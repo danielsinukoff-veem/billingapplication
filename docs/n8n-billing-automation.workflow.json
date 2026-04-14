@@ -1,0 +1,141 @@
+{
+  "name": "Billing Workbook Automation Outbox",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const billingApiBaseUrl = 'https://your-billing-api.example.com';\nconst billingApiToken = '';\nconst lookaheadDays = 45;\nconst asOf = new Date().toISOString().slice(0, 10);\nreturn [{ json: { billingApiBaseUrl, billingApiToken, lookaheadDays, asOf } }];"
+      },
+      "id": "build-config",
+      "name": "Build Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.billingApiBaseUrl.replace(/\\/$/, '') + '/api/automation/outbox' }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "asOf",
+              "value": "={{ $json.asOf }}"
+            },
+            {
+              "name": "lookaheadDays",
+              "value": "={{ String($json.lookaheadDays) }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.billingApiToken ? ('Bearer ' + $json.billingApiToken) : '' }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "fetch-outbox",
+      "name": "Fetch Automation Outbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = Array.isArray($json.items) ? $json.items : [];\nconst issues = Array.isArray($json.issues) ? $json.issues : [];\nconst dispatchItems = items.filter((item) => item.status === 'due_today' || item.status === 'overdue');\nreturn [{\n  json: {\n    generatedAt: $json.generatedAt,\n    asOfDate: $json.asOfDate,\n    summary: $json.summary,\n    dispatchCount: dispatchItems.length,\n    dispatchItems,\n    issues,\n    note: 'Use item.id as the dedupe key in n8n Data Store before sending email. Send item.subject and item.bodyText to item.recipients. For invoice_send items, optionally fetch item.invoiceDraftUrl and attach the rendered invoice.'\n  }\n}];"
+      },
+      "id": "prepare-dispatch",
+      "name": "Prepare Dispatch Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Config": {
+      "main": [
+        [
+          {
+            "node": "Fetch Automation Outbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Automation Outbox": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dispatch Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "versionId": "7df84cc3-automation-outbox-template",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "billing-workbook-automation-outbox",
+  "tags": []
+}

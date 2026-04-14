@@ -1,0 +1,123 @@
+{
+  "name": "Billing Workbook Summary Import",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "fdac0ddb-2780-4bb9-b41a-ece974b4123a",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\nreturn [{\n  json: {\n    configFile: '/Users/danielsinukoff/Documents/billing-workbook/docs/looker-summary-only.json',\n    period,\n    billingApiBaseUrl: 'http://host.docker.internal:4174',\n    billingApiToken: '',\n    lookerClientId: '',\n    lookerClientSecret: ''\n  }\n}];"
+      },
+      "id": "d7abafe3-5adc-40f2-bd11-e5c3b8fd3a92",
+      "name": "Build Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const q = (value) => `\"${String(value ?? '').replace(/([\"\\\\$`])/g, '\\\\$1')}\"`;\nconst cmd = [\n  'python3',\n  q('/Users/danielsinukoff/Documents/billing-workbook/tools/pull_looker_and_push.py'),\n  '--config-file',\n  q($json.configFile),\n  '--period',\n  q($json.period),\n  '--billing-api-base-url',\n  q($json.billingApiBaseUrl)\n];\nif ($json.billingApiToken) {\n  cmd.push('--billing-api-token', q($json.billingApiToken));\n}\nif ($json.lookerClientId) {\n  cmd.push('--looker-client-id', q($json.lookerClientId));\n}\nif ($json.lookerClientSecret) {\n  cmd.push('--looker-client-secret', q($json.lookerClientSecret));\n}\nreturn [{ json: { ...$json, command: cmd.join(' ') } }];"
+      },
+      "id": "86308936-4256-4f3e-a3ac-7748b5b5090e",
+      "name": "Build Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "={{$json.command}}"
+      },
+      "id": "9d66cbcc-eaef-4bd3-a82f-7290f184a958",
+      "name": "Run Summary Import",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1050,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.stdout || '{}';\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (error) {\n  throw new Error(`Could not parse summary import output as JSON. stdout: ${raw}`);\n}\nreturn [{ json: parsed }];"
+      },
+      "id": "5e8470d5-c2bd-4091-9021-eb5eb5ffafe7",
+      "name": "Parse Import Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Config": {
+      "main": [
+        [
+          {
+            "node": "Build Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Command": {
+      "main": [
+        [
+          {
+            "node": "Run Summary Import",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Summary Import": {
+      "main": [
+        [
+          {
+            "node": "Parse Import Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "billing-workbook-summary-import",
+  "tags": []
+}
