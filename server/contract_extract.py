@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import subprocess
 import tempfile
@@ -30,13 +31,24 @@ def extract_contract_text(payload: dict[str, Any]) -> dict[str, Any]:
             "pageCount": 0,
         }
 
+    try:
+        return _extract_contract_text_with_swift(raw_bytes, file_name)
+    except Exception:
+        return _extract_contract_text_with_pypdf(raw_bytes, file_name)
+
+
+def _extract_contract_text_with_swift(raw_bytes: bytes, file_name: str) -> dict[str, Any]:
+    swift_binary = Path("/usr/bin/swift")
+    if not swift_binary.exists() or not SWIFT_EXTRACTOR.exists():
+        raise RuntimeError("Swift PDF extractor is unavailable.")
+
     MODULE_CACHE.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="billing-contract-") as temp_dir:
         pdf_path = Path(temp_dir) / (Path(file_name).name or "contract.pdf")
         pdf_path.write_bytes(raw_bytes)
         result = subprocess.run(
             [
-                "/usr/bin/swift",
+                str(swift_binary),
                 "-module-cache-path",
                 str(MODULE_CACHE),
                 str(SWIFT_EXTRACTOR),
@@ -55,3 +67,22 @@ def extract_contract_text(payload: dict[str, Any]) -> dict[str, Any]:
             "charCount": len(text),
             "pageCount": int(doc.get("pageCount") or 0),
         }
+
+
+def _extract_contract_text_with_pypdf(raw_bytes: bytes, file_name: str) -> dict[str, Any]:
+    try:
+        from pypdf import PdfReader
+    except ImportError as error:
+        raise RuntimeError("pypdf is required for PDF extraction when Swift is unavailable.") from error
+
+    reader = PdfReader(io.BytesIO(raw_bytes))
+    text_chunks = []
+    for page in reader.pages:
+        text_chunks.append(page.extract_text() or "")
+    text = "\n".join(chunk for chunk in text_chunks if chunk)
+    return {
+        "fileName": file_name,
+        "text": text,
+        "charCount": len(text),
+        "pageCount": len(reader.pages),
+    }

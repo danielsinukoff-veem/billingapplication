@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: billingapplication
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 server/app.py
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: BILLING_BACKEND
+        value: supabase
+      - key: BILLING_ORG_SLUG
+        value: veem-billing
+      - key: BILLING_ORG_NAME
+        value: Veem Billing Workspace
+      - key: BILLING_DEFAULT_USER_EMAIL
+        value: billing.ops@veem.local
+      - key: BILLING_DEFAULT_USER_ROLE
+        value: billing_ops
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: BILLING_API_TOKEN
+        generateValue: true

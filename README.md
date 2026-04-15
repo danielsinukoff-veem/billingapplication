@@ -46,6 +46,7 @@ Then open [http://127.0.0.1:4174](http://127.0.0.1:4174). The first load seeds t
 For a Supabase-backed shared deployment, see:
 
 - `/Users/danielsinukoff/Documents/billing-workbook/docs/supabase-backend-setup.md`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/render-deployment.md`
 - `/Users/danielsinukoff/Documents/billing-workbook/server/.env.example`
 
 ## Batch contract audit

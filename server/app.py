@@ -37,6 +37,25 @@ DEFAULT_PORT = 4174
 DEFAULT_BACKEND = "sqlite"
 
 
+def default_host() -> str:
+    configured = os.getenv("BILLING_SERVER_HOST", "").strip()
+    if configured:
+        return configured
+    if os.getenv("PORT"):
+        return "0.0.0.0"
+    return "127.0.0.1"
+
+
+def default_port() -> int:
+    raw = os.getenv("PORT", "").strip()
+    if raw:
+        try:
+            return int(raw)
+        except ValueError:
+            pass
+    return DEFAULT_PORT
+
+
 class BillingRequestHandler(SimpleHTTPRequestHandler):
     server_version = "BillingSharedServer/0.1"
 
@@ -396,8 +415,8 @@ def build_store(args: argparse.Namespace):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve the shared billing workbook app and API.")
-    parser.add_argument("--host", default=os.getenv("BILLING_SERVER_HOST", "127.0.0.1"))
-    parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    parser.add_argument("--host", default=default_host())
+    parser.add_argument("--port", type=int, default=default_port())
     parser.add_argument("--backend", choices=["sqlite", "supabase"], default=os.getenv("BILLING_BACKEND", DEFAULT_BACKEND))
     parser.add_argument("--db", type=Path, default=DB_PATH)
     parser.add_argument("--supabase-url", default=os.getenv("SUPABASE_URL", ""))
