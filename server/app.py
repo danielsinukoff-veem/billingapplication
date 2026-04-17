@@ -1,3 +1,9 @@
+"""Archival reference server for local development only.
+
+Production is moving to AWS + S3 + n8n. Keep this file for historical
+comparison and local experimentation, not as the target deployment path.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -13,28 +19,27 @@ from urllib.parse import parse_qs, urlparse
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[1]))
     from server.automation_engine import build_automation_outbox  # type: ignore
+    from server.checker_engine import build_billing_checker_report  # type: ignore
     from server.contract_extract import extract_contract_text  # type: ignore
     from server.contract_parse import parse_contract_text  # type: ignore
     from server.invoice_engine import calculate_invoice  # type: ignore
     from server.looker_direct_sync import run_direct_looker_sync  # type: ignore
     from server.looker_update import apply_looker_import_result, build_looker_import_change_summary, parse_looker_file, update_looker_import_audit  # type: ignore
     from server.storage import SharedWorkspaceStore, WorkspaceIdentity  # type: ignore
-    from server.supabase_store import SupabaseConfig, SupabaseWorkspaceStore  # type: ignore
 else:
     from .automation_engine import build_automation_outbox
+    from .checker_engine import build_billing_checker_report
     from .contract_extract import extract_contract_text
     from .contract_parse import parse_contract_text
     from .invoice_engine import calculate_invoice
     from .looker_direct_sync import run_direct_looker_sync
     from .looker_update import apply_looker_import_result, build_looker_import_change_summary, parse_looker_file, update_looker_import_audit
     from .storage import SharedWorkspaceStore, WorkspaceIdentity
-    from .supabase_store import SupabaseConfig, SupabaseWorkspaceStore
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT_DIR / "server" / "data" / "shared_workspace.db"
 DEFAULT_PORT = 4174
-DEFAULT_BACKEND = "sqlite"
 
 
 def default_host() -> str:
@@ -65,7 +70,7 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
         directory: str | None = None,
         store=None,
         workspace_label: str = "Veem Billing Shared Workspace",
-        backend_name: str = DEFAULT_BACKEND,
+        backend_name: str = "sqlite",
         api_token: str = "",
         **kwargs,
     ):
@@ -106,6 +111,9 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/automation/outbox":
             self.handle_automation_outbox(parsed.query)
             return
+        if parsed.path == "/api/checker/run":
+            self.handle_checker_run(parsed.query)
+            return
         if parsed.path in ("/", "/index.html"):
             self.handle_index()
             return
@@ -138,6 +146,9 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
             return
         if parsed.path == "/api/contracts/parse":
             self.handle_contract_parse()
+            return
+        if parsed.path == "/api/checker/run":
+            self.handle_checker_run(None)
             return
         self.respond_error(HTTPStatus.NOT_FOUND, "Route not found.")
 
@@ -352,6 +363,52 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
             return
         self.respond_json(result)
 
+    def handle_checker_run(self, query: str | None) -> None:
+        if query is None:
+            try:
+                payload = self.read_json_body()
+            except ValueError as error:
+                self.respond_error(HTTPStatus.BAD_REQUEST, str(error))
+                return
+        else:
+            params = parse_qs(query)
+            payload = {
+                "partner": (params.get("partner") or [""])[0],
+                "period": (params.get("period") or [""])[0],
+                "startPeriod": (params.get("startPeriod") or [""])[0],
+                "endPeriod": (params.get("endPeriod") or [""])[0],
+            }
+            periods = params.get("periods") or []
+            if periods:
+                payload["periods"] = [value for value in ",".join(periods).split(",") if value.strip()]
+        try:
+            workspace = self.store.get_workspace()
+            snapshot = workspace.get("snapshot")
+            if not isinstance(snapshot, dict):
+                self.respond_error(HTTPStatus.NOT_FOUND, "No shared workbook snapshot has been saved yet.")
+                return
+            partner = str(payload.get("partner") or "").strip() or None
+            start_period = str(payload.get("startPeriod") or payload.get("period") or "").strip() or None
+            end_period = str(payload.get("endPeriod") or payload.get("period") or "").strip() or None
+            periods = payload.get("periods")
+            if isinstance(periods, str):
+                periods = [value.strip() for value in periods.split(",") if value.strip()]
+            if not isinstance(periods, list):
+                periods = None
+            epsilon = float(payload.get("epsilon") or 0.01)
+            report = build_billing_checker_report(
+                snapshot,
+                partner=partner,
+                periods=periods,
+                start_period=start_period,
+                end_period=end_period,
+                epsilon=epsilon,
+            )
+        except Exception as error:
+            self.respond_error(HTTPStatus.INTERNAL_SERVER_ERROR, f"Could not run billing checker: {error}")
+            return
+        self.respond_json(report)
+
     def read_json_body(self) -> dict:
         content_length = int(self.headers.get("Content-Length", "0"))
         raw = self.rfile.read(content_length) if content_length > 0 else b"{}"
@@ -374,7 +431,7 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
 
 def build_handler(store: SharedWorkspaceStore, api_token: str):
     workspace_label = getattr(getattr(store, "identity", None), "organization_name", "Veem Billing Shared Workspace")
-    backend_name = "supabase" if isinstance(store, SupabaseWorkspaceStore) else "sqlite"
+    backend_name = "sqlite"
 
     def handler(*args, **kwargs):
         BillingRequestHandler(
@@ -400,16 +457,6 @@ def build_identity(args: argparse.Namespace) -> WorkspaceIdentity:
 
 def build_store(args: argparse.Namespace):
     identity = build_identity(args)
-    if args.backend == "supabase":
-        if not args.supabase_url or not args.supabase_service_role_key:
-            raise SystemExit("Supabase backend requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.")
-        return SupabaseWorkspaceStore(
-            SupabaseConfig(
-                url=args.supabase_url,
-                service_role_key=args.supabase_service_role_key,
-            ),
-            identity=identity,
-        )
     return SharedWorkspaceStore(args.db, identity=identity)
 
 
@@ -417,10 +464,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Serve the shared billing workbook app and API.")
     parser.add_argument("--host", default=default_host())
     parser.add_argument("--port", type=int, default=default_port())
-    parser.add_argument("--backend", choices=["sqlite", "supabase"], default=os.getenv("BILLING_BACKEND", DEFAULT_BACKEND))
     parser.add_argument("--db", type=Path, default=DB_PATH)
-    parser.add_argument("--supabase-url", default=os.getenv("SUPABASE_URL", ""))
-    parser.add_argument("--supabase-service-role-key", default=os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""))
     parser.add_argument("--org-slug", default=os.getenv("BILLING_ORG_SLUG", "veem-billing"))
     parser.add_argument("--org-name", default=os.getenv("BILLING_ORG_NAME", "Veem Billing Workspace"))
     parser.add_argument("--user-email", default=os.getenv("BILLING_DEFAULT_USER_EMAIL", "billing.ops@veem.local"))
@@ -430,7 +474,7 @@ def main() -> None:
 
     store = build_store(args)
     server = ThreadingHTTPServer((args.host, args.port), build_handler(store, args.api_token))
-    print(f"Shared billing server running at http://{args.host}:{args.port} ({args.backend})")
+    print(f"Shared billing server running at http://{args.host}:{args.port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

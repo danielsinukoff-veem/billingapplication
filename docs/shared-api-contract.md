@@ -2,10 +2,7 @@
 
 This is the first API slice for moving the billing workbook from browser-local state to a shared company app.
 
-The included reference server now supports this contract in two modes:
-
-- local SQLite development mode
-- Supabase-backed mode using PostgREST plus a service-role key
+The current reference server still implements this contract locally, but the target production shape is AWS + S3 + n8n. Treat this contract as the interface the frontend expects, regardless of which backend service is behind it.
 
 ## Base assumptions
 
@@ -61,7 +58,7 @@ Replaces the shared workbook snapshot for the org.
 
 This is the first migration step only. In the long run, pricing and import data should become more granular endpoints rather than whole-snapshot writes.
 
-The backend should persist this in a `workbook_snapshots` row keyed by organization.
+The backend should persist this in a shared system-of-record row keyed by organization, whether that is an AWS-hosted API, an AWS database, or another centralized service.
 
 ### Request
 
@@ -244,6 +241,84 @@ For dependent imports, the server automatically merges the request `context` wit
   7. `stampli_fx_revenue_share`
   8. `stampli_fx_revenue_reversal`
 - If the server is started with `BILLING_API_TOKEN`, send `Authorization: Bearer <token>`.
+
+## `POST /api/checker/run`
+
+Runs the maker/checker reconciliation workflow against the shared snapshot and returns a report of matching and mismatching invoice buckets.
+
+### Request
+
+```json
+{
+  "partner": "Stampli",
+  "period": "2026-02",
+  "epsilon": 0.01
+}
+```
+
+or
+
+```json
+{
+  "startPeriod": "2026-01",
+  "endPeriod": "2026-04",
+  "periods": ["2026-01", "2026-02", "2026-03", "2026-04"],
+  "epsilon": 0.01
+}
+```
+
+### Response
+
+```json
+{
+  "generatedAt": "2026-04-17T18:00:00Z",
+  "partnerFilter": "Stampli",
+  "periodFilter": {
+    "periods": ["2026-02"],
+    "startPeriod": "2026-02",
+    "endPeriod": "2026-02"
+  },
+  "runCount": 1,
+  "passedCount": 1,
+  "failedCount": 0,
+  "runs": [
+    {
+      "partner": "Stampli",
+      "period": "2026-02",
+      "passed": true,
+      "maker": {
+        "chg": 0,
+        "pay": 0,
+        "net": 0,
+        "lineCount": 0,
+        "buckets": {}
+      },
+      "checker": {
+        "chg": 0,
+        "pay": 0,
+        "net": 0,
+        "lineCount": 0,
+        "buckets": {}
+      },
+      "totalDeltas": {
+        "chg": 0,
+        "pay": 0,
+        "net": 0
+      },
+      "diffs": [],
+      "sourceStats": {
+        "ltxn_rows": 0,
+        "lrev_rows": 0,
+        "lrs_rows": 0,
+        "lfxp_rows": 0,
+        "lva_rows": 0,
+        "impl_rows": 0
+      },
+      "notes": []
+    }
+  ]
+}
+```
 
 ## `POST /api/looker/direct-sync`
 

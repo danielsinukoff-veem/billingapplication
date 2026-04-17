@@ -1,3 +1,9 @@
+"""Archival reference invoice engine.
+
+The long-term billing calculation target is AWS + S3 + n8n, with the browser
+serving as the maker UI and the workflow layer owning the heavy computation.
+"""
+
 from __future__ import annotations
 
 from collections import OrderedDict

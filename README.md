@@ -4,13 +4,21 @@ A zero-build browser app for partner billing configuration, invoice calculation,
 
 ## Run locally
 
-From this folder:
+The frontend can be served as a static app:
 
 ```bash
 python3 -m http.server 4173
 ```
 
 Then open [http://localhost:4173](http://localhost:4173).
+
+For the legacy shared backend reference, you can still run:
+
+```bash
+python3 /Users/danielsinukoff/Documents/billing-workbook/server/app.py --port 4174
+```
+
+Then open [http://127.0.0.1:4174](http://127.0.0.1:4174). The target deployment is AWS + S3 + n8n, so this backend is now only a reference implementation.
 
 ## Notes
 
@@ -19,35 +27,54 @@ Then open [http://localhost:4173](http://localhost:4173).
 - `Import Backup` restores a saved workbook JSON file.
 - Contract parsing in this static build expects structured JSON. If you only have raw contract text, use `Copy Extraction Prompt`, run that prompt in an LLM, and paste the returned JSON into the app.
 
-## Shared-app scaffolding
+## Conversion target
 
-This repo now includes the first migration scaffolding for a company-shared version of the app:
+The target architecture is now AWS + S3 + n8n, with the browser app acting as the main user interface and the scheduled parsing/reconciliation work moving out of local Python processes.
 
-- Architecture plan: `/Users/danielsinukoff/Documents/billing-workbook/docs/shared-app-architecture.md`
-- API contract: `/Users/danielsinukoff/Documents/billing-workbook/docs/shared-api-contract.md`
-- Schema outline: `/Users/danielsinukoff/Documents/billing-workbook/docs/shared-app-schema.sql`
-- Supabase migrations:
-  - `/Users/danielsinukoff/Documents/billing-workbook/supabase/migrations/20260316_0001_core_schema.sql`
-  - `/Users/danielsinukoff/Documents/billing-workbook/supabase/migrations/20260316_0002_rls.sql`
+Recommended handoff docs:
+
+- AWS/S3/n8n handoff: `/Users/danielsinukoff/Documents/billing-workbook/docs/aws-s3-n8n-handoff.md`
+- Shared API contract: `/Users/danielsinukoff/Documents/billing-workbook/docs/shared-api-contract.md`
+- Shared data shape: `/Users/danielsinukoff/Documents/billing-workbook/docs/shared-app-schema.sql`
+- n8n workflow examples:
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-direct.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-automation.workflow.json`
+- Current n8n data input flow:
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-ingestion.md`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-direct.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json`
+- AWS contract ingestion starter:
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/eng-handoff-aws-n8n/README.md`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/eng-handoff-aws-n8n/contract-s3-ingestion.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/eng-handoff-aws-n8n/contract-s3-ingestion.md`
 - Frontend shared-backend client:
   - `/Users/danielsinukoff/Documents/billing-workbook/shared-backend.js`
   - `/Users/danielsinukoff/Documents/billing-workbook/shared-config.js`
 
-By default the app still runs in local mode. To point it at a shared backend later, configure `window.BILLING_APP_CONFIG` with a real `apiBaseUrl` and enable the shared workbook / remote invoice flags.
+The current Python reference server and the older backend notes are kept only as transitional references. They are not the target production shape.
+The `server/` Python folder is archival reference code only.
 
-For a local reference shared deployment using the included Python API + SQLite store:
+## Retained utility scripts
+
+These are the remaining reusable scripts in `tools/`:
+
+- `audit_contracts.py`
+- `audit_billing_sanity.py`
+- `generate_looker_import.py`
+- `import_historical_partner_data.py`
+- `pull_looker_and_push.py`
+- `push_looker_batch.py`
+- `extract_pdf_text.swift`
+- `ocr_pdf.swift`
+
+For the current local reference server, you can still run:
 
 ```bash
 python3 /Users/danielsinukoff/Documents/billing-workbook/server/app.py --port 4174
 ```
 
-Then open [http://127.0.0.1:4174](http://127.0.0.1:4174). The first load seeds the shared workbook snapshot from the app defaults, and subsequent saves/invoice reads go through the shared API.
-
-For a Supabase-backed shared deployment, see:
-
-- `/Users/danielsinukoff/Documents/billing-workbook/docs/supabase-backend-setup.md`
-- `/Users/danielsinukoff/Documents/billing-workbook/docs/render-deployment.md`
-- `/Users/danielsinukoff/Documents/billing-workbook/server/.env.example`
+Then open [http://127.0.0.1:4174](http://127.0.0.1:4174). That remains useful for local experiments, but the long-term plan is to replace the server-side Python pieces with AWS-hosted services and n8n workflows.
 
 ## Batch contract audit
 

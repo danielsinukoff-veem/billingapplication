@@ -1,0 +1,233 @@
+{
+  "name": "Billing Workbook Contract Ingestion (S3)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "daily-schedule",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst runId = `contract-${now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(16).slice(2, 8)}`;\nreturn [{\n  json: {\n    bucketName: 'your-contract-bucket',\n    incomingPrefix: 'contracts/incoming/',\n    processedPrefix: 'contracts/processed/',\n    errorPrefix: 'contracts/errors/',\n    apiBaseUrl: 'https://your-billing-api.example.com',\n    apiToken: '',\n    runId,\n    startedAt: now.toISOString()\n  }\n}];"
+      },
+      "id": "build-config",
+      "name": "Build Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "getAll",
+        "bucketName": "={{ $('Build Config').first().json.bucketName }}",
+        "prefix": "={{ $('Build Config').first().json.incomingPrefix }}",
+        "returnAll": true
+      },
+      "id": "list-contracts",
+      "name": "List Contract Files",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        800,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst config = $('Build Config').first().json;\nconst accepted = ['.pdf', '.txt', '.md', '.docx'];\nconst normalizedRows = rows.flatMap((item) => {\n  if (Array.isArray(item.json?.Contents)) {\n    return item.json.Contents.map((entry) => ({ json: entry }));\n  }\n  if (Array.isArray(item.json?.files)) {\n    return item.json.files.map((entry) => ({ json: entry }));\n  }\n  return [item];\n});\nconst toKey = (item) => item.json.Key || item.json.key || item.json.name || item.json.fileName || item.json.path || '';\nreturn normalizedRows\n  .map((item) => {\n    const fileName = toKey(item);\n    const lower = fileName.toLowerCase();\n    const matches = accepted.some((ext) => lower.endsWith(ext));\n    return {\n      json: {\n        ...config,\n        fileName,\n        s3Key: fileName,\n        fileExt: accepted.find((ext) => lower.endsWith(ext)) || '',\n        partnerHint: fileName.split('/').pop().replace(/\\.[^.]+$/, '') || '',\n        ingestStatus: matches ? 'queued' : 'skipped'\n      }\n    };\n  })\n  .filter((item) => item.json.ingestStatus === 'queued');"
+      },
+      "id": "filter-contracts",
+      "name": "Filter Contract Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "download",
+        "bucketName": "={{ $('Build Config').first().json.bucketName }}",
+        "fileKey": "={{ $json.s3Key }}"
+      },
+      "id": "download-contract",
+      "name": "Download Contract File",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Build Config').first().json;\nconst fileName = $json.fileName || $json.s3Key || '';\nconst binaryKeys = Object.keys($binary || {});\nconst binary = binaryKeys.length ? $binary[binaryKeys[0]] : null;\nconst isPdf = /\\.pdf$/i.test(fileName);\nlet contractText = '';\nif (!isPdf && binary && binary.data) {\n  contractText = Buffer.from(binary.data, 'base64').toString('utf8');\n}\nreturn [{\n  json: {\n    ...config,\n    ...$json,\n    fileName,\n    sourceType: 's3_contract_drop',\n    parserStatus: isPdf ? 'needs-pdf-extraction' : (contractText ? 'ready' : 'empty'),\n    contractText,\n    extractedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "parse-contract-text",
+      "name": "Parse Contract Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Build Config').first().json.apiBaseUrl.replace(/\\/$/, '') + '/api/contracts/ingest' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('Build Config').first().json.apiToken ? ('Bearer ' + $('Build Config').first().json.apiToken) : '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  runId: $json.runId,\n  sourceBucket: $json.bucketName,\n  sourceKey: $json.s3Key,\n  fileName: $json.fileName,\n  partnerHint: $json.partnerHint,\n  parserStatus: $json.parserStatus,\n  contractText: $json.contractText,\n  sourceType: $json.sourceType,\n  extractedAt: $json.extractedAt\n} }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "publish-parsed-contract",
+      "name": "Publish Parsed Contract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        360
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Config": {
+      "main": [
+        [
+          {
+            "node": "List Contract Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Contract Files": {
+      "main": [
+        [
+          {
+            "node": "Filter Contract Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Contract Queue": {
+      "main": [
+        [
+          {
+            "node": "Download Contract File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Contract File": {
+      "main": [
+        [
+          {
+            "node": "Parse Contract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Contract Text": {
+      "main": [
+        [
+          {
+            "node": "Publish Parsed Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "versionId": "aws-s3-contract-ingestion-starter",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "billing-workbook-contract-ingestion-s3",
+  "tags": []
+}

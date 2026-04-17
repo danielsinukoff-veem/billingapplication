@@ -1,3 +1,9 @@
+"""Archival reference automation engine.
+
+This module is retained for historical context only. Production automation
+should run in AWS and n8n.
+"""
+
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta

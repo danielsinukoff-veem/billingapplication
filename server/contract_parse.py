@@ -1,3 +1,8 @@
+"""Archival reference contract parsing helpers.
+
+Production contract parsing is moving to an S3 + n8n workflow.
+"""
+
 from __future__ import annotations
 
 import json

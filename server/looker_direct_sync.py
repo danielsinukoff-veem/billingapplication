@@ -1,3 +1,9 @@
+"""Archival reference Looker sync helper.
+
+The production Looker import flow should be driven by n8n and the AWS-hosted
+API/workflow stack.
+"""
+
 from __future__ import annotations
 
 import base64

@@ -1,3 +1,9 @@
+"""Archival reference shared-workspace storage helpers.
+
+This local SQLite-backed store exists only for reference and local
+experimentation. Production state should live in the AWS-hosted stack.
+"""
+
 from __future__ import annotations
 
 import json

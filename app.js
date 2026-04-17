@@ -10,16 +10,18 @@ import {
   TERTIARY,
   createInitialWorkbookData,
   getCorridor
-} from "./data.js?v=20260409j";
+} from "./data.js?v=20260417b";
 import {
   fetchSharedDraftInvoice,
+  fetchBillingCheckerReport,
   getSharedBackendConfig,
+  getSharedApiBaseUrl,
   getWorkspaceLabel,
   isRemoteInvoiceReadEnabled,
   isSharedWorkbookEnabled,
   loadSharedBootstrap,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js?v=20260409i";
+} from "./shared-backend.js?v=20260417b";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
@@ -325,6 +327,9 @@ const state = {
   pv: "",
   np: "",
   inv: null,
+  checkerReport: null,
+  checkerStatus: "idle",
+  checkerError: "",
   cf: "",
   fxSearch: "",
   cText: "",
@@ -1707,7 +1712,7 @@ function backfillMissingInvoiceTrackingDates({ log = false } = {}) {
   });
   if (changed && log) {
     logWorkbookChange(
-      "backfill_invoice_dates",
+      "invoice_tracking_dates_backfill",
       `Backfilled invoice dates for ${changed} paid invoice row${changed === 1 ? "" : "s"} across ${touchedPartners.size} partner${touchedPartners.size === 1 ? "" : "s"}.`,
       { section: "pInvoices", rows: changed, partners: [...touchedPartners] }
     );
@@ -2889,6 +2894,9 @@ function clearCurrentInvoiceSelection({ renderNow = true } = {}) {
   state.sp = "";
   state.inv = null;
   state.invoiceExplorer = null;
+  state.checkerReport = null;
+  state.checkerStatus = "idle";
+  state.checkerError = "";
   if (renderNow) render();
 }
 
@@ -3914,14 +3922,9 @@ async function loadInvoiceDetailRowsForRange(partner, startPeriod, endPeriod) {
 }
 
 function getLookerImportApiBaseUrl() {
-  const config = getSharedBackendConfig();
-  if (config.apiBaseUrl) return config.apiBaseUrl;
-  if (typeof window !== "undefined") {
-    const { protocol, hostname, port, origin } = window.location;
-    if ((hostname === "127.0.0.1" || hostname === "localhost") && port === "4174") return origin;
-    if (hostname === "127.0.0.1" || hostname === "localhost") return `${protocol}//127.0.0.1:4174`;
-  }
-  throw new Error("Looker import API is not configured. Start the shared billing server on port 4174.");
+  const apiBaseUrl = getSharedApiBaseUrl();
+  if (apiBaseUrl) return apiBaseUrl;
+  throw new Error("Looker import API is not configured. Set BILLING_APP_CONFIG.apiBaseUrl for the hosted environment.");
 }
 
 async function parseLookerApiResponse(response, fallbackMessage) {
@@ -6194,6 +6197,197 @@ async function calculateInvoice() {
   }
 }
 
+function buildCheckerSelectionPayload() {
+  state.sp = readBoundValue("sp");
+  state.perStart = readBoundValue("perStart");
+  state.perEnd = state.useDateRange ? readBoundValue("perEnd") : state.perStart;
+  if (state.useDateRange && !state.perEnd) {
+    return { error: "Choose an end month before running the checker on a date range." };
+  }
+  const { start, end } = normalizePeriodRange(state.perStart, state.perEnd);
+  state.perStart = start;
+  state.perEnd = end;
+  const resolvedPartner = resolvePartnerName(state.sp);
+  if (!resolvedPartner) {
+    return { error: "Choose a valid partner before running the checker." };
+  }
+  state.sp = resolvedPartner;
+  if (!state.perStart || !state.perEnd) {
+    return { error: "Choose a valid invoice month or date range before running the checker." };
+  }
+  return {
+    partner: state.sp,
+    startPeriod: state.perStart,
+    endPeriod: state.perEnd
+  };
+}
+
+function renderCheckerDiffTable(run) {
+  const diffs = Array.isArray(run?.diffs) ? run.diffs : [];
+  return `
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Bucket</th>
+            <th>Maker</th>
+            <th>Checker</th>
+            <th>Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${!diffs.length
+            ? `<tr><td colspan="4" class="empty-state">No bucket mismatches were found for this run.</td></tr>`
+            : diffs.map((diff) => `
+              <tr>
+                <td>${html(diff.bucket || "")}</td>
+                <td class="align-right mono">${fmt(diff.maker)}</td>
+                <td class="align-right mono">${fmt(diff.checker)}</td>
+                <td class="align-right mono">${fmt(diff.delta)}</td>
+              </tr>
+            `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderCheckerRunCards(report) {
+  const runs = Array.isArray(report?.runs) ? report.runs : [];
+  if (!runs.length) {
+    return `<div class="summary-banner"><h4>No runs were returned</h4><p>Run the checker again to generate a fresh comparison.</p></div>`;
+  }
+  return runs.map((run) => {
+    const passed = !!run.passed;
+    const totalDeltas = run.totalDeltas || {};
+    const sourceStats = run.sourceStats || {};
+    return `
+      <div class="summary-banner ${passed ? "success" : "danger"}" style="margin-top:14px">
+        <h4>${html(run.partner || "Unknown partner")} · ${html(run.period || "Unknown period")} ${passed ? "passed" : "needs review"}</h4>
+        <p>Maker net ${fmt(run?.maker?.net)} vs checker net ${fmt(run?.checker?.net)}. Total delta ${fmt(totalDeltas.net || 0)}.</p>
+        <p>Source rows: ltxn ${Number(sourceStats.ltxn_rows || 0)}, lrev ${Number(sourceStats.lrev_rows || 0)}, lrs ${Number(sourceStats.lrs_rows || 0)}, lfxp ${Number(sourceStats.lfxp_rows || 0)}, lva ${Number(sourceStats.lva_rows || 0)}, impl ${Number(sourceStats.impl_rows || 0)}.</p>
+      </div>
+      ${passed ? "" : renderCheckerDiffTable(run)}
+      ${Array.isArray(run.notes) && run.notes.length ? `
+        <div class="invoice-note-card" style="margin-top:12px">
+          <strong>Notes</strong>
+          <ul class="bulleted-list" style="margin-top:8px">
+            ${run.notes.map((note) => `<li>${html(note)}</li>`).join("")}
+          </ul>
+        </div>
+      ` : ""}
+    `;
+  }).join("");
+}
+
+function renderBillingCheckerPanel() {
+  const report = state.checkerReport;
+  const selectionPartner = resolvePartnerName(state.sp);
+  const selectionEnd = state.useDateRange ? state.perEnd : state.perStart;
+  const selectionReady = !!selectionPartner && !!state.perStart && !!selectionEnd && state.checkerStatus !== "running";
+  const selectionLabel = selectionPartner
+    ? `${selectionPartner} · ${formatPeriodDateRange(state.perStart, selectionEnd)}`
+    : "Choose a partner and month to run the checker.";
+  const badge = report
+    ? `${report.passedCount || 0} pass${report.passedCount === 1 ? "" : "es"} · ${report.failedCount || 0} fail${report.failedCount === 1 ? "" : "s"}`
+    : "Not run yet";
+  const headerNote = "Independent pre-bill reconciliation against contract terms and transaction data.";
+  const reportPartnerLabel = report?.partnerFilter ? report.partnerFilter : "All partners";
+  const reportPeriodLabel = report?.periodFilter?.periods?.length
+    ? report.periodFilter.periods.join(", ")
+    : report?.periodFilter?.startPeriod && report?.periodFilter?.endPeriod
+      ? formatPeriodDateRange(report.periodFilter.startPeriod, report.periodFilter.endPeriod)
+      : "All periods";
+  const content = `
+    <div class="button-row" style="margin-bottom:14px">
+      <button class="button ghost" data-action="clear-billing-checker"${report ? "" : " disabled"}>Clear Result</button>
+      <span class="helper-pill">${html(selectionLabel)}</span>
+      ${state.checkerStatus === "running" ? `<span class="helper-pill">Checking...</span>` : ""}
+      ${state.checkerError ? `<span class="helper-pill" style="background:#f7edc8;color:#7c5312">${html(state.checkerError)}</span>` : ""}
+    </div>
+    ${report ? `
+      <div class="grid-4">
+        <div class="kpi-card"><strong>${report.runCount || 0}</strong><span>Runs</span></div>
+        <div class="kpi-card"><strong>${report.passedCount || 0}</strong><span>Passed</span></div>
+        <div class="kpi-card"><strong>${report.failedCount || 0}</strong><span>Failed</span></div>
+        <div class="kpi-card"><strong>${report.generatedAt ? formatDateTime(report.generatedAt) : "—"}</strong><span>Last Run</span></div>
+      </div>
+      <div class="summary-banner ${report.failedCount ? "danger" : "success"}" style="margin-top:14px">
+        <h4>${report.failedCount ? "Checker found exceptions" : "Checker passed"}</h4>
+        <p>${report.failedCount ? "Review the bucket mismatches below before billing is approved." : "The maker and checker totals matched for this selection."}</p>
+        <p>Report scope: ${html(reportPartnerLabel)} · ${html(reportPeriodLabel)}</p>
+      </div>
+      ${renderCheckerRunCards(report)}
+    ` : `
+      <div class="summary-banner">
+        <h4>Run the checker before approving billing</h4>
+        <p>This compares the current app output to an independent recalculation from the same contract terms and imported transaction data.</p>
+      </div>
+    `}
+  `;
+  return renderSection({
+    key: "billing-checker",
+    title: "Maker / Checker",
+    badge,
+    note: headerNote,
+    content,
+    defaultOpen: true
+  });
+}
+
+async function runBillingChecker() {
+  const payload = buildCheckerSelectionPayload();
+  if (payload.error) {
+    showToast("Checker input required", payload.error, "warning");
+    return;
+  }
+  state.checkerStatus = "running";
+  state.checkerError = "";
+  render();
+  try {
+    if (isSharedWorkbookEnabled()) {
+      try {
+        await refreshSharedWorkspace({ showSuccessToast: false, showErrorToast: false, retries: 2, retryDelayMs: 250 });
+      } catch (error) {
+        console.error("Could not refresh shared workbook before checker run", error);
+      }
+    }
+    const report = await fetchBillingCheckerReport({
+      partner: payload.partner,
+      startPeriod: payload.startPeriod,
+      endPeriod: payload.endPeriod,
+      epsilon: 0.01
+    });
+    state.checkerReport = report;
+    state.checkerStatus = report?.failedCount ? "warning" : "success";
+    state.checkerError = "";
+    recordAccessActivity(
+      "run_billing_checker",
+      `Ran the billing checker for ${payload.partner} ${payload.startPeriod === payload.endPeriod ? payload.startPeriod : `${payload.startPeriod} to ${payload.endPeriod}`}.`,
+      {
+        category: "activity",
+        partner: payload.partner,
+        periodStart: payload.startPeriod,
+        periodEnd: payload.endPeriod,
+        failedCount: Number(report?.failedCount || 0),
+        passedCount: Number(report?.passedCount || 0)
+      }
+    );
+    if (report?.failedCount) {
+      showToast("Checker found exceptions", `${report.failedCount} run${report.failedCount === 1 ? "" : "s"} need review before billing is approved.`, "warning");
+    } else {
+      showToast("Checker passed", "Maker and checker totals matched for this selection.", "success");
+    }
+    render();
+  } catch (error) {
+    console.error("Could not run billing checker", error);
+    state.checkerStatus = "error";
+    state.checkerError = String(error?.message || error || "Unknown error");
+    showToast("Checker failed", state.checkerError, "error");
+    render();
+  }
+}
+
 function renderHeader() {
   const statusText = state.lastSaved
     ? `${state.workspaceMode === "shared" ? "Shared" : "Saved"} ${html(state.lastSaved)}`
@@ -6745,6 +6939,8 @@ function renderInvoiceTab() {
       : `<div class="panel"><div class="empty-state">No invoice lines were generated for this selection.</div></div>`)
     : "";
   const invoiceSection = state.inv ? `${banner}${notesBlock}${documentTables}` : "";
+  const checkerPanel = renderBillingCheckerPanel();
+  const checkerSelectionReady = !!resolvePartnerName(state.sp) && !!state.perStart && (!state.useDateRange || !!state.perEnd);
   return `
     <div class="stack">
       ${renderPageTableToggle("invoice")}
@@ -6781,12 +6977,14 @@ function renderInvoiceTab() {
             <span class="label">Run</span>
             <div class="button-row">
               <button class="button primary" data-action="calculate-invoice">Calculate</button>
+              <button class="button secondary" data-action="run-billing-checker"${checkerSelectionReady ? "" : " disabled"}>${state.checkerStatus === "running" ? "Checking..." : "Run Checker"}</button>
               <button class="button secondary" data-action="clear-invoice-selection">Clear</button>
             </div>
           </div>
         </div>
       </div>
       ${invoiceSection}
+      ${checkerPanel}
       ${summaryPanel}
     </div>
   `;
@@ -7776,6 +7974,17 @@ root.addEventListener("click", (event) => {
       console.error("Unhandled invoice calculation error", error);
       showToast("Invoice calculation failed", String(error?.message || error || "Unknown error"), "error");
     });
+    return;
+  }
+  if (action === "run-billing-checker") {
+    void runBillingChecker();
+    return;
+  }
+  if (action === "clear-billing-checker") {
+    state.checkerReport = null;
+    state.checkerStatus = "idle";
+    state.checkerError = "";
+    render();
     return;
   }
   if (action === "clear-invoice-selection") {

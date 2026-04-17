@@ -1,4 +1,4 @@
-import { billingAppConfig } from "./shared-config.js?v=20260320a";
+import { billingAppConfig } from "./shared-config.js?v=20260417b";
 
 function trimSlash(value) {
   return String(value || "").replace(/\/+$/, "");
@@ -23,14 +23,23 @@ export function getSharedBackendConfig() {
   };
 }
 
+export function getSharedApiBaseUrl() {
+  const config = getSharedBackendConfig();
+  if (config.apiBaseUrl) return config.apiBaseUrl;
+  if (typeof window !== "undefined" && window.location && window.location.origin) {
+    return window.location.origin;
+  }
+  return "";
+}
+
 export function isSharedWorkbookEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableSharedWorkbook && config.apiBaseUrl);
+  return !!(config.enableSharedWorkbook && getSharedApiBaseUrl());
 }
 
 export function isRemoteInvoiceReadEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableRemoteInvoiceReads && config.apiBaseUrl);
+  return !!(config.enableRemoteInvoiceReads && getSharedApiBaseUrl());
 }
 
 export function getWorkspaceLabel() {
@@ -69,9 +78,9 @@ async function parseApiResponse(response, fallbackMessage) {
 }
 
 function buildUrl(path, params = null) {
-  const config = getSharedBackendConfig();
-  if (!config.apiBaseUrl) throw new Error("Shared backend is not configured.");
-  const url = new URL(config.apiBaseUrl + path);
+  const baseUrl = getSharedApiBaseUrl();
+  if (!baseUrl) throw new Error("Shared backend is not configured.");
+  const url = new URL(path, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value != null && value !== "") url.searchParams.set(key, value);
@@ -134,6 +143,17 @@ export async function fetchBillingAutomationOutbox(asOf = "", lookaheadDays = 45
     "Could not load the billing automation outbox."
   );
   return payload;
+}
+
+export async function fetchBillingCheckerReport(payload) {
+  return parseApiResponse(
+    await fetch(buildUrl("/api/checker/run"), {
+      method: "POST",
+      headers: buildHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload || {})
+    }),
+    "Could not run the billing checker."
+  );
 }
 
 export async function importLookerFileAndSave(payload) {
