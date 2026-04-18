@@ -46,6 +46,8 @@ Recommended handoff docs:
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json`
 - Billing QA package:
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/README.md`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/local-test.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/local-test.md`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/llm-comparison.workflow.json`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/data-comparison.workflow.json`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/missing-data.workflow.json`

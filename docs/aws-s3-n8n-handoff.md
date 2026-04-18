@@ -71,6 +71,8 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 This is the multi-tier checker layer that Finance should use before billing is released.
 
 - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/README.md`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/local-test.workflow.json`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/local-test.md`
 - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/llm-comparison.workflow.json`
 - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/data-comparison.workflow.json`
 - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/missing-data.workflow.json`

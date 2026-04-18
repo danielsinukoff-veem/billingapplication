@@ -143,3 +143,18 @@ Engineering still needs to wire the actual n8n nodes for:
 - Slack or email alerting
 
 The important part is that the checker remains independent from the maker and fails closed whenever a source, term, or amount does not line up.
+
+## Runnable local harness
+
+If you want to test the checker immediately in a local n8n instance, import:
+
+- `local-test.workflow.json`
+- `local-test.md`
+
+That version uses:
+
+- OpenAI for the primary and shadow parse passes
+- embedded sample transaction data instead of Snowflake
+- embedded sample contract text instead of S3
+
+It is meant to prove the control flow and exception reporting before the real Claude, Snowflake, and S3 nodes are wired in.
