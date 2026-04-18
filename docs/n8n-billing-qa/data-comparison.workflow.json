@@ -1,0 +1,96 @@
+{
+  "name": "Billing QA Data Comparison",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 240]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "daily-trigger",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst prev = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));\nconst period = prev.toISOString().slice(0, 7);\nconst runId = `qa-data-${period}-${Date.now()}`;\nreturn [{ json: {\n  runId,\n  period,\n  billingApiBaseUrl: 'https://your-billing-api.example.com',\n  snowflakeApiUrl: 'https://your-data-platform.example.com/api/snowflake/export',\n  billingFeedUrl: 'https://your-billing-api.example.com/api/qa/billing-feed',\n  reportDestinationPrefix: 's3://your-billing-bucket/reports/billing-qa/data-comparison/',\n  note: 'Insert the actual billing feed read and Snowflake read nodes between this context and the final compare step.'\n} }];"
+      },
+      "id": "build-context",
+      "name": "Build Run Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 330]
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = {\n  workflow: 'data-comparison',\n  runId: $json.runId,\n  period: $json.period,\n  status: 'starter-template',\n  purpose: 'Compare the transaction data feeding the billing app against Snowflake for the same period.',\n  requiredInputs: [\n    'billing app transaction feed',\n    'Snowflake transaction export',\n    'transaction id or activity key',\n    'monthly totals by partner'\n  ],\n  requiredChecks: [\n    'row count mismatch',\n    'missing row mismatch',\n    'duplicate row mismatch',\n    'partner total delta',\n    'period total delta'\n  ],\n  reportDestinationPrefix: $json.reportDestinationPrefix,\n  nextAction: 'Wire the source reads, compare rows by key, then write the exception report to S3 and alert Finance if any delta is present.'\n};\nreturn [{ json: report }];"
+      },
+      "id": "build-report",
+      "name": "Build Exception Report Template",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [860, 330]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Context": {
+      "main": [
+        [
+          {
+            "node": "Build Exception Report Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "versionId": "qa-data-starter-template",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "billing-qa-data-comparison",
+  "tags": []
+}

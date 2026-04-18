@@ -44,6 +44,11 @@ Recommended handoff docs:
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-ingestion.md`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-direct.workflow.json`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json`
+- Billing QA package:
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/README.md`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/llm-comparison.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/data-comparison.workflow.json`
+  - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/missing-data.workflow.json`
 - AWS contract ingestion starter:
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/eng-handoff-aws-n8n/README.md`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/eng-handoff-aws-n8n/contract-s3-ingestion.workflow.json`

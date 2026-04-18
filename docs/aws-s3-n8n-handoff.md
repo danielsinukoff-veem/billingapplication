@@ -66,6 +66,18 @@ We want the app to stay mostly front end driven while moving the heavy work out 
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-direct.workflow.json`
   - `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json`
 
+## QA checker package
+
+This is the multi-tier checker layer that Finance should use before billing is released.
+
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/README.md`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/llm-comparison.workflow.json`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/data-comparison.workflow.json`
+- `/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-billing-qa/missing-data.workflow.json`
+
+The important control rule is that the checker should not just read the maker output back to itself.
+It should independently pull raw source data, run the comparisons, and fail closed on any mismatch.
+
 ## What should stay in the repo
 
 - Frontend UI files

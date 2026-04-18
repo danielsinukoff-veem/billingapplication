@@ -1,0 +1,96 @@
+{
+  "name": "Billing QA LLM Comparison",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 240]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 3 * *"
+            }
+          ]
+        }
+      },
+      "id": "monthly-trigger",
+      "name": "Monthly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst prev = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));\nconst period = prev.toISOString().slice(0, 7);\nconst runId = `qa-llm-${period}-${Date.now()}`;\nreturn [{ json: {\n  runId,\n  period,\n  epsilon: 0.01,\n  billingApiBaseUrl: 'https://your-billing-api.example.com',\n  sourceBundleUrl: 'https://your-billing-api.example.com/api/qa/llm-bundle',\n  reportDestinationPrefix: 's3://your-billing-bucket/reports/billing-qa/llm-comparison/',\n  openAiModel: 'gpt-5.4-pro',\n  anthropicModel: 'claude-opus-4.7',\n  note: 'Insert the actual S3 manifest lookup, GPT parse node, Claude parse node, and deterministic compare nodes between this context and the final report step.'\n} }];"
+      },
+      "id": "build-context",
+      "name": "Build Run Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 330]
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = {\n  workflow: 'llm-comparison',\n  runId: $json.runId,\n  period: $json.period,\n  status: 'starter-template',\n  purpose: 'Compare GPT and Claude contract parsing, then compare invoice math against maker output.',\n  requiredInputs: [\n    'raw contract text from S3',\n    'transaction data for the last full month',\n    'maker invoice output from the billing app',\n    'GPT parse JSON',\n    'Claude parse JSON'\n  ],\n  requiredChecks: [\n    'contract term diff',\n    'fee rule diff',\n    'invoice amount diff',\n    'missing or ambiguous term review',\n    'maker-vs-checker delta review'\n  ],\n  epsilon: $json.epsilon,\n  reportDestinationPrefix: $json.reportDestinationPrefix,\n  nextAction: 'Wire the model nodes and deterministic compare step, then write the report to S3 and alert Finance on any mismatch.'\n};\nreturn [{ json: report }];"
+      },
+      "id": "build-report",
+      "name": "Build Exception Report Template",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [860, 330]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monthly Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Context": {
+      "main": [
+        [
+          {
+            "node": "Build Exception Report Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "versionId": "qa-llm-starter-template",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "billing-qa-llm-comparison",
+  "tags": []
+}
