@@ -58,6 +58,7 @@
       "reportName": "CC/Citi VBA Txns (CC)",
       "reportTimeout": 1200,
       "historyWindowDays": 90,
+      "historyFilterKey": "cc_virtual_bank_account_payments.COMPLETED_AT_date",
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -70,6 +71,7 @@
       "reportName": "CC/Citi VBA Txns (Citi)",
       "reportTimeout": 1200,
       "historyWindowDays": 90,
+      "historyFilterKey": "citi_virtual_bank_transaction_report.COMPLETED_AT_date",
       "periodFilterKey": null,
       "periodFilterMode": null
     },

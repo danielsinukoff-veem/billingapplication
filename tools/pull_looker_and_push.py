@@ -55,6 +55,7 @@ class ReportSpec:
     look_id: str | None = None
     period_filter_key: str | None = None
     period_filter_mode: str | None = None
+    history_filter_key: str | None = None
     report_timeout: int | None = None
     history_window_days: int | None = None
 
@@ -111,6 +112,7 @@ def ordered_reports(report_defs: list[dict[str, Any]]) -> list[ReportSpec]:
             look_id=str(item["lookId"]) if item.get("lookId") not in (None, "", "null") else None,
             period_filter_key=str(item["periodFilterKey"]) if item.get("periodFilterKey") not in (None, "", "null") else None,
             period_filter_mode=str(item.get("periodFilterMode") or "") or None,
+            history_filter_key=str(item["historyFilterKey"]) if item.get("historyFilterKey") not in (None, "", "null") else None,
             report_timeout=int(item["reportTimeout"]) if item.get("reportTimeout") not in (None, "", "null") else None,
             history_window_days=int(item["historyWindowDays"]) if item.get("historyWindowDays") not in (None, "", "null") else None,
         )
@@ -254,6 +256,11 @@ def build_period_filter_value(period: str, mode: str | None) -> str:
     if normalized == "raw":
         return period
     raise RuntimeError(f"Unsupported Looker period filter mode: {mode}")
+
+
+def build_history_filter_value(history_window_days: int) -> str:
+    days = max(1, int(history_window_days or 0))
+    return f"{days} day"
 
 
 def create_filtered_query(
@@ -467,6 +474,19 @@ def fetch_report_bytes(base_url: str, api_version: str, access_token: str, spec:
         source_metadata["periodFilterKey"] = spec.period_filter_key
         source_metadata["periodFilterMode"] = spec.period_filter_mode or "month"
         source_metadata["periodFilterValue"] = filter_value
+        source_metadata["exportQueryLimit"] = "-1"
+    elif spec.history_filter_key and (spec.history_window_days or 0) > 0:
+        filter_value = build_history_filter_value(int(spec.history_window_days or 0))
+        effective_query_id = create_filtered_query(
+            base_url,
+            api_version,
+            access_token,
+            base_query,
+            spec.history_filter_key,
+            filter_value,
+        )
+        source_metadata["historyFilterKey"] = spec.history_filter_key
+        source_metadata["historyFilterValue"] = filter_value
         source_metadata["exportQueryLimit"] = "-1"
     else:
         effective_query_id = create_export_query(
