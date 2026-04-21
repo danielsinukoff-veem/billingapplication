@@ -1,7 +1,7 @@
-import { billingAppConfig } from "./shared-config.js?v=20260417b";
+import { billingAppConfig } from "./shared-config.js?v=20260421b";
 
-function trimSlash(value) {
-  return String(value || "").replace(/\/+$/, "");
+function normalizeConfigUrl(value) {
+  return String(value || "").trim();
 }
 
 function readWindowOverrides() {
@@ -19,27 +19,72 @@ export function getSharedBackendConfig() {
   };
   return {
     ...merged,
-    apiBaseUrl: trimSlash(merged.apiBaseUrl)
+    bootstrapUrl: normalizeConfigUrl(merged.bootstrapUrl),
+    workbookReadUrl: normalizeConfigUrl(merged.workbookReadUrl),
+    workbookWriteWebhookUrl: normalizeConfigUrl(merged.workbookWriteWebhookUrl),
+    invoiceDraftUrl: normalizeConfigUrl(merged.invoiceDraftUrl),
+    automationOutboxUrl: normalizeConfigUrl(merged.automationOutboxUrl),
+    checkerWebhookUrl: normalizeConfigUrl(merged.checkerWebhookUrl),
+    lookerImportWebhookUrl: normalizeConfigUrl(merged.lookerImportWebhookUrl),
+    contractParseWebhookUrl: normalizeConfigUrl(merged.contractParseWebhookUrl),
+    contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl)
   };
 }
 
-export function getSharedApiBaseUrl() {
-  const config = getSharedBackendConfig();
-  if (config.apiBaseUrl) return config.apiBaseUrl;
-  if (typeof window !== "undefined" && window.location && window.location.origin) {
-    return window.location.origin;
+function resolveUrl(value, params = null) {
+  if (!value) return "";
+  const base = typeof window !== "undefined" && window.location ? window.location.href : "http://localhost/";
+  const url = new URL(value, base);
+  if (params) {
+    Object.entries(params).forEach(([key, val]) => {
+      if (val != null && val !== "") url.searchParams.set(key, val);
+    });
   }
-  return "";
+  return url.toString();
+}
+
+function getSharedWorkbookReadUrl() {
+  const config = getSharedBackendConfig();
+  return config.workbookReadUrl || config.bootstrapUrl;
+}
+
+function getSharedWorkbookWriteUrl() {
+  return getSharedBackendConfig().workbookWriteWebhookUrl;
 }
 
 export function isSharedWorkbookEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableSharedWorkbook && getSharedApiBaseUrl());
+  return !!(config.enableSharedWorkbook && getSharedWorkbookReadUrl());
+}
+
+export function isSharedWorkbookWriteEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableSharedWorkbook && config.workbookWriteWebhookUrl);
 }
 
 export function isRemoteInvoiceReadEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableRemoteInvoiceReads && getSharedApiBaseUrl());
+  return !!(config.enableRemoteInvoiceReads && config.invoiceDraftUrl);
+}
+
+export function isBillingCheckerEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableCheckerRuns && config.checkerWebhookUrl);
+}
+
+export function isLookerImportEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableLookerImports && config.lookerImportWebhookUrl);
+}
+
+export function isContractParseEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableContractAutomation && config.contractParseWebhookUrl);
+}
+
+export function isContractExtractEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableContractAutomation && config.contractExtractWebhookUrl);
 }
 
 export function getWorkspaceLabel() {
@@ -77,29 +122,36 @@ async function parseApiResponse(response, fallbackMessage) {
   return payload;
 }
 
-function buildUrl(path, params = null) {
-  const baseUrl = getSharedApiBaseUrl();
-  if (!baseUrl) throw new Error("Shared backend is not configured.");
-  const url = new URL(path, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value != null && value !== "") url.searchParams.set(key, value);
-    });
+function normalizeBootstrapPayload(payload) {
+  if (!payload) return payload;
+  if (payload.snapshot && payload.snapshot._version) {
+    return {
+      workspace: payload.workspace || { label: payload.workspaceLabel || getWorkspaceLabel() },
+      user: payload.user || {},
+      snapshot: payload.snapshot
+    };
   }
-  return url.toString();
+  if (payload._version) {
+    return {
+      workspace: { label: payload.workspaceLabel || getWorkspaceLabel() },
+      user: {},
+      snapshot: payload
+    };
+  }
+  throw new Error("Shared workbook file did not include a valid snapshot.");
 }
 
-export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = {}) {
+async function fetchConfiguredJson(url, fallbackMessage, { params = null, retries = 0, retryDelayMs = 350 } = {}) {
   let lastError = null;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
       const payload = await parseApiResponse(
-        await fetch(buildUrl("/api/bootstrap", { ts: Date.now() }), {
+        await fetch(resolveUrl(url, params), {
           method: "GET",
           headers: buildHeaders(),
           cache: "no-store"
         }),
-        "Could not load shared workspace bootstrap."
+        fallbackMessage
       );
       return payload;
     } catch (error) {
@@ -108,61 +160,103 @@ export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = 
       await sleep(retryDelayMs * (attempt + 1));
     }
   }
-  throw lastError || new Error("Could not load shared workspace bootstrap.");
+  throw lastError || new Error(fallbackMessage);
+}
+
+async function postConfiguredJson(url, body, fallbackMessage) {
+  return parseApiResponse(
+    await fetch(resolveUrl(url), {
+      method: "POST",
+      headers: buildHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body || {})
+    }),
+    fallbackMessage
+  );
+}
+
+export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = {}) {
+  const staticUrl = getSharedWorkbookReadUrl();
+  if (!staticUrl) {
+    throw new Error("Shared workbook file is not configured. Set BILLING_APP_CONFIG.bootstrapUrl or workbookReadUrl.");
+  }
+  const payload = await fetchConfiguredJson(staticUrl, "Could not load the shared workbook file.", {
+    params: { ts: Date.now() },
+    retries,
+    retryDelayMs
+  });
+  return normalizeBootstrapPayload(payload);
 }
 
 export async function saveSharedWorkbookSnapshot(snapshot) {
-  const payload = await parseApiResponse(
-    await fetch(buildUrl("/api/workbook"), {
-      method: "PUT",
-      headers: buildHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ snapshot })
-    }),
+  const writeUrl = getSharedWorkbookWriteUrl();
+  if (!writeUrl) {
+    throw new Error("Shared workbook saving is not configured. Set BILLING_APP_CONFIG.workbookWriteWebhookUrl.");
+  }
+  const payload = await postConfiguredJson(
+    writeUrl,
+    {
+      snapshot,
+      savedAt: snapshot?._saved || new Date().toISOString(),
+      workspaceLabel: getWorkspaceLabel(),
+      mode: "workbook_save"
+    },
     "Could not save the shared workbook."
   );
-  return payload;
+  return payload || { savedAt: snapshot?._saved || new Date().toISOString() };
 }
 
 export async function fetchSharedDraftInvoice(partner, startPeriod, endPeriod = startPeriod) {
-  const payload = await parseApiResponse(
-    await fetch(buildUrl("/api/invoices/draft", { partner, startPeriod, endPeriod }), {
-      method: "GET",
-      headers: buildHeaders()
-    }),
-    "Could not load the server-generated invoice."
+  const config = getSharedBackendConfig();
+  if (!config.invoiceDraftUrl) {
+    throw new Error("Remote invoice reads are not configured.");
+  }
+  return fetchConfiguredJson(
+    config.invoiceDraftUrl,
+    "Could not load the server-generated invoice.",
+    { params: { partner, startPeriod, endPeriod } }
   );
-  return payload;
 }
 
 export async function fetchBillingAutomationOutbox(asOf = "", lookaheadDays = 45) {
-  const payload = await parseApiResponse(
-    await fetch(buildUrl("/api/automation/outbox", { asOf, lookaheadDays }), {
-      method: "GET",
-      headers: buildHeaders()
-    }),
-    "Could not load the billing automation outbox."
+  const config = getSharedBackendConfig();
+  if (!config.automationOutboxUrl) {
+    throw new Error("Billing automation outbox is not configured.");
+  }
+  return fetchConfiguredJson(
+    config.automationOutboxUrl,
+    "Could not load the billing automation outbox.",
+    { params: { asOf, lookaheadDays } }
   );
-  return payload;
 }
 
 export async function fetchBillingCheckerReport(payload) {
-  return parseApiResponse(
-    await fetch(buildUrl("/api/checker/run"), {
-      method: "POST",
-      headers: buildHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(payload || {})
-    }),
-    "Could not run the billing checker."
-  );
+  const config = getSharedBackendConfig();
+  if (!config.checkerWebhookUrl) {
+    throw new Error("Billing checker is not configured.");
+  }
+  return postConfiguredJson(config.checkerWebhookUrl, payload, "Could not run the billing checker.");
 }
 
 export async function importLookerFileAndSave(payload) {
-  return parseApiResponse(
-    await fetch(buildUrl("/api/looker/import-and-save"), {
-      method: "POST",
-      headers: buildHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(payload || {})
-    }),
-    "Could not import and save the Looker file."
-  );
+  const config = getSharedBackendConfig();
+  if (!config.lookerImportWebhookUrl) {
+    throw new Error("Looker import automation is not configured.");
+  }
+  return postConfiguredJson(config.lookerImportWebhookUrl, payload, "Could not import and save the Looker file.");
+}
+
+export async function parseContractText(payload) {
+  const config = getSharedBackendConfig();
+  if (!config.contractParseWebhookUrl) {
+    throw new Error("Contract parsing automation is not configured. Paste structured JSON or connect BILLING_APP_CONFIG.contractParseWebhookUrl.");
+  }
+  return postConfiguredJson(config.contractParseWebhookUrl, payload, "Could not parse the contract text.");
+}
+
+export async function extractContractText(payload) {
+  const config = getSharedBackendConfig();
+  if (!config.contractExtractWebhookUrl) {
+    throw new Error("Contract extraction automation is not configured. Connect BILLING_APP_CONFIG.contractExtractWebhookUrl to enable PDF extraction.");
+  }
+  return postConfiguredJson(config.contractExtractWebhookUrl, payload, "Could not extract the contract text.");
 }

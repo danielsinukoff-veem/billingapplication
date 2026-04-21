@@ -14,14 +14,20 @@ import {
 import {
   fetchSharedDraftInvoice,
   fetchBillingCheckerReport,
-  getSharedBackendConfig,
-  getSharedApiBaseUrl,
+  extractContractText,
   getWorkspaceLabel,
+  importLookerFileAndSave,
+  isBillingCheckerEnabled,
+  isContractExtractEnabled,
+  isContractParseEnabled,
+  isLookerImportEnabled,
   isRemoteInvoiceReadEnabled,
   isSharedWorkbookEnabled,
+  isSharedWorkbookWriteEnabled,
   loadSharedBootstrap,
+  parseContractText,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js?v=20260417b";
+} from "./shared-backend.js?v=20260421b";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
@@ -372,7 +378,7 @@ const state = {
   lookerImportContext: {},
   lookerImportedDetailRows: [],
   lookerImportAudit: null,
-  workspaceMode: isSharedWorkbookEnabled() ? "shared" : "local",
+  workspaceMode: isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? "shared" : "local",
   workspaceLabel: getWorkspaceLabel(),
   workspaceRefreshing: false,
   lastSharedAutoRefreshAt: 0,
@@ -778,8 +784,23 @@ async function loadState() {
   if (isSharedWorkbookEnabled()) {
     try {
       const payload = await loadSharedBootstrap();
-      const saved = payload?.snapshot;
+      let saved = payload?.snapshot;
       if (saved && saved._version) {
+        if (!isSharedWorkbookWriteEnabled()) {
+          try {
+            const rawLocal = localStorage.getItem(STORAGE_KEY);
+            const localSnapshot = rawLocal ? JSON.parse(rawLocal) : null;
+            if (localSnapshot?._version) {
+              const sharedSavedAt = new Date(saved._saved || 0).getTime();
+              const localSavedAt = new Date(localSnapshot._saved || 0).getTime();
+              if (localSavedAt > sharedSavedAt) {
+                saved = localSnapshot;
+              }
+            }
+          } catch (error) {
+            console.warn("Could not compare local workbook draft against the shared seed file", error);
+          }
+        }
         const { snapshot, changed } = migrateSnapshot(saved);
         DATA_KEYS.forEach((key) => {
           if (snapshot[key] != null) state[key] = snapshot[key];
@@ -801,7 +822,7 @@ async function loadState() {
         state.lastSavedAt = savedAt || seededSnapshot._saved;
         state.lastSaved = savedAt ? new Date(savedAt).toLocaleTimeString() : null;
       }
-      state.workspaceMode = "shared";
+      state.workspaceMode = isSharedWorkbookWriteEnabled() ? "shared" : "local-seeded";
       state.workspaceLabel = payload?.workspace?.label || getWorkspaceLabel();
       state.currentUserRole = payload?.user?.role || "";
       state.currentUserEmail = payload?.user?.email || "";
@@ -839,6 +860,7 @@ async function loadState() {
 
 async function refreshSharedWorkspace({ showSuccessToast = true, showErrorToast = true, retries = 3, retryDelayMs = 500 } = {}) {
   if (!isSharedWorkbookEnabled()) return;
+  if (!isSharedWorkbookWriteEnabled()) return false;
   if (sharedWorkspaceRefreshPromise) return sharedWorkspaceRefreshPromise;
   state.workspaceRefreshing = true;
   render();
@@ -897,7 +919,7 @@ async function refreshSharedWorkspace({ showSuccessToast = true, showErrorToast 
       }
       cacheSnapshotLocally(snapshot);
       if (showSuccessToast) {
-        showToast("Shared data refreshed", "Loaded the latest workbook snapshot from the shared API.", "success");
+        showToast("Shared data refreshed", "Loaded the latest workbook snapshot from the shared source.", "success");
       }
       return true;
     } catch (error) {
@@ -926,6 +948,7 @@ const SHARED_WORKSPACE_AUTO_REFRESH_MS = 30 * 1000;
 
 async function maybeAutoRefreshSharedWorkspace({ force = false } = {}) {
   if (!isSharedWorkbookEnabled()) return;
+  if (!isSharedWorkbookWriteEnabled()) return;
   if (state.workspaceRefreshing) return;
   const now = Date.now();
   const lastRefreshAt = Number(state.lastSharedAutoRefreshAt || 0);
@@ -945,7 +968,7 @@ function exportSnapshot() {
 }
 
 async function persistSnapshot(payload) {
-  if (isSharedWorkbookEnabled()) {
+  if (isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled()) {
     try {
       const result = await saveSharedWorkbookSnapshot(payload);
       cacheSnapshotLocally(payload);
@@ -3214,7 +3237,7 @@ function resetToDefaults() {
   state.accessLogs = [];
   state.adminSettings = buildDefaultAdminSettings();
   localStorage.removeItem(STORAGE_KEY);
-  state.workspaceMode = isSharedWorkbookEnabled() ? "shared" : "local";
+  state.workspaceMode = isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? "shared" : "local";
   state.workspaceLabel = getWorkspaceLabel();
   if (!isSharedWorkbookEnabled()) {
     render();
@@ -3955,26 +3978,6 @@ async function loadInvoiceDetailRowsForRange(partner, startPeriod, endPeriod) {
   return batches.flat();
 }
 
-function getLookerImportApiBaseUrl() {
-  const apiBaseUrl = getSharedApiBaseUrl();
-  if (apiBaseUrl) return apiBaseUrl;
-  throw new Error("Looker import API is not configured. Set BILLING_APP_CONFIG.apiBaseUrl for the hosted environment.");
-}
-
-async function parseLookerApiResponse(response, fallbackMessage) {
-  const text = await response.text();
-  let payload = null;
-  try {
-    payload = text ? JSON.parse(text) : null;
-  } catch (error) {
-    payload = null;
-  }
-  if (!response.ok) {
-    throw new Error(payload?.error || payload?.message || text || fallbackMessage);
-  }
-  return payload;
-}
-
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -4111,6 +4114,9 @@ async function submitLookerImport() {
   state.lookerImportResult = null;
   render();
   try {
+    if (!isLookerImportEnabled()) {
+      throw new Error("Manual upload automation is not configured. Connect BILLING_APP_CONFIG.lookerImportWebhookUrl to enable in-browser imports.");
+    }
     const payload = {
       fileType: state.lookerImportType,
       period: state.lookerImportPeriod,
@@ -4121,12 +4127,7 @@ async function submitLookerImport() {
       payload.fileName = state.lookerImportPendingFile.name;
       payload.fileBase64 = await fileToBase64(state.lookerImportPendingFile);
     }
-    const response = await fetch(`${getLookerImportApiBaseUrl()}/api/looker/import`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const result = await parseLookerApiResponse(response, "Could not parse the Looker file.");
+    const result = await importLookerFileAndSave(payload);
     Object.entries(result.sections || {}).forEach(([section, rows]) => {
       applyLookerSectionUpdate(section, result.fileType, result.period, rows);
     });
@@ -4284,15 +4285,10 @@ async function parseContract() {
     return;
   } catch (structuredError) {
     try {
-      const response = await fetch(`${getLookerImportApiBaseUrl()}/api/contracts/parse`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: state.cFileName || state.cPendingFile?.name || "",
-          text: state.cText
-        })
+      const result = await parseContractText({
+        fileName: state.cFileName || state.cPendingFile?.name || "",
+        text: state.cText
       });
-      const result = await parseLookerApiResponse(response, "Could not parse the contract text.");
       state.cParsed = result;
       state.cName = result.partnerName && result.partnerName !== "Partner" ? result.partnerName : state.cName;
       if (state.cMode === "verify") {
@@ -4329,16 +4325,17 @@ async function extractContractFile() {
   render();
 
   try {
-    const fileBase64 = await fileToBase64(state.cPendingFile);
-    const response = await fetch(`${getLookerImportApiBaseUrl()}/api/contracts/extract`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fileName: state.cPendingFile.name,
-        fileBase64
-      })
-    });
-    const payload = await parseLookerApiResponse(response, "Could not extract the contract text.");
+    const isPlainTextFile = state.cPendingFile.type.startsWith("text/") || /\.txt$/i.test(state.cPendingFile.name || "");
+    const payload = isPlainTextFile
+      ? {
+          text: await state.cPendingFile.text(),
+          fileName: state.cPendingFile.name,
+          charCount: 0
+        }
+      : await extractContractText({
+          fileName: state.cPendingFile.name,
+          fileBase64: await fileToBase64(state.cPendingFile)
+        });
     state.cText = payload?.text || "";
     state.cFileName = payload?.fileName || state.cPendingFile.name;
     state.cPendingFile = null;
@@ -6295,16 +6292,19 @@ function renderCheckerRunCards(report) {
 
 function renderBillingCheckerPanel() {
   const report = state.checkerReport;
+  const checkerEnabled = isBillingCheckerEnabled();
   const selectionPartner = resolvePartnerName(state.sp);
   const selectionEnd = state.useDateRange ? state.perEnd : state.perStart;
-  const selectionReady = !!selectionPartner && !!state.perStart && !!selectionEnd && state.checkerStatus !== "running";
+  const selectionReady = checkerEnabled && !!selectionPartner && !!state.perStart && !!selectionEnd && state.checkerStatus !== "running";
   const selectionLabel = selectionPartner
     ? `${selectionPartner} · ${formatPeriodDateRange(state.perStart, selectionEnd)}`
     : "Choose a partner and month to run the checker.";
   const badge = report
     ? `${report.passedCount || 0} pass${report.passedCount === 1 ? "" : "es"} · ${report.failedCount || 0} fail${report.failedCount === 1 ? "" : "s"}`
     : "Not run yet";
-  const headerNote = "Independent pre-bill reconciliation against contract terms and transaction data.";
+  const headerNote = checkerEnabled
+    ? "Independent pre-bill reconciliation against contract terms and transaction data."
+    : "Checker webhook not configured yet for this hosted frontend.";
   const reportPartnerLabel = report?.partnerFilter ? report.partnerFilter : "All partners";
   const reportPeriodLabel = report?.periodFilter?.periods?.length
     ? report.periodFilter.periods.join(", ")
@@ -6334,7 +6334,9 @@ function renderBillingCheckerPanel() {
     ` : `
       <div class="summary-banner">
         <h4>Run the checker before approving billing</h4>
-        <p>This compares the current app output to an independent recalculation from the same contract terms and imported transaction data.</p>
+        <p>${checkerEnabled
+          ? "This compares the current app output to an independent recalculation from the same contract terms and imported transaction data."
+          : "Connect BILLING_APP_CONFIG.checkerWebhookUrl to run the checker from this browser build."}</p>
       </div>
     `}
   `;
@@ -6352,6 +6354,10 @@ async function runBillingChecker() {
   const payload = buildCheckerSelectionPayload();
   if (payload.error) {
     showToast("Checker input required", payload.error, "warning");
+    return;
+  }
+  if (!isBillingCheckerEnabled()) {
+    showToast("Checker not configured", "Connect BILLING_APP_CONFIG.checkerWebhookUrl to run the independent checker from this hosted build.", "warning");
     return;
   }
   state.checkerStatus = "running";
@@ -6406,6 +6412,8 @@ function renderHeader() {
     ? `${state.workspaceMode === "shared" ? "Shared" : "Saved"} ${html(state.lastSaved)}`
     : state.workspaceMode === "shared"
       ? `Connected to ${html(state.workspaceLabel)}`
+      : state.workspaceMode === "local-seeded"
+      ? `Seeded from ${html(state.workspaceLabel)}`
       : state.workspaceMode === "local-fallback"
       ? `Using local fallback`
         : "Using local defaults";
@@ -6422,7 +6430,7 @@ function renderHeader() {
           ${sessionLabel ? `<span class="status-pill">${html(sessionLabel)}</span>` : ""}
           ${isAdminAuthenticated() ? `
             <button class="button secondary small" data-action="open-admin-portal">Admin Portal</button>
-            ${isSharedWorkbookEnabled() ? `<button class="button ghost small" data-action="refresh-shared-workspace"${state.workspaceRefreshing ? " disabled" : ""}>${state.workspaceRefreshing ? "Refreshing..." : state.workspaceMode === "local-fallback" ? "Retry Shared Refresh" : "Refresh Shared Data"}</button>` : ""}
+            ${isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? `<button class="button ghost small" data-action="refresh-shared-workspace"${state.workspaceRefreshing ? " disabled" : ""}>${state.workspaceRefreshing ? "Refreshing..." : state.workspaceMode === "local-fallback" ? "Retry Shared Refresh" : "Refresh Shared Data"}</button>` : ""}
             <button class="button ghost small" data-action="export-backup">Export Backup</button>
             <button class="button ghost small" data-action="import-backup">Import Backup</button>
             <button class="button warning small" data-action="reset-defaults">Reset to Defaults</button>
@@ -6953,7 +6961,7 @@ function renderInvoiceTab() {
     : "";
   const invoiceSection = state.inv ? `${banner}${notesBlock}${documentTables}` : "";
   const checkerPanel = renderBillingCheckerPanel();
-  const checkerSelectionReady = !!resolvePartnerName(state.sp) && !!state.perStart && (!state.useDateRange || !!state.perEnd);
+  const checkerSelectionReady = isBillingCheckerEnabled() && !!resolvePartnerName(state.sp) && !!state.perStart && (!state.useDateRange || !!state.perEnd);
   return `
     <div class="stack">
       ${renderPageTableToggle("invoice")}
@@ -7157,6 +7165,7 @@ function renderRatesTab() {
 
 function renderLookerTab() {
   const configs = getTableConfigs();
+  const lookerImportEnabled = isLookerImportEnabled();
   const fileOptions = getLookerFileOptionsWithStatus();
   const audit = getResolvedLookerImportAudit();
   const latestWorkflowRun = audit?.latestRunByChannel?.workflow || null;
@@ -7232,6 +7241,12 @@ function renderLookerTab() {
           </div>
           <span class="helper-pill">${html(state.lookerImportStatus === "idle" ? "Ready" : state.lookerImportStatus === "parsing" ? "Parsing..." : state.lookerImportStatus === "success" ? "Imported" : "Error")}</span>
         </div>
+        ${lookerImportEnabled ? "" : `
+          <div class="summary-banner warning" style="margin-top:16px">
+            <h4>Manual upload webhook not configured</h4>
+            <p>Set BILLING_APP_CONFIG.lookerImportWebhookUrl to let the hosted frontend hand manual uploads off to n8n.</p>
+          </div>
+        `}
         <div class="field-grid" style="margin-top:16px">
           <label class="field">
             <span class="label">Upload Source File Type</span>
@@ -7255,7 +7270,7 @@ function renderLookerTab() {
           <textarea class="textarea" data-bind="lookerImportText" data-bind-live="true" placeholder="Paste the exported upload table directly here if you copied it from Sheets / CSV / Looker...">${html(state.lookerImportText)}</textarea>
         </div>
         <div class="button-row" style="margin-top:14px">
-          <button class="button primary" data-action="run-looker-import"${state.lookerImportStatus === "parsing" ? " disabled" : ""}>Import & Replace Month</button>
+          <button class="button primary" data-action="run-looker-import"${state.lookerImportStatus === "parsing" || !lookerImportEnabled ? " disabled" : ""}>Import & Replace Month</button>
           <button class="button ghost" data-action="clear-looker-import">Clear Contents</button>
           ${state.lookerImportError ? `<span class="footer-note" style="color:#a33b29">${html(state.lookerImportError)}</span>` : ""}
         </div>
@@ -7315,6 +7330,8 @@ function renderPreviewTable(rows, headers, rowRenderer, emptyMessage, rowsKey = 
 }
 
 function renderImportTab() {
+  const contractParseEnabled = isContractParseEnabled();
+  const contractExtractEnabled = isContractExtractEnabled();
   const parsed = state.cParsed;
   const counts = parsed ? [
     { label: "offline rates", count: (parsed.offlineRates || []).length },
@@ -7526,9 +7543,19 @@ function renderImportTab() {
             ${state.cExtractStatus !== "idle" ? `<span class="helper-pill">${html(state.cExtractStatus === "parsing" ? "Extracting PDF..." : state.cExtractStatus === "success" ? "PDF Loaded" : "PDF Error")}</span>` : ""}
           </div>
         </div>
+        ${contractExtractEnabled && contractParseEnabled ? "" : `
+          <div class="summary-banner warning" style="margin-bottom:16px">
+            <h4>Contract automation is only partially configured</h4>
+            <p>${html([
+              !contractExtractEnabled ? "PDF extraction needs BILLING_APP_CONFIG.contractExtractWebhookUrl." : "",
+              !contractParseEnabled ? "Raw contract text parsing needs BILLING_APP_CONFIG.contractParseWebhookUrl." : "",
+              "Structured JSON paste still works in the browser."
+            ].filter(Boolean).join(" "))}</p>
+          </div>
+        `}
         <div class="button-row" style="margin-bottom:14px">
           <button class="button secondary" data-action="choose-contract-file">Choose PDF</button>
-          <button class="button primary" data-action="extract-contract-file"${state.cPendingFile ? "" : " disabled"}>${state.cExtractStatus === "parsing" ? "Loading PDF..." : "Load PDF Text"}</button>
+          <button class="button primary" data-action="extract-contract-file"${state.cPendingFile && (contractExtractEnabled || (state.cPendingFile?.type || "").startsWith("text/") || /\.txt$/i.test(state.cPendingFile?.name || "")) ? "" : " disabled"}>${state.cExtractStatus === "parsing" ? "Loading PDF..." : "Load PDF Text"}</button>
           ${(state.cPendingFile || state.cFileName) ? `<span class="helper-pill">${html(state.cPendingFile?.name || state.cFileName)}</span>` : `${renderInfoTip("PDF or text file upload supported.")}`}
           ${state.cDetectedIncremental ? `<span class="helper-pill" style="background:#dff4e7;color:#1c5d3c">Per-tier marginal pricing detected</span>` : ""}
           <input id="contract-file-upload" type="file" accept=".pdf,.txt,text/plain,application/pdf" hidden>

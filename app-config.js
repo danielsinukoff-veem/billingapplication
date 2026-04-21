@@ -1,8 +1,6 @@
-export const billingAppConfig = {
-  mode: "frontend-static",
-  workspaceLabel: "Veem Billing Workspace",
+window.BILLING_APP_CONFIG = {
   bootstrapUrl: "./data/current-workbook.json",
-  workbookReadUrl: "",
+  workbookReadUrl: "./data/current-workbook.json",
   workbookWriteWebhookUrl: "",
   invoiceDraftUrl: "",
   automationOutboxUrl: "",
