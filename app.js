@@ -13,21 +13,26 @@ import {
 } from "./data.js?v=20260417b";
 import {
   fetchSharedDraftInvoice,
+  generatePrivateInvoiceLink,
+  getSharedBackendConfig,
   fetchBillingCheckerReport,
   extractContractText,
   getWorkspaceLabel,
   importLookerFileAndSave,
   isBillingCheckerEnabled,
   isContractExtractEnabled,
+  isInvoiceArtifactEnabled,
   isContractParseEnabled,
   isLookerImportEnabled,
+  isPrivateInvoiceLinkEnabled,
   isRemoteInvoiceReadEnabled,
   isSharedWorkbookEnabled,
   isSharedWorkbookWriteEnabled,
   loadSharedBootstrap,
   parseContractText,
+  saveInvoiceArtifact,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js?v=20260421b";
+} from "./shared-backend.js?v=20260421c";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
@@ -332,6 +337,12 @@ const state = {
   checkerReport: null,
   checkerStatus: "idle",
   checkerError: "",
+  invoiceArtifactStatus: "idle",
+  invoiceArtifactError: "",
+  invoiceArtifactRecord: null,
+  privateInvoiceLinkStatus: "idle",
+  privateInvoiceLinkError: "",
+  privateInvoiceLinkResult: null,
   cf: "",
   fxSearch: "",
   cText: "",
@@ -1002,14 +1013,18 @@ function csvEscape(value) {
   return text;
 }
 
-function downloadCsv(filename, rows) {
-  if (!rows.length) return;
+function rowsToCsvText(rows) {
+  if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
-  const lines = [
+  return [
     headers.map(csvEscape).join(","),
     ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(","))
-  ];
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  ].join("\n");
+}
+
+function downloadCsv(filename, rows) {
+  if (!rows.length) return;
+  const blob = new Blob([rowsToCsvText(rows)], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -2916,6 +2931,12 @@ function clearCurrentInvoiceSelection({ renderNow = true } = {}) {
   state.checkerReport = null;
   state.checkerStatus = "idle";
   state.checkerError = "";
+  state.invoiceArtifactStatus = "idle";
+  state.invoiceArtifactError = "";
+  state.invoiceArtifactRecord = null;
+  state.privateInvoiceLinkStatus = "idle";
+  state.privateInvoiceLinkError = "";
+  state.privateInvoiceLinkResult = null;
   if (renderNow) render();
 }
 
@@ -3230,6 +3251,12 @@ function resetToDefaults() {
   state.lookerImportStatus = "idle";
   state.lookerImportError = "";
   state.lookerImportResult = null;
+  state.invoiceArtifactStatus = "idle";
+  state.invoiceArtifactError = "";
+  state.invoiceArtifactRecord = null;
+  state.privateInvoiceLinkStatus = "idle";
+  state.privateInvoiceLinkError = "";
+  state.privateInvoiceLinkResult = null;
   state.lookerImportFileName = "";
   state.lookerImportPendingFile = null;
   state.lookerImportContext = {};
@@ -4220,6 +4247,248 @@ async function exportInvoiceTransactions(scope, groupId) {
   const filename = `${slugifyFilenamePart(state.inv.partner)}-${buildInvoicePeriodKey(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period)}-${groupLabel}-${scopeLabel}.csv`;
   downloadCsv(filename, rows);
   showToast("CSV exported", `${rows.length} row${rows.length === 1 ? "" : "s"} downloaded for ${scope === "all" ? "the full date range" : (group?.label || "that invoice line")}.`, "success");
+}
+
+function buildInvoiceArtifactTimestampKey(value = new Date().toISOString()) {
+  return String(value || "")
+    .replaceAll(":", "-")
+    .replaceAll(".", "-");
+}
+
+function buildInvoiceArtifactBundleKey(inv, generatedAt) {
+  const periodStart = inv?.periodStart || inv?.period || "";
+  const periodEnd = inv?.periodEnd || inv?.period || periodStart;
+  return [
+    slugifyFilenamePart(inv?.partner || "partner"),
+    buildInvoicePeriodKey(periodStart, periodEnd),
+    buildInvoiceArtifactTimestampKey(generatedAt)
+  ].filter(Boolean).join("-");
+}
+
+function getPrivateInvoiceLinkUrl(result) {
+  return String(
+    result?.privateUrl
+    || result?.downloadUrl
+    || result?.url
+    || result?.link
+    || ""
+  ).trim();
+}
+
+async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generate_invoice" } = {}) {
+  if (!inv) {
+    throw new Error("Calculate an invoice before creating delivery artifacts.");
+  }
+  const generatedAt = new Date().toISOString();
+  const periodStart = inv.periodStart || inv.period;
+  const periodEnd = inv.periodEnd || inv.period;
+  const bundleKey = buildInvoiceArtifactBundleKey(inv, generatedAt);
+  let detailRows = [];
+  let detailWarning = "";
+  try {
+    detailRows = (await loadInvoiceDetailRowsForRange(inv.partner, periodStart, periodEnd))
+      .filter((row) => !row.period || isPartnerActiveForPeriod(state, inv.partner, row.period));
+  } catch (error) {
+    console.error("Could not load invoice detail rows for artifact packaging", error);
+    detailWarning = String(error?.message || error || "Could not load detail rows.");
+  }
+  const transactionRows = buildInvoiceExportRows(detailRows, "all", null);
+  const documents = buildInvoiceDocuments(inv).map((doc) => ({
+    kind: doc.kind,
+    title: doc.title,
+    fileName: `${bundleKey}-${doc.kind === "receivable" ? "ar-invoice" : "ap-invoice"}.html`,
+    amountDue: doc.amountDue,
+    data: doc,
+    pdfHtml: buildInvoicePdfDocument(doc)
+  }));
+  const receivableDoc = documents.find((doc) => doc.kind === "receivable") || null;
+  const payableDoc = documents.find((doc) => doc.kind === "payable") || null;
+  return {
+    mode: "invoice_artifact",
+    trigger,
+    generatedAt,
+    bundleKey,
+    workspace: {
+      mode: state.workspaceMode || "local",
+      label: state.workspaceLabel || getWorkspaceLabel()
+    },
+    actor: {
+      email: state.currentUserEmail || "",
+      role: state.currentUserRole || ""
+    },
+    partner: inv.partner,
+    period: inv.period,
+    periodStart,
+    periodEnd,
+    periodKey: buildInvoicePeriodKey(periodStart, periodEnd),
+    periodLabel: inv.periodLabel || formatPeriodRangeLabel(periodStart, periodEnd),
+    periodDateRange: inv.periodDateRange || formatPeriodDateRange(periodStart, periodEnd),
+    summary: {
+      arAmount: Number(receivableDoc?.amountDue || 0),
+      apAmount: Number(payableDoc?.amountDue || 0),
+      netAmount: Math.abs(Number(inv.net || 0)),
+      netDirection: Number(inv.net || 0) >= 0 ? getPartnerOwesLabel(inv.partner) : "Veem Owes",
+      transactionRowCount: transactionRows.length
+    },
+    invoice: inv,
+    documents,
+    transactions: {
+      fileName: `${bundleKey}-transactions.csv`,
+      rowCount: transactionRows.length,
+      csvText: rowsToCsvText(transactionRows),
+      rows: transactionRows
+    },
+    warnings: [
+      ...(Array.isArray(inv.notes) ? inv.notes : []),
+      ...(detailWarning ? [`Transaction detail export warning: ${detailWarning}`] : [])
+    ]
+  };
+}
+
+async function archiveInvoiceArtifactCopy(inv = state.inv, {
+  trigger = "generate_invoice",
+  showSuccessToast = false,
+  showUnavailableToast = false,
+  showErrorToast = true
+} = {}) {
+  const payload = await buildInvoiceArtifactPayload(inv, { trigger });
+  if (!isInvoiceArtifactEnabled()) {
+    state.invoiceArtifactStatus = "idle";
+    state.invoiceArtifactError = "";
+    state.invoiceArtifactRecord = null;
+    if (showUnavailableToast) {
+      showToast("Archive not configured", "Connect BILLING_APP_CONFIG.invoiceArtifactWriteBaseUrl to save a timestamped invoice copy on each run.", "warning");
+    }
+    render();
+    return { payload, result: null };
+  }
+
+  state.invoiceArtifactStatus = "saving";
+  state.invoiceArtifactError = "";
+  render();
+  try {
+    const result = await saveInvoiceArtifact(payload);
+    state.invoiceArtifactRecord = {
+      trigger,
+      artifactId: result?.artifactId || result?.id || "",
+      savedAt: result?.savedAt || payload.generatedAt,
+      generatedAt: payload.generatedAt,
+      bundleKey: payload.bundleKey,
+      fileCount: Number(result?.fileCount || payload.documents.length + 1),
+      response: result || null
+    };
+    state.invoiceArtifactStatus = "success";
+    state.invoiceArtifactError = "";
+    if (showSuccessToast) {
+      showToast("Invoice archived", "Saved a timestamped copy of the invoice package.", "success");
+    }
+    render();
+    return { payload, result };
+  } catch (error) {
+    console.error("Could not save invoice artifact", error);
+    state.invoiceArtifactStatus = "error";
+    state.invoiceArtifactError = String(error?.message || error || "Unknown error");
+    if (showErrorToast) {
+      showToast("Invoice archive failed", state.invoiceArtifactError, "warning");
+    }
+    render();
+    throw error;
+  }
+}
+
+async function generateInvoicePrivateLinkForCurrentSelection() {
+  if (!state.inv) {
+    showToast("Invoice required", "Calculate the invoice before generating a private partner link.", "warning");
+    return;
+  }
+
+  state.privateInvoiceLinkStatus = "creating";
+  state.privateInvoiceLinkError = "";
+  render();
+
+  try {
+    let archiveContext = null;
+    try {
+      archiveContext = await archiveInvoiceArtifactCopy(state.inv, {
+        trigger: "generate_private_link",
+        showSuccessToast: false,
+        showUnavailableToast: false,
+        showErrorToast: false
+      });
+    } catch (error) {
+      console.error("Could not pre-save invoice artifact before private link generation", error);
+    }
+
+    if (!isPrivateInvoiceLinkEnabled()) {
+      state.privateInvoiceLinkStatus = "error";
+      state.privateInvoiceLinkError = "Connect BILLING_APP_CONFIG.privateInvoiceLinkWriteBaseUrl to generate a private partner link.";
+      showToast("Private link not configured", state.privateInvoiceLinkError, "warning");
+      render();
+      return;
+    }
+
+    const payload = {
+      mode: "invoice_private_link",
+      requestedAt: new Date().toISOString(),
+      partner: state.inv.partner,
+      period: state.inv.period,
+      periodStart: state.inv.periodStart || state.inv.period,
+      periodEnd: state.inv.periodEnd || state.inv.period,
+      invoiceArtifact: archiveContext?.payload || await buildInvoiceArtifactPayload(state.inv, { trigger: "generate_private_link" }),
+      archivedArtifact: archiveContext?.result || state.invoiceArtifactRecord || null
+    };
+    const result = await generatePrivateInvoiceLink(payload);
+    const privateUrl = getPrivateInvoiceLinkUrl(result);
+    if (!privateUrl) {
+      throw new Error("The direct-write private-link flow did not return a download URL.");
+    }
+    state.privateInvoiceLinkResult = {
+      ...result,
+      privateUrl,
+      generatedAt: payload.requestedAt
+    };
+    state.privateInvoiceLinkStatus = "success";
+    state.privateInvoiceLinkError = "";
+    recordAccessActivity(
+      "generate_private_invoice_link",
+      `Generated a private invoice link for ${state.inv.partner} ${payload.periodStart === payload.periodEnd ? payload.periodStart : `${payload.periodStart} to ${payload.periodEnd}`}.`,
+      {
+        category: "activity",
+        partner: state.inv.partner,
+        periodStart: payload.periodStart,
+        periodEnd: payload.periodEnd
+      }
+    );
+    showToast("Private link ready", "Generated a private partner download link.", "success");
+    render();
+  } catch (error) {
+    console.error("Could not generate private invoice link", error);
+    state.privateInvoiceLinkStatus = "error";
+    state.privateInvoiceLinkError = String(error?.message || error || "Unknown error");
+    showToast("Private link failed", state.privateInvoiceLinkError, "error");
+    render();
+  }
+}
+
+function copyPrivateInvoiceLinkToClipboard() {
+  const privateUrl = getPrivateInvoiceLinkUrl(state.privateInvoiceLinkResult);
+  if (!privateUrl) {
+    showToast("No link available", "Generate a private link before trying to copy it.", "warning");
+    return;
+  }
+  navigator.clipboard.writeText(privateUrl)
+    .then(() => {
+      recordAccessActivity(
+        "copy_private_invoice_link",
+        `Copied the private invoice link for ${state.inv?.partner || "the selected partner"}.`,
+        { category: "activity", partner: state.inv?.partner || "" }
+      );
+      showToast("Private link copied", "The partner download link is on your clipboard.", "success");
+    })
+    .catch((error) => {
+      console.error("Could not copy private invoice link", error);
+      showToast("Copy failed", "Could not copy the private link to your clipboard.", "warning");
+    });
 }
 
 function parseStructuredContract(rawText) {
@@ -5282,6 +5551,12 @@ function unarchivePartner(name) {
 function applyInvoiceResult(invoice) {
   if (!invoice) return;
   state.invoiceExplorer = null;
+  state.invoiceArtifactStatus = "idle";
+  state.invoiceArtifactError = "";
+  state.invoiceArtifactRecord = null;
+  state.privateInvoiceLinkStatus = "idle";
+  state.privateInvoiceLinkError = "";
+  state.privateInvoiceLinkResult = null;
   const preservedOpenSections = Object.fromEntries(Object.entries(state.openSections).filter(([key]) => !key.includes("invoice-group:")));
   const groups = (Array.isArray(invoice.groups) && invoice.groups.length ? invoice.groups : groupInvoiceLines(invoice.lines || [])).map((group, index) => ({
     id: group.id || `invoice-group-remote-${index}`,
@@ -6189,6 +6464,16 @@ async function calculateInvoice() {
         const payload = await fetchSharedDraftInvoice(state.sp, state.perStart, state.perEnd);
         if (payload?.invoice) {
           applyInvoiceResult(payload.invoice);
+          try {
+            await archiveInvoiceArtifactCopy(payload.invoice, {
+              trigger: "generate_invoice",
+              showSuccessToast: false,
+              showUnavailableToast: false,
+              showErrorToast: true
+            });
+          } catch (archiveError) {
+            console.error("Invoice generated but artifact archive failed", archiveError);
+          }
           return;
         }
       } catch (error) {
@@ -6200,7 +6485,18 @@ async function calculateInvoice() {
     state.invoiceExplorer = null;
     const periods = enumeratePeriods(state.perStart, state.perEnd);
     const monthlyInvoices = periods.map((period) => calculateLocalInvoiceForPeriod(state.sp, period));
-    applyInvoiceResult(combineInvoicesForRange(state.sp, state.perStart, state.perEnd, monthlyInvoices));
+    const combinedInvoice = combineInvoicesForRange(state.sp, state.perStart, state.perEnd, monthlyInvoices);
+    applyInvoiceResult(combinedInvoice);
+    try {
+      await archiveInvoiceArtifactCopy(combinedInvoice, {
+        trigger: "generate_invoice",
+        showSuccessToast: false,
+        showUnavailableToast: false,
+        showErrorToast: true
+      });
+    } catch (archiveError) {
+      console.error("Invoice generated but artifact archive failed", archiveError);
+    }
   } catch (error) {
     console.error("Could not calculate invoice", error);
     showToast("Invoice calculation failed", String(error?.message || error || "Unknown error"), "error");
@@ -6405,6 +6701,50 @@ async function runBillingChecker() {
     showToast("Checker failed", state.checkerError, "error");
     render();
   }
+}
+
+function renderInvoiceDeliveryPanel() {
+  if (!state.inv) return "";
+  const config = getSharedBackendConfig();
+  const privateUrl = getPrivateInvoiceLinkUrl(state.privateInvoiceLinkResult);
+  const tone = state.privateInvoiceLinkStatus === "error" || state.invoiceArtifactStatus === "error"
+    ? "warning"
+    : state.privateInvoiceLinkStatus === "success" || state.invoiceArtifactStatus === "success"
+      ? "success"
+      : "";
+  const archiveConfigured = !!config.invoiceArtifactWriteBaseUrl;
+  const linkConfigured = !!config.privateInvoiceLinkWriteBaseUrl;
+  const archiveSummary = state.invoiceArtifactStatus === "saving"
+    ? "Saving a timestamped invoice copy..."
+    : state.invoiceArtifactStatus === "success" && state.invoiceArtifactRecord?.savedAt
+      ? `Last archived ${formatDateTime(state.invoiceArtifactRecord.savedAt)}`
+      : archiveConfigured
+        ? "Timestamped invoice archiving is ready."
+        : "Connect BILLING_APP_CONFIG.invoiceArtifactWriteBaseUrl to save a timestamped copy on each invoice run.";
+  const linkSummary = state.privateInvoiceLinkStatus === "creating"
+    ? "Generating a private partner download link..."
+    : state.privateInvoiceLinkStatus === "success" && privateUrl
+      ? "Private partner download link is ready."
+      : linkConfigured
+        ? "Private link generation is ready."
+        : "Connect BILLING_APP_CONFIG.privateInvoiceLinkWriteBaseUrl to generate a partner-safe private link.";
+  return `
+    <div class="summary-banner ${tone}" style="margin-top:14px">
+      <h4>Partner Delivery Package</h4>
+      <p>${html(archiveSummary)}</p>
+      <p>${html(linkSummary)}</p>
+      ${state.invoiceArtifactRecord?.artifactId ? `<p>Artifact ID: ${html(state.invoiceArtifactRecord.artifactId)}</p>` : ""}
+      ${state.invoiceArtifactError ? `<p class="footer-note" style="color:#a33b29">${html(state.invoiceArtifactError)}</p>` : ""}
+      ${state.privateInvoiceLinkError ? `<p class="footer-note" style="color:#a33b29">${html(state.privateInvoiceLinkError)}</p>` : ""}
+      ${privateUrl ? `
+        <div class="button-row" style="margin-top:12px">
+          <a class="button secondary" href="${html(privateUrl)}" target="_blank" rel="noopener">Open Private Link</a>
+          <button class="button ghost" data-action="copy-private-invoice-link">Copy Private Link</button>
+        </div>
+        <div class="footer-note" style="margin-top:10px;word-break:break-all">${html(privateUrl)}</div>
+      ` : ""}
+    </div>
+  `;
 }
 
 function renderHeader() {
@@ -6911,6 +7251,7 @@ function renderInvoiceTab() {
   const invoiceDocuments = state.inv ? buildInvoiceDocuments(state.inv) : [];
   const receivableDoc = invoiceDocuments.find((doc) => doc.kind === "receivable") || null;
   const payableDoc = invoiceDocuments.find((doc) => doc.kind === "payable") || null;
+  const privateLinkReady = !!getPrivateInvoiceLinkUrl(state.privateInvoiceLinkResult);
   const netAmount = state.inv ? Math.abs(Number(state.inv.net || 0)) : 0;
   const netLabel = state.inv ? (Number(state.inv.net || 0) >= 0 ? getPartnerOwesLabel(state.inv.partner) : "Veem Owes") : "";
   const partnerLifecycle = state.inv ? getPartnerLifecycleStatus(state.inv.partner, state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period) : null;
@@ -6934,6 +7275,12 @@ function renderInvoiceTab() {
           <button class="invoice-icon-button" data-action="export-invoice-period-transactions" title="Export all transactions for this partner and date range" aria-label="Export all transactions for this partner and date range">
             <span aria-hidden="true">Download All Transactions</span>
           </button>
+          <button class="invoice-icon-button" data-action="generate-private-invoice-link"${state.privateInvoiceLinkStatus === "creating" ? " disabled" : ""} title="Generate a private partner download link" aria-label="Generate a private partner download link">
+            <span aria-hidden="true">${state.privateInvoiceLinkStatus === "creating" ? "Generating Private Link..." : "Generate Private Link"}</span>
+          </button>
+          ${privateLinkReady ? `<button class="invoice-icon-button" data-action="copy-private-invoice-link" title="Copy the private partner download link" aria-label="Copy the private partner download link">
+            <span aria-hidden="true">Copy Private Link</span>
+          </button>` : ""}
         </div>
         <div class="invoice-banner-badges">
           ${receivableDoc ? `<div class="amount-badge"><div>AR Invoice</div><div>${fmt(receivableDoc.amountDue)}</div></div>` : ""}
@@ -6943,6 +7290,7 @@ function renderInvoiceTab() {
       </div>
     </div>
   ` : "";
+  const deliveryPanel = state.inv ? renderInvoiceDeliveryPanel() : "";
   const notesBlock = state.inv?.notes?.length ? renderSection({
     key: noteSectionKey,
     title: "Invoice Notes",
@@ -6959,7 +7307,7 @@ function renderInvoiceTab() {
       ? invoiceDocuments.map((doc) => renderInvoiceDocumentTable(doc)).join("")
       : `<div class="panel"><div class="empty-state">No invoice lines were generated for this selection.</div></div>`)
     : "";
-  const invoiceSection = state.inv ? `${banner}${notesBlock}${documentTables}` : "";
+  const invoiceSection = state.inv ? `${banner}${deliveryPanel}${notesBlock}${documentTables}` : "";
   const checkerPanel = renderBillingCheckerPanel();
   const checkerSelectionReady = isBillingCheckerEnabled() && !!resolvePartnerName(state.sp) && !!state.perStart && (!state.useDateRange || !!state.perEnd);
   return `
@@ -8076,6 +8424,14 @@ root.addEventListener("click", (event) => {
   if (action === "export-invoice-pdf") {
     recordAccessActivity("export_invoice_pdf", `Exported ${target.dataset.docKind || "invoice"} PDF for ${state.sp || "unknown partner"}.`, { category: "activity" });
     exportInvoicePdf(target.dataset.docKind || "");
+    return;
+  }
+  if (action === "generate-private-invoice-link") {
+    void generateInvoicePrivateLinkForCurrentSelection();
+    return;
+  }
+  if (action === "copy-private-invoice-link") {
+    copyPrivateInvoiceLinkToClipboard();
     return;
   }
   if (action === "toggle-delete-partner") {

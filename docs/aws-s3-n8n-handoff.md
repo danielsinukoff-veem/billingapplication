@@ -10,7 +10,7 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 
 - The browser app owns the UI and the editable billing workbook experience.
 - The hosted runtime is now a static frontend that reads current state from same-directory JSON files.
-- Optional integrations are driven by runtime config and n8n webhooks rather than a custom app backend.
+- Optional integrations are driven by runtime config, direct AWS object writes, and n8n automation URLs rather than a custom app backend.
 
 ## Target state
 
@@ -21,14 +21,14 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 - Contract parsing: n8n job that reads contract files from S3, extracts terms, and writes structured output back to S3.
 - Looker ingestion: n8n job on a schedule that writes refreshed workbook data back to S3.
 - Checker: a separate reconciliation workflow that recalculates billing and flags mismatches before invoices are released.
-- Frontend config: the browser reads same-directory runtime config from `app-config.js`, so AWS can point the app at S3 JSON files and n8n webhooks without rebuilding the frontend.
+- Frontend config: the browser reads same-directory runtime config from `app-config.js`, so AWS can point the app at S3 JSON files, direct-write object URLs, and n8n automation URLs without rebuilding the frontend.
 
 ## Frontend runtime model
 
 1. The app reads `app-config.js` at load time.
 2. The app reads the current workbook snapshot from `data/current-workbook.json` or another S3 JSON path configured in `app-config.js`.
-3. User edits continue locally in the browser unless `workbookWriteWebhookUrl` is configured.
-4. When save/import/checker/contract automation webhooks are configured, the frontend posts to n8n and n8n writes updated JSON artifacts back to S3.
+3. User edits continue locally in the browser unless `workbookWriteUrl` is configured.
+4. When direct-write AWS object URLs are configured, the frontend writes the current workbook, invoice artifacts, and private delivery bundles straight to object storage. Import/checker/contract automations can still call n8n where needed.
 5. The frontend reloads the refreshed S3 artifacts on the next load or refresh.
 
 ## Current repo components that matter
@@ -44,9 +44,13 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 - Seed workbook data:
   - `/Users/danielsinukoff/Documents/billing-workbook/data/current-workbook.json`
 
-## Required webhook slots
+## Required storage and automation slots
 
-- `workbookWriteWebhookUrl`
+- `workbookWriteUrl`
+- `workbookHistoryWriteBaseUrl`
+- `invoiceArtifactWriteBaseUrl`
+- `privateInvoiceLinkWriteBaseUrl`
+- `privateInvoiceLinkReadBaseUrl`
 - `invoiceDraftUrl`
 - `automationOutboxUrl`
 - `checkerWebhookUrl`

@@ -1,8 +1,12 @@
 window.BILLING_APP_CONFIG = {
   bootstrapUrl: "./data/current-workbook.json",
   workbookReadUrl: "./data/current-workbook.json",
-  workbookWriteWebhookUrl: "",
+  workbookWriteUrl: "",
+  workbookHistoryWriteBaseUrl: "",
   invoiceDraftUrl: "",
+  invoiceArtifactWriteBaseUrl: "",
+  privateInvoiceLinkWriteBaseUrl: "",
+  privateInvoiceLinkReadBaseUrl: "",
   automationOutboxUrl: "",
   checkerWebhookUrl: "",
   lookerImportWebhookUrl: "",
@@ -10,6 +14,8 @@ window.BILLING_APP_CONFIG = {
   contractExtractWebhookUrl: "",
   enableSharedWorkbook: true,
   enableRemoteInvoiceReads: false,
+  enableInvoiceArtifacts: false,
+  enablePrivateInvoiceLinks: false,
   enableCheckerRuns: false,
   enableLookerImports: false,
   enableContractAutomation: false
