@@ -423,7 +423,10 @@ class BillingRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def respond_error(self, status: HTTPStatus, message: str) -> None:
         self.respond_json({"error": message}, status=status)

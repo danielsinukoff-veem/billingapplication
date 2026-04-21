@@ -129,6 +129,7 @@ def run_direct_looker_sync(
             "tileId": spec.tile_id,
             "lookId": spec.look_id,
             "reportName": spec.report_name,
+            "historyWindowDays": int(payload.get("historyWindowDays") or spec.history_window_days or 0),
         }
         if dry_run:
             entry["status"] = "configured"
@@ -148,6 +149,7 @@ def run_direct_looker_sync(
             parse_payload = {
                 "fileType": spec.file_type,
                 "period": period,
+                "historyWindowDays": int(payload.get("historyWindowDays") or spec.history_window_days or 0),
                 "fileName": spec.file_name,
                 "fileBase64": base64.b64encode(file_bytes).decode("ascii"),
                 "sourceMetadata": source_metadata,

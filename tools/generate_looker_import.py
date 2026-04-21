@@ -40,9 +40,9 @@ PARTNER_PATTERNS = [
     ("halorecruiting", "Halorecruiting"),
     ("jazz cash", "Jazz Cash"),
     ("jazz", "Jazz Cash"),
-    ("lightnet", "LightNet"),
+    ("lightnet", "Lightnet"),
     ("magaya", "Magaya"),
-    ("multigate", "MultiGate"),
+    ("multigate", "Multigate"),
     ("nibss", "NIBSS ( TurboTech)"),
     ("nium", "Nium"),
     ("ohent", "OhentPay"),
@@ -90,11 +90,11 @@ PARTNER_ALIASES = {
     "halorecruiting": "Halorecruiting",
     "jazz cash": "Jazz Cash",
     "jazz": "Jazz Cash",
-    "lightnet": "LightNet",
+    "lightnet": "Lightnet",
     "lianlian": "LianLian",
     "magaya": "Magaya",
     "maplewave": "Maplewave",
-    "multigate": "MultiGate",
+    "multigate": "Multigate",
     "nibss": "NIBSS ( TurboTech)",
     "nium": "Nium",
     "nomad": "Nomad",
@@ -196,7 +196,6 @@ class Paths:
     revenue_summary: Path | None
     stampli_credit_complete_all: Path | None
     stampli_domestic_revenue: Path | None
-    stampli_usd_abroad_revenue: Path | None
     stampli_fx_share: Path | None
     stampli_fx_reversals: Path | None
 
@@ -977,12 +976,6 @@ def load_paths(source_dir: Path, stampli_source_dir: Path | None = None) -> Path
             direct_stampli_dir / "Stampli Domestic Revenue.csv",
         ) if direct_stampli_dir else tuple())
     )
-    stampli_usd_abroad_revenue = first_existing(
-        *((
-            direct_stampli_dir / "Stampli USD Abroad Revenue.xlsx",
-            direct_stampli_dir / "Stampli USD Abroad Revenue.csv",
-        ) if direct_stampli_dir else tuple())
-    )
     stampli_fx_share = first_existing(
         stampli_fx_dir / "stampli_fx_revenue_share.csv",
         stampli_fx_dir / "stampli_fx_revenue_share.xlsx",
@@ -1011,7 +1004,6 @@ def load_paths(source_dir: Path, stampli_source_dir: Path | None = None) -> Path
         revenue_summary=revenue_summary,
         stampli_credit_complete_all=stampli_credit_complete_all,
         stampli_domestic_revenue=stampli_domestic_revenue,
-        stampli_usd_abroad_revenue=stampli_usd_abroad_revenue,
         stampli_fx_share=stampli_fx_share,
         stampli_fx_reversals=stampli_fx_reversals,
     )
@@ -1081,7 +1073,6 @@ def build_stampli_credit_complete_lookup(path: Path | None) -> dict[str, str]:
 def build_stampli_direct_billing(
     credit_complete_path: Path | None,
     domestic_path: Path | None,
-    usd_abroad_path: Path | None,
     period: str | None,
 ) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]], dict[str, Any]]:
     grouped: dict[tuple[str, str, str, str], dict[str, float]] = defaultdict(lambda: {"txnCount": 0, "totalVolume": 0.0, "directInvoiceAmount": 0.0})
@@ -1229,13 +1220,6 @@ def build_stampli_direct_billing(
             "detailSource": "stampli_domestic_revenue",
             "speedResolver": lambda row: normalize_speed(False, text(row.get("Is Faster Ach")) == "FasterACH"),
         },
-        {
-            "path": usd_abroad_path,
-            "txnType": "USD Abroad",
-            "processingMethod": "Wire",
-            "detailSource": "stampli_usd_abroad_revenue",
-            "speedResolver": lambda row: "Standard",
-        },
     ]
 
     for config in configs:
@@ -1353,129 +1337,6 @@ def build_stampli_direct_billing(
                 "directInvoiceAmount": direct_invoice_amount,
                 "directInvoiceRate": direct_invoice_rate,
                 "directInvoiceSource": "stampli_direct_billing",
-            }
-        )
-
-    meta = {
-        "sources": sources,
-        "paymentIdsImported": len(detail_rows),
-        "periods": sorted(periods_seen),
-    }
-    return output, sorted(periods_seen), detail_rows, meta
-
-
-def build_stampli_direct_reversal_rows(path: Path, period: str | None) -> tuple[list[dict[str, Any]], list[str], list[dict[str, Any]], dict[str, Any]]:
-    grouped: dict[tuple[str, str, str, str], dict[str, float]] = defaultdict(lambda: {"txnCount": 0, "totalVolume": 0.0, "directInvoiceAmount": 0.0})
-    detail_rows: list[dict[str, Any]] = []
-    periods_seen: set[str] = set()
-    sources = [str(path)]
-
-    for row in iter_table_rows(path):
-        refund_complete_value = row_value_first(
-            row,
-            "Refund Complete Date",
-            "Refund Completed Date",
-            "Transaction Lookup Dates Refund Complete Timestamp Date",
-            "Transaction Lookup Dates Refund Complete Timestamp Time",
-            patterns=("refundcompletedate", "refundcompleteddate", "refundcompletetimestampdate", "refundcompletetimestamptime"),
-        )
-        month = month_key(refund_complete_value)
-        if not month or not matches_period(month, period):
-            continue
-        payment_id = text(
-            row_value_first(
-                row,
-                "Payment Payment ID",
-                "Payment ID",
-                patterns=("paymentpaymentid", "paymentid"),
-            )
-        )
-        if not payment_id:
-            continue
-        periods_seen.add(month)
-        txn_type = "USD Abroad"
-        speed_flag = "Standard"
-        processing_method = "Wire"
-        direct_invoice_amount = -abs(
-            money(
-                row.get("Fees")
-                or row_value_by_patterns(row, "fees", "fee")
-                or extract_est_revenue(row)
-            )
-        )
-        total_volume = money(
-            row_value_first(
-                row,
-                "Payment USD Equivalent Amount",
-                "** Payment For Sales DV ** Total USD Amount Number",
-                "** Payment For Sales DV ** USD Amount Number",
-                "Total USD Amount Number",
-                patterns=("paymentusdequivalentamount", "totalusdamountnumber", "usdamountnumber"),
-            )
-        )
-        key = (month, txn_type, speed_flag, processing_method)
-        grouped[key]["txnCount"] += 1
-        grouped[key]["totalVolume"] += total_volume
-        grouped[key]["directInvoiceAmount"] += direct_invoice_amount
-        detail_rows.append(
-            {
-                "detailCategory": "reversal",
-                "detailSource": "stampli_usd_abroad_reversal",
-                "partner": STAMPLI_FX_PARTNER,
-                "period": month,
-                "paymentId": payment_id,
-                "txnType": txn_type,
-                "speedFlag": speed_flag,
-                "processingMethod": processing_method,
-                "payerFunding": "",
-                "payeeFunding": text(row_value_first(row, "** Payment For Sales DV ** Payee Funding Method Type", "Payee Funding Method", patterns=("payeefundingmethodtype", "payeefundingmethod"))),
-                "payerCcy": text(row_value_first(row, "** Payment For Sales DV ** Payer Amount Currency", "Payer Amount Currency", patterns=("payeramountcurrency",))) or "USD",
-                "payeeCcy": text(row_value_first(row, "** Payment For Sales DV ** Payee Amount Currency", "Currency (Payee Amount Currency)", patterns=("payeeamountcurrency",))) or "USD",
-                "payerCountry": normalize_country_code(row_value_first(row, "** Payment For Sales DV ** Payer Country", "Payer Country", patterns=("payercountry",))),
-                "payeeCountry": normalize_country_code(row_value_first(row, "** Payment For Sales DV ** Payee Country", "Payee Country", patterns=("payeecountry",))),
-                "accountId": text(row_value_first(row, "** Payment For Sales DV ** Payer Account ID", "Account ID", patterns=("payeraccountid", "accountid"))),
-                "paymentType": txn_type,
-                "submissionDate": iso_value(row_value_first(row, "Date of Payment Submission", "** Payment For Sales DV ** Time Created Date", "Time Created Date", patterns=("dateofpaymentsubmission", "timecreateddate"))),
-                "reversalDate": iso_value(refund_complete_value),
-                "payerEmail": text(row.get("Payer Email") or row_value_by_patterns(row, "payeraccountprimaryemail")),
-                "payerBusinessName": text(row.get("Payer Business Name") or row_value_by_patterns(row, "payeraccountname")),
-                "payeeEmail": text(row.get("Payee Email") or row_value_by_patterns(row, "payeeaccountprimaryemail")),
-                "payeeBusinessName": text(row.get("Payee Business Name") or row_value_by_patterns(row, "payeeaccountname")),
-                "payeeAmountCurrency": text(row_value_first(row, "** Payment For Sales DV ** Payee Amount Currency", "Currency (Payee Amount Currency)", patterns=("payeeamountcurrency",))) or "USD",
-                "payeeAmount": round(money(row_value_first(row, "** Payment For Sales DV ** Payee Amount Number", "Foreign Currency Amount (Payee Amount Number)", patterns=("payeeamountnumber",))), 2),
-                "paymentUsdEquivalentAmount": round(total_volume, 2),
-                "directFeeAmount": round(direct_invoice_amount, 2),
-            }
-        )
-
-    output: list[dict[str, Any]] = []
-    for (month, txn_type, speed_flag, processing_method), aggregate in sorted(grouped.items()):
-        txn_count = int(aggregate["txnCount"])
-        total_volume = round(aggregate["totalVolume"], 2)
-        direct_invoice_amount = round(aggregate["directInvoiceAmount"], 2)
-        direct_invoice_rate = round(direct_invoice_amount / txn_count, 4) if txn_count else 0.0
-        output.append(
-            {
-                "period": month,
-                "partner": STAMPLI_FX_PARTNER,
-                "txnType": txn_type,
-                "speedFlag": speed_flag,
-                "minAmt": txn_count,
-                "maxAmt": txn_count,
-                "payerFunding": "",
-                "payeeFunding": "",
-                "payerCcy": "USD",
-                "payeeCcy": "USD",
-                "payerCountry": "",
-                "payeeCountry": "",
-                "processingMethod": processing_method,
-                "txnCount": txn_count,
-                "totalVolume": total_volume,
-                "customerRevenue": direct_invoice_amount,
-                "avgTxnSize": round(total_volume / txn_count, 2) if txn_count else 0.0,
-                "directInvoiceAmount": direct_invoice_amount,
-                "directInvoiceRate": direct_invoice_rate,
-                "directInvoiceSource": "stampli_usd_abroad_reversal",
             }
         )
 
@@ -3148,7 +3009,6 @@ def main() -> None:
     stampli_direct_rows, stampli_direct_periods, stampli_direct_detail_rows, stampli_direct_meta = build_stampli_direct_billing(
         paths.stampli_credit_complete_all,
         paths.stampli_domestic_revenue,
-        paths.stampli_usd_abroad_revenue,
         args.period,
     )
     if stampli_direct_rows:
@@ -3237,7 +3097,6 @@ def main() -> None:
             "stampliFx": {
                 "creditCompleteSource": str(paths.stampli_credit_complete_all) if paths.stampli_credit_complete_all else "",
                 "directDomesticSource": str(paths.stampli_domestic_revenue) if paths.stampli_domestic_revenue else "",
-                "directUsdAbroadSource": str(paths.stampli_usd_abroad_revenue) if paths.stampli_usd_abroad_revenue else "",
                 "shareSource": str(paths.stampli_fx_share) if paths.stampli_fx_share else "",
                 "reversalSource": str(paths.stampli_fx_reversals) if paths.stampli_fx_reversals else "",
                 "directBillingPeriods": stampli_direct_meta["periods"],

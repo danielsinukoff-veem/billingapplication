@@ -13,6 +13,30 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+MAX_AUDIT_SNAPSHOT_BYTES = 1_000_000
+
+
+def _audit_snapshot_value(encoded: str | None) -> str | None:
+    if encoded is None:
+        return None
+    if len(encoded.encode("utf-8")) <= MAX_AUDIT_SNAPSHOT_BYTES:
+        return encoded
+    try:
+        parsed = json.loads(encoded)
+    except Exception:
+        parsed = None
+    summary = {
+        "omitted": True,
+        "reason": "snapshot_too_large",
+        "sizeBytes": len(encoded.encode("utf-8")),
+    }
+    if isinstance(parsed, dict):
+        summary["topLevelKeys"] = sorted(parsed.keys())
+        detail_rows = parsed.get("lookerImportedDetailRows")
+        if isinstance(detail_rows, list):
+            summary["lookerImportedDetailRows"] = len(detail_rows)
+    return json.dumps(summary)
+
 
 @dataclass(frozen=True)
 class WorkspaceIdentity:
@@ -170,7 +194,12 @@ class SharedWorkspaceStore:
                 insert into audit_log (organization_id, actor_user_id, entity_type, action, before_json, after_json)
                 values (?, ?, 'workbook_snapshot', 'save', ?, ?)
                 """,
-                (organization_id, user_id, before["snapshot_json"] if before else None, encoded),
+                (
+                    organization_id,
+                    user_id,
+                    _audit_snapshot_value(before["snapshot_json"] if before else None),
+                    _audit_snapshot_value(encoded),
+                ),
             )
             conn.commit()
             return str(after["updated_at"])

@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const now = new Date();\nconst period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\nreturn [{\n  json: {\n    configFile: '/Users/danielsinukoff/Documents/billing-workbook/docs/looker-summary-only.json',\n    period,\n    billingApiBaseUrl: 'http://host.docker.internal:4174',\n    billingApiToken: '',\n    lookerClientId: '',\n    lookerClientSecret: ''\n  }\n}];"
+        "jsCode": "const now = new Date();\nconst period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\nreturn [{\n  json: {\n    configFile: '/workspace/billing-workbook/docs/looker-summary-only.json',\n    period,\n    billingApiBaseUrl: 'http://host.docker.internal:4174',\n    billingApiToken: '',\n    lookerClientId: '',\n    lookerClientSecret: ''\n  }\n}];"
       },
       "id": "d7abafe3-5adc-40f2-bd11-e5c3b8fd3a92",
       "name": "Build Config",
@@ -27,7 +27,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const q = (value) => `\"${String(value ?? '').replace(/([\"\\\\$`])/g, '\\\\$1')}\"`;\nconst cmd = [\n  'python3',\n  q('/Users/danielsinukoff/Documents/billing-workbook/tools/pull_looker_and_push.py'),\n  '--config-file',\n  q($json.configFile),\n  '--period',\n  q($json.period),\n  '--billing-api-base-url',\n  q($json.billingApiBaseUrl)\n];\nif ($json.billingApiToken) {\n  cmd.push('--billing-api-token', q($json.billingApiToken));\n}\nif ($json.lookerClientId) {\n  cmd.push('--looker-client-id', q($json.lookerClientId));\n}\nif ($json.lookerClientSecret) {\n  cmd.push('--looker-client-secret', q($json.lookerClientSecret));\n}\nreturn [{ json: { ...$json, command: cmd.join(' ') } }];"
+        "jsCode": "const q = (value) => `\"${String(value ?? '').replace(/([\"\\\\$`])/g, '\\\\$1')}\"`;\nconst cmd = [\n  'python3',\n  q('/workspace/billing-workbook/tools/pull_looker_and_push.py'),\n  '--config-file',\n  q($json.configFile),\n  '--period',\n  q($json.period),\n  '--billing-api-base-url',\n  q($json.billingApiBaseUrl)\n];\nif ($json.billingApiToken) {\n  cmd.push('--billing-api-token', q($json.billingApiToken));\n}\nif ($json.lookerClientId) {\n  cmd.push('--looker-client-id', q($json.lookerClientId));\n}\nif ($json.lookerClientSecret) {\n  cmd.push('--looker-client-secret', q($json.lookerClientSecret));\n}\nreturn [{ json: { ...$json, command: cmd.join(' ') } }];"
       },
       "id": "86308936-4256-4f3e-a3ac-7748b5b5090e",
       "name": "Build Command",

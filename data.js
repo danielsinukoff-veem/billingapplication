@@ -26,7 +26,7 @@ RULES:
 - Include ALL tiers as separate entries
 CRITICAL: Output COMPACT/MINIFIED JSON. No indentation. Start with { end with }. No trailing commas. Double quotes only.`;
 
-const initPartners = ["Stampli", "Nuvei", "PayNearMe", "Highnote", "Shepherd", "Everflow", "Q2", "Finastra", "Halorecruiting", "Magaya", "Fulfil", "Nomad", "Skydo", "TripleA", "Capi", "Nsave", "Cellpay", "Nuvion", "Yeepay", "Clearshift", "Graph Finance", "Remittanceshub", "Altpay", "Repay", "LianLian", "Blindpay", "Whish", "Athena", "Maplewave", "GME_Remit", "Oson", "BHN", "Factura", "Goldstack", "Jazz Cash", "LightNet", "MultiGate", "NIBSS ( TurboTech)", "Nium", "OhentPay", "VG Pay"];
+const initPartners = ["Stampli", "Shepherd", "Everflow", "Q2", "Finastra", "Halorecruiting", "Magaya", "Fulfil", "Nomad", "Skydo", "TripleA", "Capi", "Nsave", "Cellpay", "Nuvion", "Yeepay", "Clearshift", "Graph Finance", "Remittanceshub", "Altpay", "Repay", "LianLian", "Blindpay", "Whish", "Athena", "Maplewave", "GME_Remit", "Oson", "BHN", "Factura", "Goldstack", "Jazz Cash", "Lightnet", "Multigate", "NIBSS ( TurboTech)", "Nium", "OhentPay", "VG Pay"];
 const initPartnerConfig = { "VG Pay": true };
 const initArchivedPartners = [];
 const initPartnerActivity = [];
@@ -154,9 +154,6 @@ function enrichPartnerBillingRows(rows) {
 
 const initPartnerBilling = [
   pb("pb_stampli", "Stampli", "Monthly", "Monthly settlement / setoff", 0, 2, "Source: Stampli.txt Warnings: Detected an FX markup or settlement formula that cannot be converted into fixed rate rows automatically.", "7th of the following month", "2nd of following month", "accounting@stampli.com"),
-  pb("pb_nuvei", "Nuvei", "Monthly", "", 0, "", "No mapped contract file"),
-  pb("pb_paynearme", "PayNearMe", "Monthly", "", 0, "", "No mapped contract file"),
-  pb("pb_highnote", "Highnote", "Monthly", "", 0, "", "No mapped contract file"),
   pb("pb_shepherd", "Shepherd", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, 7, "Source: Shepherd_Somewhere.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "Not specified", "1st week of following month", "sheila@veem.com, ryan@somewhere.com, venice@somewhere.com, niel@somewhere.com, jerimiah@somewhere.com, nprada@somewhere.com, accountspayable@veem.com"),
   pb("pb_everflow", "Everflow", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, 2, "Source: Everflow.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "Not specified", "2nd of following month", "ed@everflow.io, arshi@everflow.io, peter@everflow.io, suzy@everflow.io, olivier@everflow.io, patrick@everflow.io, accountspayable@veem.com, sheila@veem.com, natalie@everflow.io"),
   pb("pb_q2", "Q2", "Monthly", "Monthly within 45 days from last day of month", 45, "", "Source: Q2.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually."),
@@ -188,8 +185,8 @@ const initPartnerBilling = [
   pb("pb_factura", "Factura", "Quarterly", "Quarterly within 15 days from last day of quarter", 15, "", "Source: Factura.txt Main contract pricing is a $20 monthly subscription fee per Veem account plus referral/rebate terms. The app still needs a referred-business account count source to calculate this automatically.", "", "", "", "2024-02-14"),
   pb("pb_goldstack", "Goldstack", "Monthly", "Due in 7 days", 7, "", "Source: Goldstack.txt", "", "", "", "2026-01-12", "", true, "Integration Underway (Partners Onboarding)"),
   pb("pb_jazz_cash", "Jazz Cash", "Monthly", "", 0, "", "Source: Jazz_Cash.txt Warnings: Pricing requires manual review for complete fee mapping.", "", "", "", "2025-12-30", "", true, "Integration Underway (Partners Onboarding)"),
-  pb("pb_lightnet", "LightNet", "Monthly", "Due in 7 days", 7, "", "Source: Lightnet.txt", "", "", "", "2025-04-22", "", true, "On Hold (Partners Onboarding)"),
-  pb("pb_multigate", "MultiGate", "Monthly", "Due in 7 days", 7, "", "Source: Multigate.txt Warnings: Detected a period-based or ramping monthly minimum schedule. Review minimum rows manually after import.", "", "", "", "2025-10-22", "", true, "Integration Underway (Partners Onboarding)"),
+  pb("pb_lightnet", "Lightnet", "Monthly", "Due in 7 days", 7, "", "Source: Lightnet.txt", "", "", "", "2025-04-22", "", true, "On Hold (Partners Onboarding)"),
+  pb("pb_multigate", "Multigate", "Monthly", "Due in 7 days", 7, "", "Source: Multigate.txt Warnings: Detected a period-based or ramping monthly minimum schedule. Review minimum rows manually after import.", "", "", "", "2025-10-22", "", true, "Integration Underway (Partners Onboarding)"),
   pb("pb_nibss", "NIBSS ( TurboTech)", "Monthly", "", 0, "", "Source: NIBSS.txt Warnings: Detected a period-based or ramping monthly minimum schedule. Review minimum rows manually after import.", "", "", "", "2025-03-01", "", true, "Closed Lost (Partners Onboarding)"),
   pb("pb_nium", "Nium", "Monthly", "Due in 7 days", 7, "", "Source: Nium.txt", "", "", "", "2025-10-23", "", true, "Integration Underway (Partners Onboarding)"),
   pb("pb_ohentpay", "OhentPay", "Monthly", "Due in 7 days", 7, "", "Source: OhentPay.txt", "", "", "", "2026-02-27", "", true, "Integration Underway (Partners Onboarding)"),
@@ -305,11 +302,6 @@ const sfxRaw = [
 ];
 
 const offRaw = [
-["Nuvei","Payout","Standard",0,10000000,1.50,"USD","USD","ACH","2024-01-01",""],
-["Nuvei","Payout","FasterACH",0,10000000,2.25,"USD","USD","ACH","2024-01-01",""],
-["Nuvei","Payin","Standard",0,10000000,1.00,"USD","USD","ACH","2024-01-01",""],
-["PayNearMe","Payin","Standard",0,10000000,0.75,"USD","USD","ACH","2024-03-01",""],
-["Highnote","Payout","Standard",0,10000000,1.10,"USD","USD","ACH","2024-09-01",""],
 ["Nomad","Domestic","FasterACH",0,30000,0.60,"USD","USD","","2025-01-01",""],
 ["Nomad","Domestic","FasterACH",30001,60000,0.50,"USD","USD","","2025-02-01",""],
 ["Nomad","Domestic","FasterACH",60001,90000,0.40,"USD","USD","","2025-02-01",""],
@@ -468,7 +460,6 @@ export function getCorridor(ccy) {
 }
 
 const volRaw = [
-["Nuvei","Payout","Standard",0.0015,"Credit","Bank","","",0,1e9,"2024-01-01","",""],
 ["Whish","","",0.004,"","","","",0,1e9,"2024-10-01","",""],
 ["Athena","","",0.002,"","","","",0,1e9,"2025-04-01","",""],
 ["TripleA","","",0.002,"","","","",0,1e9,"2025-05-01","","Platform Fee"],

@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const now = new Date();\nconst period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\nreturn [{\n  json: {\n    sourceDir: '/Users/danielsinukoff/Documents/billing-workbook/Partner Billing Data',\n    period,\n    apiBaseUrl: $env.BILLING_API_BASE_URL || 'http://127.0.0.1:4174',\n    apiToken: $env.BILLING_API_TOKEN || ''\n  }\n}];"
+        "jsCode": "const now = new Date();\nconst period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;\nreturn [{\n  json: {\n    sourceDir: '/workspace/billing-workbook/Partner Billing Data',\n    period,\n    apiBaseUrl: $env.BILLING_API_BASE_URL || 'http://host.docker.internal:4174',\n    apiToken: $env.BILLING_API_TOKEN || ''\n  }\n}];"
       },
       "id": "f0d3789b-1dae-4c64-8fc4-e8a20e2b3432",
       "name": "Build Config",
@@ -27,7 +27,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const q = (value) => `\"${String(value ?? '').replace(/([\"\\\\$`])/g, '\\\\$1')}\"`;\nconst tokenArg = $json.apiToken ? ` --api-token ${q($json.apiToken)}` : '';\nconst command = [\n  'python3',\n  q('/Users/danielsinukoff/Documents/billing-workbook/tools/push_looker_batch.py'),\n  '--source-dir',\n  q($json.sourceDir),\n  '--period',\n  q($json.period),\n  '--api-base-url',\n  q($json.apiBaseUrl)\n].join(' ') + tokenArg;\nreturn [{ json: { ...$json, command } }];"
+        "jsCode": "const q = (value) => `\"${String(value ?? '').replace(/([\"\\\\$`])/g, '\\\\$1')}\"`;\nconst tokenArg = $json.apiToken ? ` --api-token ${q($json.apiToken)}` : '';\nconst command = [\n  'python3',\n  q('/workspace/billing-workbook/tools/push_looker_batch.py'),\n  '--source-dir',\n  q($json.sourceDir),\n  '--period',\n  q($json.period),\n  '--api-base-url',\n  q($json.apiBaseUrl)\n].join(' ') + tokenArg;\nreturn [{ json: { ...$json, command } }];"
       },
       "id": "92eb17a7-58f1-4b0f-a255-7fcd0e03f195",
       "name": "Build Command",

@@ -15,7 +15,7 @@ import sys
 import tempfile
 import uuid
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -97,14 +97,6 @@ LOOKER_FILE_TYPES = {
         "label": "Stampli FX Revenue Reversal 2026-04-12T2033.xlsx",
         "defaultSuffix": ".csv",
     },
-    "stampli_usd_abroad_revenue_share": {
-        "label": "Stampli USD Abroad Revenue Share 2026-04-12T2034.xlsx",
-        "defaultSuffix": ".csv",
-    },
-    "stampli_usd_abroad_reversal": {
-        "label": "Stampli USD Abroad Revenue Reversal 2026-04-12T2033.xlsx",
-        "defaultSuffix": ".csv",
-    },
 }
 
 LOOKER_IMPORT_ORDER = [
@@ -118,8 +110,6 @@ LOOKER_IMPORT_ORDER = [
     "revenue_share_report",
     "rev_share_reversals",
     "all_registered_accounts_rev_share",
-    "stampli_usd_abroad_revenue_share",
-    "stampli_usd_abroad_reversal",
     "stampli_fx_revenue_share",
     "stampli_fx_revenue_reversal",
     "all_registered_accounts",
@@ -163,8 +153,6 @@ FULL_HISTORY_FILE_TYPES = {
     "rev_share_reversals",
     "partner_revenue_summary",
     "all_stampli_credit_complete",
-    "stampli_usd_abroad_revenue_share",
-    "stampli_usd_abroad_reversal",
     "stampli_fx_revenue_share",
     "stampli_fx_revenue_reversal",
 }
@@ -186,6 +174,8 @@ SECTION_CHANGE_FIELDS = {
 }
 
 MAX_PERSISTED_DETAIL_ROWS_FOR_ALL_TIME_IMPORT = 5000
+MAX_PERSISTED_DETAIL_ROWS_PER_IMPORT = 10000
+MAX_PERSISTED_DETAIL_ROWS_TOTAL = 50000
 
 
 @lru_cache(maxsize=1)
@@ -461,6 +451,189 @@ def infer_looker_data_coverage(
     return {}
 
 
+def parse_history_window_days(value: Any) -> int:
+    try:
+        days = int(value or 0)
+    except (TypeError, ValueError):
+        return 0
+    return max(days, 0)
+
+
+def history_window_cutoff(history_window_days: int) -> date | None:
+    if history_window_days <= 0:
+        return None
+    return date.today() - timedelta(days=max(history_window_days - 1, 0))
+
+
+def history_window_periods(history_window_days: int) -> list[str]:
+    cutoff = history_window_cutoff(history_window_days)
+    if cutoff is None:
+        return []
+    return enumerate_period_range(month_key(cutoff), month_key(date.today()))
+
+
+def normalize_tracking_key(value: Any) -> str:
+    return "".join(char.lower() for char in str(value or "") if char.isalnum())
+
+
+def normalize_period_value(value: Any) -> str:
+    return str(load_generator_module().month_key(value) or "").strip()
+
+
+def row_anchor_period(row: dict[str, Any]) -> str:
+    for key in ("period", "refundPeriod", "creditCompleteMonth", "billingMonth", "summaryMonth"):
+        period = normalize_period_value(row.get(key))
+        if period:
+            return period
+    for key, value in row.items():
+        normalized_key = normalize_tracking_key(key)
+        if "period" not in normalized_key and "month" not in normalized_key:
+            continue
+        period = normalize_period_value(value)
+        if period:
+            return period
+    return ""
+
+
+def row_anchor_date(row: dict[str, Any]) -> date | None:
+    module = load_generator_module()
+    best_score = -1
+    best_value: date | None = None
+    for key, value in row.items():
+        normalized_key = normalize_tracking_key(key)
+        score = -1
+        if "refundcomplete" in normalized_key:
+            score = 100
+        elif "creditcomplete" in normalized_key:
+            score = 90
+        elif "completedat" in normalized_key or "completiondate" in normalized_key:
+            score = 80
+        elif "joindate" in normalized_key:
+            score = 70
+        elif "timecreated" in normalized_key:
+            score = 60
+        elif "submissiondate" in normalized_key:
+            score = 50
+        elif "date" in normalized_key or "time" in normalized_key:
+            score = 10
+        if score < 0:
+            continue
+        parsed = module.parse_dateish(value)
+        if parsed and score > best_score:
+            best_score = score
+            best_value = parsed
+    return best_value
+
+
+def row_is_within_history_window(
+    row: dict[str, Any],
+    cutoff_date: date | None,
+    cutoff_period: str | None,
+) -> bool:
+    if cutoff_date is None and not cutoff_period:
+        return True
+    anchor_date = row_anchor_date(row)
+    if anchor_date is not None and cutoff_date is not None:
+        return anchor_date >= cutoff_date
+    anchor_period = row_anchor_period(row)
+    if anchor_period and cutoff_period:
+        return anchor_period >= cutoff_period
+    return True
+
+
+def filter_rows_to_history_window(rows: list[dict[str, Any]], history_window_days: int) -> list[dict[str, Any]]:
+    if history_window_days <= 0:
+        return list(rows or [])
+    cutoff = history_window_cutoff(history_window_days)
+    cutoff_period = month_key(cutoff) if cutoff else ""
+    return [
+        dict(row)
+        for row in (rows or [])
+        if isinstance(row, dict) and row_is_within_history_window(row, cutoff, cutoff_period)
+    ]
+
+
+def trim_lookup_to_history_window(lookup: dict[str, Any], history_window_days: int) -> dict[str, Any]:
+    if history_window_days <= 0:
+        return dict(lookup or {})
+    cutoff = history_window_cutoff(history_window_days)
+    cutoff_period = month_key(cutoff) if cutoff else ""
+    trimmed: dict[str, Any] = {}
+    for key, value in (lookup or {}).items():
+        period = normalize_period_value(value)
+        if period and cutoff_period and period < cutoff_period:
+            continue
+        trimmed[str(key)] = value
+    return trimmed
+
+
+def apply_history_window_to_result(result: dict[str, Any], history_window_days: int) -> dict[str, Any]:
+    history_window_days = parse_history_window_days(history_window_days)
+    if history_window_days <= 0:
+        result["historyWindowDays"] = 0
+        result["windowPeriods"] = []
+        return result
+
+    sections = dict(result.get("sections") or {})
+    detail_rows = list(result.get("detailRows") or [])
+    context_update = dict(result.get("contextUpdate") or {})
+    source_rows = list(result.get("sourceRows") or [])
+    stats = dict(result.get("stats") or {})
+    warnings = list(result.get("warnings") or [])
+
+    filtered_sections = {
+        section: filter_rows_to_history_window(rows or [], history_window_days)
+        for section, rows in sections.items()
+    }
+    filtered_detail_rows = filter_rows_to_history_window(detail_rows, history_window_days)
+    filtered_source_rows = filter_rows_to_history_window(source_rows, history_window_days)
+
+    if isinstance(context_update.get("stampliFxShareRows"), list):
+        context_update["stampliFxShareRows"] = filter_rows_to_history_window(context_update.get("stampliFxShareRows") or [], history_window_days)
+    if isinstance(context_update.get("stampliFxReversalRows"), list):
+        context_update["stampliFxReversalRows"] = filter_rows_to_history_window(context_update.get("stampliFxReversalRows") or [], history_window_days)
+    if isinstance(context_update.get("stampliCreditCompleteLookup"), dict):
+        context_update["stampliCreditCompleteLookup"] = trim_lookup_to_history_window(context_update.get("stampliCreditCompleteLookup") or {}, history_window_days)
+
+    section_counts_before = dict(stats.get("sectionCounts") or {})
+    detail_count_before = len(detail_rows)
+    section_counts_after = {section: len(rows) for section, rows in filtered_sections.items()}
+    detail_count_after = len(filtered_detail_rows)
+    if section_counts_before != section_counts_after or detail_count_before != detail_count_after:
+        warnings.append(
+            f"Applied rolling {history_window_days}-day import window before save. "
+            f"Section rows changed from {sum(section_counts_before.values())} to {sum(section_counts_after.values())} "
+            f"and detail rows from {detail_count_before} to {detail_count_after}."
+        )
+
+    window_periods = history_window_periods(history_window_days)
+    result.update({
+        "sections": filtered_sections,
+        "detailRows": filtered_detail_rows,
+        "contextUpdate": context_update,
+        "sourceRows": filtered_source_rows,
+        "warnings": warnings,
+        "historyWindowDays": history_window_days,
+        "windowPeriods": window_periods,
+        "dataCoverage": infer_looker_data_coverage(
+            str(result.get("period") or ""),
+            filtered_sections,
+            filtered_detail_rows,
+            context_update,
+            dict(result.get("sourceMetadata") or {}),
+            source_rows=filtered_source_rows,
+        ),
+        "stats": {
+            **stats,
+            "historyWindowDays": history_window_days,
+            "sectionCounts": section_counts_after,
+            "detailCounts": partner_period_counts(filtered_detail_rows),
+            "detailRowsPersisted": detail_count_after,
+        },
+    })
+    return result
+
+
 def normalize_number(value: Any) -> int | float | None:
     if value in (None, "", False):
         return None
@@ -562,10 +735,6 @@ def build_section_replace_predicate(
             return lambda row: period_matches(row) and not row.get("revenueBasis") and not row.get("directInvoiceSource")
         if file_type == "all_stampli_credit_complete":
             return lambda row: period_matches(row) and row.get("directInvoiceSource") == "stampli_credit_complete_billing"
-        if file_type == "stampli_usd_abroad_revenue_share":
-            return lambda row: period_matches(row) and row.get("directInvoiceSource") == "stampli_direct_billing"
-        if file_type == "stampli_usd_abroad_reversal":
-            return lambda row: period_matches(row) and row.get("directInvoiceSource") == "stampli_usd_abroad_reversal"
         if file_type in {"partner_rev_share_v2", "partner_revenue_share", "revenue_share_report"}:
             return lambda row: period_matches(row) and bool(row.get("revenueBasis"))
         return lambda row: period_matches(row)
@@ -708,6 +877,7 @@ def file_type_uses_full_history(file_type: str) -> bool:
 def parse_looker_file(payload: dict[str, Any]) -> dict[str, Any]:
     file_type = str(payload.get("fileType") or "").strip()
     period = str(payload.get("period") or "").strip()
+    history_window_days = parse_history_window_days(payload.get("historyWindowDays"))
     selected_period = period or None
     effective_period = None if file_type_uses_full_history(file_type) else selected_period
     context = payload.get("context") or {}
@@ -833,22 +1003,6 @@ def parse_looker_file(payload: dict[str, Any]) -> dict[str, Any]:
         stats["periodsSeen"] = periods_seen
         stats["paymentIdsImported"] = meta.get("paymentIdsImported", 0)
 
-    elif file_type == "stampli_usd_abroad_revenue_share":
-        source_rows = module.read_table(path)
-        ltxn, periods_seen, parsed_detail_rows, meta = module.build_stampli_direct_billing(None, None, path, effective_period)
-        sections["ltxn"] = ltxn
-        detail_rows = parsed_detail_rows
-        stats["periodsSeen"] = periods_seen
-        stats["paymentIdsImported"] = meta.get("paymentIdsImported", 0)
-
-    elif file_type == "stampli_usd_abroad_reversal":
-        source_rows = module.read_table(path)
-        ltxn, periods_seen, parsed_detail_rows, meta = module.build_stampli_direct_reversal_rows(path, effective_period)
-        sections["ltxn"] = ltxn
-        detail_rows = parsed_detail_rows
-        stats["periodsSeen"] = periods_seen
-        stats["paymentIdsImported"] = meta.get("paymentIdsImported", 0)
-
     elif file_type in {"stampli_fx_revenue_share", "stampli_fx_revenue_reversal"}:
         rows = module.read_table(path)
         source_rows = rows
@@ -885,7 +1039,7 @@ def parse_looker_file(payload: dict[str, Any]) -> dict[str, Any]:
     else:
         raise ValueError("That Looker file type is not wired yet.")
 
-    return {
+    result = {
         "fileType": file_type,
         "fileLabel": LOOKER_FILE_TYPES[file_type]["label"],
         "period": period,
@@ -894,12 +1048,18 @@ def parse_looker_file(payload: dict[str, Any]) -> dict[str, Any]:
         "contextUpdate": context_update,
         "warnings": warnings,
         "dataCoverage": infer_looker_data_coverage(effective_period, sections, detail_rows, context_update, source_rows=source_rows),
+        "historyWindowDays": history_window_days,
+        "sourceRows": source_rows,
         "stats": {
             **stats,
+            "historyWindowDays": history_window_days,
             "sectionCounts": {section: len(rows) for section, rows in sections.items()},
             "detailCounts": partner_period_counts(detail_rows),
         },
     }
+    if history_window_days and file_type_uses_full_history(file_type):
+        result = apply_history_window_to_result(result, history_window_days)
+    return result
 
 
 def ensure_row_ids(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -970,17 +1130,46 @@ def merge_looker_detail_overrides(snapshot: dict[str, Any], detail_rows: list[di
     }
     if period:
         target_periods.add(period)
-    snapshot["lookerImportedDetailRows"] = [
-        *(
-            row
-            for row in existing_rows
-            if not (
-                str(row.get("period") or "").strip() in target_periods
-                and (row.get("detailSource") or row.get("detailCategory") or "uploaded_looker_detail") in incoming_sources
-            )
-        ),
-        *rows,
+    retained_existing_rows = [
+        row
+        for row in existing_rows
+        if not (
+            str(row.get("period") or "").strip() in target_periods
+            and (row.get("detailSource") or row.get("detailCategory") or "uploaded_looker_detail") in incoming_sources
+        )
     ]
+    if len(rows) > MAX_PERSISTED_DETAIL_ROWS_PER_IMPORT:
+        snapshot["lookerImportedDetailRows"] = compact_persisted_detail_rows(retained_existing_rows)
+        return
+    snapshot["lookerImportedDetailRows"] = compact_persisted_detail_rows([
+        *retained_existing_rows,
+        *rows,
+    ])
+
+
+def compact_persisted_detail_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(rows) <= MAX_PERSISTED_DETAIL_ROWS_TOTAL:
+        return rows
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        key = (
+            str(row.get("period") or "").strip(),
+            str(row.get("detailSource") or row.get("detailCategory") or "uploaded_looker_detail").strip(),
+        )
+        grouped[key].append(row)
+    ordered_keys = sorted(grouped.keys(), reverse=True)
+    kept: list[dict[str, Any]] = []
+    for key in ordered_keys:
+        group = grouped[key]
+        if kept and len(kept) + len(group) > MAX_PERSISTED_DETAIL_ROWS_TOTAL:
+            continue
+        if not kept and len(group) > MAX_PERSISTED_DETAIL_ROWS_TOTAL:
+            kept.extend(group[:MAX_PERSISTED_DETAIL_ROWS_TOTAL])
+            break
+        kept.extend(group)
+        if len(kept) >= MAX_PERSISTED_DETAIL_ROWS_TOTAL:
+            break
+    return kept
 
 
 def rederive_virtual_account_section(snapshot: dict[str, Any], period: str) -> None:
@@ -1014,6 +1203,27 @@ def rederive_all_virtual_account_sections(snapshot: dict[str, Any]) -> None:
     account_activity, settlement_days = deserialize_offline_context(offline_context)
     periods = derive_virtual_account_periods(module, registered_rows, account_activity, settlement_days, "")
     snapshot["lva"] = module.build_virtual_account_usage(registered_rows, account_activity, settlement_days, periods)
+
+
+def rederive_virtual_account_sections_for_periods(snapshot: dict[str, Any], periods: list[str]) -> None:
+    target_periods = [period for period in periods if str(period or "").strip()]
+    if not target_periods:
+        return
+    module = load_generator_module()
+    context = snapshot.get("lookerImportContext") or {}
+    registered_rows = context_registered_account_rows(context)
+    if not registered_rows:
+        return
+    offline_context = context.get("offlineContext") or {}
+    if not isinstance(offline_context, dict):
+        offline_context = {}
+    account_activity, settlement_days = deserialize_offline_context(offline_context)
+    lva_rows = module.build_virtual_account_usage(registered_rows, account_activity, settlement_days, target_periods)
+    snapshot["lva"] = replace_rows(
+        snapshot.get("lva", []),
+        [row for row in lva_rows if row.get("period") in target_periods],
+        lambda row: row.get("period") in target_periods,
+    )
 
 
 def rederive_stampli_fx_section(snapshot: dict[str, Any], period: str) -> None:
@@ -1061,9 +1271,42 @@ def rederive_all_stampli_fx_sections(snapshot: dict[str, Any]) -> None:
     merge_looker_detail_overrides(snapshot, detail_rows, "")
 
 
+def rederive_stampli_fx_sections_for_periods(snapshot: dict[str, Any], periods: list[str]) -> None:
+    target_periods = [period for period in periods if str(period or "").strip()]
+    if not target_periods:
+        return
+    module = load_generator_module()
+    context = snapshot.get("lookerImportContext") or {}
+    share_rows = context.get("stampliFxShareRows") or []
+    reversal_rows = context.get("stampliFxReversalRows") or []
+    if not share_rows and not reversal_rows:
+        return
+    credit_complete_lookup = context.get("stampliCreditCompleteLookup") or {}
+    lfxp_rows, detail_rows = module.build_stampli_fx_partner_payouts(
+        [],
+        target_periods,
+        share_rows=share_rows,
+        reversal_rows=reversal_rows,
+        period=None,
+        credit_complete_lookup=credit_complete_lookup,
+    )
+    snapshot["lfxp"] = replace_rows(
+        snapshot.get("lfxp", []),
+        [row for row in lfxp_rows if row.get("period") in target_periods],
+        lambda row: row.get("period") in target_periods,
+    )
+    merge_looker_detail_overrides(
+        snapshot,
+        [row for row in detail_rows if str(row.get("period") or "").strip() in set(target_periods)],
+        "",
+    )
+
+
 def apply_looker_import_result(snapshot: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
     updated_snapshot = dict(snapshot or {})
     warnings = list(result.get("warnings") or [])
+    history_window_days = parse_history_window_days(result.get("historyWindowDays"))
+    window_periods = [str(period).strip() for period in (result.get("windowPeriods") or []) if str(period).strip()]
     for section, rows in (result.get("sections") or {}).items():
         predicate = build_section_replace_predicate(
             section,
@@ -1093,12 +1336,16 @@ def apply_looker_import_result(snapshot: dict[str, Any], result: dict[str, Any])
     period = str(result.get("period") or "")
     file_type = str(result.get("fileType") or "")
     if period and file_type in LVA_CONTEXT_FILE_TYPES:
-        if file_type_uses_full_history(file_type):
+        if history_window_days and window_periods:
+            rederive_virtual_account_sections_for_periods(updated_snapshot, window_periods)
+        elif file_type_uses_full_history(file_type):
             rederive_all_virtual_account_sections(updated_snapshot)
         else:
             rederive_virtual_account_section(updated_snapshot, period)
     if period and file_type in STAMPLI_FX_CONTEXT_FILE_TYPES:
-        if file_type_uses_full_history(file_type):
+        if history_window_days and window_periods:
+            rederive_stampli_fx_sections_for_periods(updated_snapshot, window_periods)
+        elif file_type_uses_full_history(file_type):
             rederive_all_stampli_fx_sections(updated_snapshot)
         else:
             rederive_stampli_fx_section(updated_snapshot, period)

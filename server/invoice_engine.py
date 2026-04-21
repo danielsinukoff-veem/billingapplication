@@ -738,8 +738,6 @@ def calculate_invoice_for_period(snapshot: dict[str, Any], partner: str, period:
     authoritative_payout_summary = bool(summary_pay_rows) and not rev_share_rows and not fx_partner_payout_rows
     authoritative_recurring_charge_summary = any(str(row.get("revenueSource") or "") == "billing_summary" for row in summary_charge_rows)
     pre_collected_revenue_total = sum(to_float(row.get("estRevenue")) for row in txns)
-    has_dedicated_stampli_usd_abroad = partner == "Stampli" and any(row.get("directInvoiceSource") == "stampli_direct_billing" for row in txns)
-
     def append_line(**kwargs: Any) -> None:
         activity_rows = kwargs.pop("activityRows", []) or []
         group_label = kwargs.pop("groupLabel", "") or kwargs.get("desc", "")
@@ -894,30 +892,6 @@ def calculate_invoice_for_period(snapshot: dict[str, Any], partner: str, period:
     if not authoritative_recurring_charge_summary:
         for txn in txns:
             direct_invoice_amount = to_float(txn.get("directInvoiceAmount"))
-            if has_dedicated_stampli_usd_abroad and txn.get("txnType") == "USD Abroad" and not txn.get("directInvoiceSource"):
-                continue
-            if txn.get("directInvoiceSource") == "stampli_usd_abroad_reversal" and direct_invoice_amount == 0:
-                for row in snapshot.get("off", []):
-                    if row.get("partner") != partner:
-                        continue
-                    if not (
-                        txn_matches_pricing_row(row, txn)
-                        and to_float(txn.get("minAmt")) >= to_float(row.get("minAmt"))
-                        and to_float(txn.get("maxAmt")) <= to_float(row.get("maxAmt"))
-                        and in_range(f"{period}-15", row.get("startDate"), row.get("endDate"))
-                    ):
-                        continue
-                    amount = to_float(row.get("fee")) * to_float(txn.get("txnCount"))
-                    label = " ".join(filter(None, [str(txn.get("txnType") or ""), str(txn.get("speedFlag") or ""), str(txn.get("processingMethod") or "")])).strip()
-                append_line(
-                    cat="Offline",
-                    desc=f"{label} reversal adjustment ({int(to_float(txn.get('txnCount')))}x{fmt(row.get('fee'))})",
-                    amount=-amount,
-                    dir="charge",
-                    groupLabel=f"{label} reversal",
-                    activityRows=[txn],
-                )
-                continue
             if direct_invoice_amount != 0:
                 direct_rate = abs(direct_invoice_amount) / to_float(txn.get("txnCount")) if to_float(txn.get("txnCount")) > 0 else abs(to_float(txn.get("directInvoiceRate")))
                 label = " ".join(filter(None, [str(txn.get("txnType") or ""), str(txn.get("speedFlag") or ""), str(txn.get("processingMethod") or "")])).strip()

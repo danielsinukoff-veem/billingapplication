@@ -12,7 +12,8 @@
       "lookId": 6876,
       "tileId": null,
       "reportName": "Partner Offline Billing",
-      "reportTimeout": 600,
+      "reportTimeout": 1800,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -23,7 +24,8 @@
       "lookId": 6877,
       "tileId": null,
       "reportName": "Partner Offline Billing (Reversals)",
-      "reportTimeout": 600,
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -34,7 +36,8 @@
       "lookId": 6878,
       "tileId": null,
       "reportName": "All Registered Accounts - Offline Billing",
-      "reportTimeout": 300
+      "reportTimeout": 300,
+      "historyWindowDays": 90
     },
     {
       "fileType": "vba_accounts",
@@ -43,7 +46,8 @@
       "lookId": 6874,
       "tileId": null,
       "reportName": "VBA ACCOUNTS",
-      "reportTimeout": 300
+      "reportTimeout": 300,
+      "historyWindowDays": 90
     },
     {
       "fileType": "vba_transactions_cc",
@@ -53,6 +57,7 @@
       "tileId": null,
       "reportName": "CC/Citi VBA Txns (CC)",
       "reportTimeout": 1200,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -64,6 +69,7 @@
       "tileId": null,
       "reportName": "CC/Citi VBA Txns (Citi)",
       "reportTimeout": 1200,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -74,7 +80,8 @@
       "lookId": 6879,
       "tileId": null,
       "reportName": "Revenue Share Report",
-      "reportTimeout": 600,
+      "reportTimeout": 1800,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -85,7 +92,8 @@
       "lookId": 6880,
       "tileId": null,
       "reportName": "Rev Share Reversals",
-      "reportTimeout": 600,
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -96,29 +104,8 @@
       "lookId": 6881,
       "tileId": null,
       "reportName": "All Registered Accounts - Rev Share",
-      "reportTimeout": 300
-    },
-    {
-      "fileType": "stampli_usd_abroad_revenue_share",
-      "fileName": "stampli_usd_abroad_revenue_share.csv",
-      "dashboardId": null,
-      "lookId": 6871,
-      "tileId": null,
-      "reportName": "Stampli USD Abroad Revenue Share",
-      "reportTimeout": 600,
-      "periodFilterKey": null,
-      "periodFilterMode": null
-    },
-    {
-      "fileType": "stampli_usd_abroad_reversal",
-      "fileName": "stampli_usd_abroad_reversal.csv",
-      "dashboardId": null,
-      "lookId": 6872,
-      "tileId": null,
-      "reportName": "Stampli USD Abroad Revenue Reversal",
-      "reportTimeout": 600,
-      "periodFilterKey": null,
-      "periodFilterMode": null
+      "reportTimeout": 300,
+      "historyWindowDays": 90
     },
     {
       "fileType": "stampli_fx_revenue_share",
@@ -128,6 +115,7 @@
       "tileId": null,
       "reportName": "Stampli FX Revenue Share",
       "reportTimeout": 600,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     },
@@ -139,6 +127,7 @@
       "tileId": null,
       "reportName": "Stampli FX Revenue Reversal",
       "reportTimeout": 600,
+      "historyWindowDays": 90,
       "periodFilterKey": null,
       "periodFilterMode": null
     }

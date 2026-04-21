@@ -34,8 +34,6 @@ IMPORT_ORDER = [
     "revenue_share_report",
     "rev_share_reversals",
     "all_registered_accounts_rev_share",
-    "stampli_usd_abroad_revenue_share",
-    "stampli_usd_abroad_reversal",
     "stampli_fx_revenue_share",
     "stampli_fx_revenue_reversal",
     "all_registered_accounts",
@@ -58,6 +56,7 @@ class ReportSpec:
     period_filter_key: str | None = None
     period_filter_mode: str | None = None
     report_timeout: int | None = None
+    history_window_days: int | None = None
 
 
 def normalize(value: Any) -> str:
@@ -73,6 +72,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--looker-client-id", default="", help="Override Looker client ID. Falls back to config or env.")
     parser.add_argument("--looker-client-secret", default="", help="Override Looker client secret. Falls back to config or env.")
     parser.add_argument("--report-timeout", type=int, default=240, help="Per-report Looker export timeout in seconds, including async query polling.")
+    parser.add_argument("--billing-api-timeout", type=int, default=1800, help="Timeout in seconds for the billing API save step after a report has been fetched.")
+    parser.add_argument(
+        "--history-window-days",
+        type=int,
+        default=0,
+        help="Optional rolling window for imports. When set, the billing API trims imported rows to the last N days before saving.",
+    )
     parser.add_argument("--run-id", default="", help="Optional shared workflow run ID so multiple fileType imports group into one logical run.")
     parser.add_argument(
         "--file-type",
@@ -106,6 +112,7 @@ def ordered_reports(report_defs: list[dict[str, Any]]) -> list[ReportSpec]:
             period_filter_key=str(item["periodFilterKey"]) if item.get("periodFilterKey") not in (None, "", "null") else None,
             period_filter_mode=str(item.get("periodFilterMode") or "") or None,
             report_timeout=int(item["reportTimeout"]) if item.get("reportTimeout") not in (None, "", "null") else None,
+            history_window_days=int(item["historyWindowDays"]) if item.get("historyWindowDays") not in (None, "", "null") else None,
         )
         for item in report_defs
     ]
@@ -257,14 +264,36 @@ def create_filtered_query(
     filter_key: str,
     filter_value: str,
 ) -> str:
+    return create_export_query(
+        base_url=base_url,
+        api_version=api_version,
+        access_token=access_token,
+        base_query=base_query,
+        extra_filters={filter_key: filter_value},
+    )
+
+
+def create_export_query(
+    base_url: str,
+    api_version: str,
+    access_token: str,
+    base_query: dict[str, Any],
+    extra_filters: dict[str, Any] | None = None,
+) -> str:
+    merged_filters = dict(base_query.get("filters") or {})
+    if extra_filters:
+        merged_filters.update(extra_filters)
     payload = {
         "model": base_query.get("model"),
         "view": base_query.get("view"),
         "fields": base_query.get("fields"),
-        "filters": {**(base_query.get("filters") or {}), filter_key: filter_value},
+        "filters": merged_filters,
         "filter_expression": base_query.get("filter_expression"),
         "sorts": base_query.get("sorts"),
-        "limit": base_query.get("limit"),
+        # Saved Looks often carry UI row limits like 500 or 5000. For billing
+        # imports we want the full downloadable result set, so override the
+        # query limit to Looker's "all results" sentinel value.
+        "limit": "-1",
         "column_limit": base_query.get("column_limit"),
         "total": base_query.get("total"),
         "row_total": base_query.get("row_total"),
@@ -285,7 +314,7 @@ def create_filtered_query(
         timeout=120,
     )
     if not isinstance(created, dict) or not created.get("id"):
-        raise RuntimeError(f"Failed to create filtered Looker query for filter {filter_key}")
+        raise RuntimeError("Failed to create Looker export query.")
     return str(created["id"])
 
 
@@ -328,6 +357,7 @@ def wait_for_query_task_results(
 ) -> bytes:
     url = f"{base_url.rstrip('/')}/api/{api_version}/query_tasks/{parse.quote(str(task_id), safe='')}/results"
     deadline = time.monotonic() + max(1, timeout)
+    transient_404_count = 0
     while time.monotonic() < deadline:
         req = request.Request(
             url,
@@ -349,6 +379,13 @@ def wait_for_query_task_results(
         except error.HTTPError as exc:
             if exc.code == 202:
                 time.sleep(2)
+                continue
+            if exc.code == 404:
+                transient_404_count += 1
+                # Looker occasionally returns a temporary 404 before the async
+                # result file is fully available. Treat that the same way we
+                # treat 202 and keep polling until the timeout is reached.
+                time.sleep(min(5, 1 + transient_404_count))
                 continue
             detail = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(f"HTTP {exc.code} from {url}: {detail}") from exc
@@ -413,9 +450,11 @@ def fetch_report_bytes(base_url: str, api_version: str, access_token: str, spec:
         raise RuntimeError(f"Could not resolve a Looker query id for '{spec.report_name}'")
 
     source_metadata["baseQueryId"] = str(resolved_query_id)
+    base_query = get_query(base_url, api_version, access_token, resolved_query_id)
     effective_query_id = resolved_query_id
+    source_metadata["baseQueryLimit"] = base_query.get("limit")
+    source_metadata["baseQueryColumnLimit"] = base_query.get("column_limit")
     if spec.period_filter_key:
-        base_query = get_query(base_url, api_version, access_token, resolved_query_id)
         filter_value = build_period_filter_value(period, spec.period_filter_mode)
         effective_query_id = create_filtered_query(
             base_url,
@@ -428,6 +467,15 @@ def fetch_report_bytes(base_url: str, api_version: str, access_token: str, spec:
         source_metadata["periodFilterKey"] = spec.period_filter_key
         source_metadata["periodFilterMode"] = spec.period_filter_mode or "month"
         source_metadata["periodFilterValue"] = filter_value
+        source_metadata["exportQueryLimit"] = "-1"
+    else:
+        effective_query_id = create_export_query(
+            base_url=base_url,
+            api_version=api_version,
+            access_token=access_token,
+            base_query=base_query,
+        )
+        source_metadata["exportQueryLimit"] = "-1"
     source_metadata["queryId"] = str(effective_query_id)
     task_id = create_query_task(base_url, api_version, access_token, effective_query_id, result_format, force_production)
     source_metadata["queryTaskId"] = task_id
@@ -436,7 +484,12 @@ def fetch_report_bytes(base_url: str, api_version: str, access_token: str, spec:
     return file_bytes, source_metadata
 
 
-def post_import(billing_api_base_url: str, billing_api_token: str, payload: dict[str, Any]) -> dict[str, Any]:
+def post_import(
+    billing_api_base_url: str,
+    billing_api_token: str,
+    payload: dict[str, Any],
+    timeout: int,
+) -> dict[str, Any]:
     body = json.dumps(payload).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
@@ -451,7 +504,7 @@ def post_import(billing_api_base_url: str, billing_api_token: str, payload: dict
         method="POST",
     )
     try:
-        with request.urlopen(req, timeout=300) as response:
+        with request.urlopen(req, timeout=max(1, timeout)) as response:
             raw = response.read().decode("utf-8")
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
@@ -542,11 +595,13 @@ def main() -> int:
                 {
                     "fileType": spec.file_type,
                     "period": args.period,
+                    "historyWindowDays": max(0, int(spec.history_window_days or args.history_window_days or 0)),
                     "runId": run_id,
                     "fileName": spec.file_name,
                     "fileBase64": base64.b64encode(file_bytes).decode("ascii"),
                     "sourceMetadata": source_metadata,
                 },
+                timeout=int(args.billing_api_timeout),
             )
             warnings = response.get("warnings") or []
             if warnings:

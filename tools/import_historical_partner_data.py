@@ -29,8 +29,6 @@ FILE_TYPE_PREFIXES = {
     "vba_transactions": ["CC_Citi VBA Txns "],
     "revenue_share_report": ["Revenue Share Report "],
     "rev_share_reversals": ["Rev Share Reversals "],
-    "stampli_usd_abroad_revenue_share": ["Stampli USD Abroad Revenue Share "],
-    "stampli_usd_abroad_reversal": ["Stampli USD Abroad Revenue Reversal "],
     "stampli_fx_revenue_share": ["Stampli FX Revenue Share "],
     "stampli_fx_revenue_reversal": ["Stampli FX Revenue Reversal "],
 }

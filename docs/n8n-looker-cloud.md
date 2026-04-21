@@ -12,6 +12,20 @@ It does not use `Execute Command`, local scripts, or local filesystem paths. Ins
 
 The billing API does the full Looker login, report export, parsing, and shared workbook save on the server side.
 
+## If You Imported The Local Workflow By Accident
+
+The local workflow file uses `n8n-nodes-base.executeCommand` nodes.
+
+Those nodes work in local Docker/self-hosted `n8n`, but they do not work in `n8n Cloud`. When you import the local file into cloud `n8n`, the command nodes appear as `?` blocks and execution fails with:
+
+- `Unrecognized node type: n8n-nodes-base.executeCommand`
+
+If that happens:
+
+1. Delete that imported workflow.
+2. Import [n8n-looker-cloud.workflow.json](/Users/danielsinukoff/Documents/billing-workbook/docs/n8n-looker-cloud.workflow.json) instead.
+3. Open the `Build Config` node and set your hosted billing API URL.
+
 ## What To Change In n8n Cloud
 
 Open the `Build Config` node and set:
@@ -52,7 +66,8 @@ The workflow sends:
 {
   "period": "2026-04",
   "dryRun": false,
-  "reportTimeout": 600
+  "reportTimeout": 600,
+  "historyWindowDays": 90
 }
 ```
 
@@ -63,6 +78,7 @@ You can also narrow it to one file type while testing:
   "period": "2026-04",
   "dryRun": false,
   "reportTimeout": 600,
+  "historyWindowDays": 90,
   "reportFileTypes": ["partner_revenue_summary"]
 }
 ```

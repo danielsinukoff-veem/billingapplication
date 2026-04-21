@@ -25,7 +25,7 @@ import {
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
-const STORAGE_VERSION = 33;
+const STORAGE_VERSION = 34;
 const SAVE_DELAY_MS = 1200;
 const ADMIN_USERNAME = "VeemAdmin";
 const ADMIN_PASSWORD = "VeemBilling123$";
@@ -255,8 +255,6 @@ const WORKFLOW_LOOKER_FILE_OPTIONS = [
   { value: "revenue_share_report", label: "Revenue Share Report" },
   { value: "stampli_fx_revenue_reversal", label: "Stampli FX Revenue Reversal" },
   { value: "stampli_fx_revenue_share", label: "Stampli FX Revenue Share" },
-  { value: "stampli_usd_abroad_reversal", label: "Stampli USD Abroad Revenue Reversal" },
-  { value: "stampli_usd_abroad_revenue_share", label: "Stampli USD Abroad Revenue Share" },
   { value: "vba_accounts", label: "VBA ACCOUNTS" },
   { value: "vba_transactions_cc", label: "CC/Citi VBA Txns (Currency Cloud)" },
   { value: "vba_transactions_citi", label: "CC/Citi VBA Txns (Citi)" }
@@ -271,8 +269,6 @@ const MANUAL_LOOKER_FILE_OPTIONS = [
   { value: "revenue_share_report", label: "Revenue Share Report 2026-04-12T2020.xlsx" },
   { value: "stampli_fx_revenue_reversal", label: "Stampli FX Revenue Reversal 2026-04-12T2033.xlsx" },
   { value: "stampli_fx_revenue_share", label: "Stampli FX Revenue Share 2026-04-12T2033.xlsx" },
-  { value: "stampli_usd_abroad_reversal", label: "Stampli USD Abroad Revenue Reversal 2026-04-12T2033.xlsx" },
-  { value: "stampli_usd_abroad_revenue_share", label: "Stampli USD Abroad Revenue Share 2026-04-12T2034.xlsx" },
   { value: "vba_accounts", label: "VBA ACCOUNTS 2026-04-12T2034.xlsx" }
 ];
 const LOOKER_FILE_ORDER_OPTIONS = [
@@ -2923,9 +2919,6 @@ function migrateSnapshot(saved) {
     return { snapshot: saved, changed: false };
   }
   const version = Number(saved._version || 0);
-  if (version >= STORAGE_VERSION) {
-    return { snapshot: saved, changed: false };
-  }
 
   const defaults = createInitialWorkbookData();
   const snapshot = { ...saved };
@@ -3132,9 +3125,50 @@ function migrateSnapshot(saved) {
     snapshot.impl = (Array.isArray(snapshot.impl) ? snapshot.impl : defaults.impl).map((row) => normalizeImplementationRow(row));
   }
 
+  if (version < 34) {
+    const removedPartners = new Set(["nuvei", "paynearme", "highnote"]);
+    const renamedPartners = new Map([
+      ["LightNet", "Lightnet"],
+      ["MultiGate", "Multigate"],
+      ["YeePay", "Yeepay"]
+    ]);
+    const normalizePartnerName = (value) => renamedPartners.get(value) || value;
+    const keepPartner = (value) => !removedPartners.has(norm(value));
+    const rewritePartnerRows = (rows) => (Array.isArray(rows) ? rows : []).flatMap((row) => {
+      if (typeof row === "string") {
+        if (!keepPartner(row)) return [];
+        return [normalizePartnerName(row)];
+      }
+      if (!row || typeof row !== "object") return [row];
+      if ("partner" in row) {
+        if (!keepPartner(row.partner)) return [];
+        return [{ ...row, partner: normalizePartnerName(row.partner) }];
+      }
+      return [row];
+    });
+    snapshot.ps = rewritePartnerRows(snapshot.ps ?? defaults.ps);
+    snapshot.pBilling = rewritePartnerRows(snapshot.pBilling ?? defaults.pBilling);
+    snapshot.pArchived = rewritePartnerRows(snapshot.pArchived ?? defaults.pArchived);
+    snapshot.pActive = rewritePartnerRows(snapshot.pActive ?? defaults.pActive);
+    snapshot.pInvoices = rewritePartnerRows(snapshot.pInvoices ?? defaults.pInvoices);
+    snapshot.off = rewritePartnerRows(snapshot.off ?? defaults.off);
+    snapshot.vol = rewritePartnerRows(snapshot.vol ?? defaults.vol);
+    snapshot.mins = rewritePartnerRows(snapshot.mins ?? defaults.mins);
+    snapshot.plat = rewritePartnerRows(snapshot.plat ?? defaults.plat);
+    snapshot.revf = rewritePartnerRows(snapshot.revf ?? defaults.revf);
+    snapshot.impl = rewritePartnerRows(snapshot.impl ?? defaults.impl);
+    snapshot.vaFees = rewritePartnerRows(snapshot.vaFees ?? defaults.vaFees);
+    snapshot.cap = rewritePartnerRows(snapshot.cap ?? defaults.cap);
+    snapshot.ltxn = rewritePartnerRows(snapshot.ltxn ?? defaults.ltxn);
+    snapshot.lrev = rewritePartnerRows(snapshot.lrev ?? defaults.lrev);
+    snapshot.lrs = rewritePartnerRows(snapshot.lrs ?? defaults.lrs);
+    snapshot.lfxp = rewritePartnerRows(snapshot.lfxp ?? defaults.lfxp);
+    snapshot.lva = rewritePartnerRows(snapshot.lva ?? defaults.lva);
+  }
+
   snapshot._version = STORAGE_VERSION;
   snapshot._saved = new Date().toISOString();
-  return { snapshot, changed: true };
+  return { snapshot, changed: version < STORAGE_VERSION };
 }
 
 function resetToDefaults() {
@@ -5484,7 +5518,6 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const accountSetupRows = state.impl.filter((row) => row.partner === activePartner && row.feeType === "Account Setup" && inRange(activePeriod + "-15", row.startDate || row.goLiveDate, row.endDate));
   const dailySettlementRows = state.impl.filter((row) => row.partner === activePartner && row.feeType === "Daily Settlement" && inRange(activePeriod + "-15", row.startDate || row.goLiveDate, row.endDate));
   const vaData = state.lva.find((row) => row.partner === activePartner && row.period === activePeriod);
-  const hasDedicatedStampliUsdAbroad = activePartner === "Stampli" && txns.some((row) => row.directInvoiceSource === "stampli_direct_billing");
   const subscriptionSummaryRows = summaryChargeRows.filter((summary) => isSubscriptionSummary(summary));
   const hasCombinedSubscriptionSummary = !!subscriptionSummaryRows.length && (
     subscriptionSummaryRows.some((summary) => String(summary.summaryComputation || "").includes("+"))
@@ -5494,26 +5527,6 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   if (recurringBillingActive && !authoritativeRecurringChargeSummary) {
     txns.forEach((txn) => {
       const directInvoiceAmount = Number(txn.directInvoiceAmount || 0);
-      if (hasDedicatedStampliUsdAbroad && txn.txnType === "USD Abroad" && !txn.directInvoiceSource) {
-        return;
-      }
-      if (txn.directInvoiceSource === "stampli_usd_abroad_reversal" && directInvoiceAmount === 0) {
-        state.off
-          .filter((row) => row.partner === activePartner && txnMatchesPricingRow(row, txn) && txn.minAmt >= row.minAmt && txn.maxAmt <= row.maxAmt && inRange(activePeriod + "-15", row.startDate, row.endDate))
-          .forEach((row) => {
-            const amount = row.fee * txn.txnCount;
-            const label = [txn.txnType, txn.speedFlag, txn.processingMethod || ""].filter(Boolean).join(" ");
-            appendLine({
-              cat: "Offline",
-              desc: `${label} reversal adjustment (${txn.txnCount}x${fmt(row.fee)})`,
-              amount: -amount,
-              dir: "charge",
-              groupLabel: `${label} reversal`,
-              activityRows: [txn]
-            });
-          });
-        return;
-      }
       if (directInvoiceAmount !== 0) {
         const directRate = txn.txnCount > 0 ? Math.abs(directInvoiceAmount) / txn.txnCount : Math.abs(Number(txn.directInvoiceRate || 0));
         const label = [txn.txnType, txn.speedFlag, txn.processingMethod || ""].filter(Boolean).join(" ");

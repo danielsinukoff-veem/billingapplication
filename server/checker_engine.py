@@ -267,7 +267,6 @@ def calculate_checker_invoice_for_period(
     summary_pay_rows = [row for row in rev_share_summaries if to_float(row.get("partnerRevenueShare")) > 0]
     authoritative_payout_summary = bool(summary_pay_rows) and not rev_share_rows and not fx_partner_payout_rows
     authoritative_recurring_charge_summary = any(str(row.get("revenueSource") or "") == "billing_summary" for row in summary_charge_rows)
-    has_dedicated_stampli_usd_abroad = partner == "Stampli" and any(row.get("directInvoiceSource") == "stampli_direct_billing" for row in txns)
     pre_collected_revenue_total = sum(to_float(row.get("estRevenue")) for row in txns)
     fx_markup_activity_rows = [
         row
@@ -363,30 +362,6 @@ def calculate_checker_invoice_for_period(
     if not authoritative_recurring_charge_summary:
         for txn in txns:
             direct_invoice_amount = to_float(txn.get("directInvoiceAmount"))
-            if has_dedicated_stampli_usd_abroad and txn.get("txnType") == "USD Abroad" and not txn.get("directInvoiceSource"):
-                continue
-            if txn.get("directInvoiceSource") == "stampli_usd_abroad_reversal" and direct_invoice_amount == 0:
-                for row in snapshot.get("off", []) or []:
-                    if norm(row.get("partner")) != norm(partner):
-                        continue
-                    if not (
-                        txn_matches_pricing_row(row, txn)
-                        and to_float(txn.get("minAmt")) >= to_float(row.get("minAmt"))
-                        and to_float(txn.get("maxAmt")) <= to_float(row.get("maxAmt"))
-                        and in_range(f"{period}-15", row.get("startDate"), row.get("endDate"))
-                    ):
-                        continue
-                    amount = to_float(row.get("fee")) * to_float(txn.get("txnCount"))
-                    _append_line(
-                        lines,
-                        cat="Offline",
-                        direction="charge",
-                        amount=-amount,
-                        group_label="Offline reversal",
-                        activity_rows=[txn],
-                        note=f"{txn.get('txnType') or ''} reversal adjustment",
-                    )
-                continue
             if direct_invoice_amount != 0:
                 _append_line(
                     lines,
