@@ -10,7 +10,7 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 
 - The browser app owns the UI and the editable billing workbook experience.
 - The hosted runtime is now a static frontend that reads current state from same-directory JSON files.
-- Optional integrations are driven by runtime config, direct AWS object writes, and n8n automation URLs rather than a custom app backend.
+- Optional integrations are driven by runtime config, Cognito-authenticated AWS object writes, signer-based private links, and n8n automation URLs rather than a custom app backend.
 
 ## Target state
 
@@ -28,7 +28,7 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 1. The app reads `app-config.js` at load time.
 2. The app reads the current workbook snapshot from `data/current-workbook.json` or another S3 JSON path configured in `app-config.js`.
 3. User edits continue locally in the browser unless `workbookWriteUrl` is configured.
-4. When direct-write AWS object URLs are configured, the frontend writes the current workbook, invoice artifacts, and private delivery bundles straight to object storage. Import/checker/contract automations can still call n8n where needed.
+4. When Cognito-authenticated S3 object URLs are configured, the frontend writes the current workbook and invoice artifacts directly to object storage. Private partner links are generated through a signer endpoint instead of direct browser writes to the delivery prefix.
 5. The frontend reloads the refreshed S3 artifacts on the next load or refresh.
 
 ## Current repo components that matter
@@ -49,8 +49,16 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 - `workbookWriteUrl`
 - `workbookHistoryWriteBaseUrl`
 - `invoiceArtifactWriteBaseUrl`
+- `authMethod`
+- `awsRegion`
+- `cognitoUserPoolId`
+- `cognitoUserPoolClientId`
+- `cognitoIdentityPoolId`
+- `cognitoHostedUiDomain`
+- `cognitoRedirectUrl`
 - `privateInvoiceLinkWriteBaseUrl`
 - `privateInvoiceLinkReadBaseUrl`
+- `privateInvoiceLinkSignerUrl`
 - `invoiceDraftUrl`
 - `automationOutboxUrl`
 - `checkerWebhookUrl`

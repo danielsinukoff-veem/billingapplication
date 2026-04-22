@@ -1,7 +1,31 @@
-import { billingAppConfig } from "./shared-config.js?v=20260421c";
+import { billingAppConfig } from "./shared-config.js?v=20260422a";
+
+const AUTH_REDIRECT_ERROR_CODE = "billing-auth-redirect";
+const COGNITO_SESSION_STORAGE_KEY = "billing-workbook-cognito-session";
+const COGNITO_PKCE_STORAGE_KEY = "billing-workbook-cognito-pkce";
+
+const sharedWorkbookState = {
+  etag: "",
+  readUrl: ""
+};
+
+let awsBrowserModulesPromise = null;
+let cognitoSessionPromise = null;
+let awsCredentialProviderCache = {
+  key: "",
+  provider: null
+};
 
 function normalizeConfigUrl(value) {
   return String(value || "").trim();
+}
+
+function normalizeConfigList(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item || "").trim()).filter(Boolean);
+  return String(value || "")
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function readWindowOverrides() {
@@ -9,6 +33,10 @@ function readWindowOverrides() {
     return {};
   }
   return window.BILLING_APP_CONFIG;
+}
+
+function normalizeAuthMethod(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
 export function getSharedBackendConfig() {
@@ -19,6 +47,7 @@ export function getSharedBackendConfig() {
   };
   return {
     ...merged,
+    authMethod: normalizeAuthMethod(merged.authMethod),
     bootstrapUrl: normalizeConfigUrl(merged.bootstrapUrl),
     workbookReadUrl: normalizeConfigUrl(merged.workbookReadUrl),
     workbookWriteUrl: normalizeConfigUrl(merged.workbookWriteUrl),
@@ -27,11 +56,19 @@ export function getSharedBackendConfig() {
     invoiceArtifactWriteBaseUrl: normalizeConfigUrl(merged.invoiceArtifactWriteBaseUrl),
     privateInvoiceLinkWriteBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkWriteBaseUrl),
     privateInvoiceLinkReadBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkReadBaseUrl),
+    privateInvoiceLinkSignerUrl: normalizeConfigUrl(merged.privateInvoiceLinkSignerUrl),
     automationOutboxUrl: normalizeConfigUrl(merged.automationOutboxUrl),
     checkerWebhookUrl: normalizeConfigUrl(merged.checkerWebhookUrl),
     lookerImportWebhookUrl: normalizeConfigUrl(merged.lookerImportWebhookUrl),
     contractParseWebhookUrl: normalizeConfigUrl(merged.contractParseWebhookUrl),
-    contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl)
+    contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl),
+    awsRegion: normalizeConfigUrl(merged.awsRegion),
+    cognitoUserPoolId: normalizeConfigUrl(merged.cognitoUserPoolId),
+    cognitoUserPoolClientId: normalizeConfigUrl(merged.cognitoUserPoolClientId),
+    cognitoIdentityPoolId: normalizeConfigUrl(merged.cognitoIdentityPoolId),
+    cognitoHostedUiDomain: normalizeConfigUrl(merged.cognitoHostedUiDomain),
+    cognitoRedirectUrl: normalizeConfigUrl(merged.cognitoRedirectUrl),
+    cognitoScopes: normalizeConfigList(merged.cognitoScopes).join(" ")
   };
 }
 
@@ -56,6 +93,20 @@ function getSharedWorkbookWriteUrl() {
   return getSharedBackendConfig().workbookWriteUrl;
 }
 
+function shouldUseAwsStorageAuth(config = getSharedBackendConfig()) {
+  const method = normalizeAuthMethod(config.authMethod);
+  return method === "aws-cognito" || method === "cognito-sigv4" || method === "aws-cognito-sigv4" || method === "sigv4-cognito";
+}
+
+function shouldUseAwsCognito(config = getSharedBackendConfig()) {
+  return shouldUseAwsStorageAuth(config)
+    && !!config.awsRegion
+    && !!config.cognitoUserPoolId
+    && !!config.cognitoUserPoolClientId
+    && !!config.cognitoIdentityPoolId
+    && !!config.cognitoHostedUiDomain;
+}
+
 export function isSharedWorkbookEnabled() {
   const config = getSharedBackendConfig();
   return !!(config.enableSharedWorkbook && getSharedWorkbookReadUrl());
@@ -78,7 +129,7 @@ export function isInvoiceArtifactEnabled() {
 
 export function isPrivateInvoiceLinkEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enablePrivateInvoiceLinks && config.privateInvoiceLinkWriteBaseUrl);
+  return !!(config.enablePrivateInvoiceLinks && (config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl));
 }
 
 export function isBillingCheckerEnabled() {
@@ -107,8 +158,311 @@ export function getWorkspaceLabel() {
   return config.workspaceLabel || "Local workspace";
 }
 
+export function isBillingAuthRedirectError(error) {
+  return !!error && (error.code === AUTH_REDIRECT_ERROR_CODE || error.isAuthRedirect === true);
+}
+
 function sleep(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function readStoredJson(key) {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn(`Could not read session storage key ${key}`, error);
+    return null;
+  }
+}
+
+function writeStoredJson(key, value) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`Could not write session storage key ${key}`, error);
+  }
+}
+
+function clearStoredJson(key) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch (error) {
+    console.warn(`Could not clear session storage key ${key}`, error);
+  }
+}
+
+function createAuthRedirectError() {
+  const error = new Error("Redirecting to Cognito login.");
+  error.code = AUTH_REDIRECT_ERROR_CODE;
+  error.isAuthRedirect = true;
+  return error;
+}
+
+function buildCognitoIssuer(region, userPoolId) {
+  return `cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+}
+
+function getCurrentRedirectUrl(config = getSharedBackendConfig()) {
+  if (config.cognitoRedirectUrl) return config.cognitoRedirectUrl;
+  if (typeof window === "undefined" || !window.location) return "";
+  const url = new URL(window.location.href);
+  url.searchParams.delete("code");
+  url.searchParams.delete("state");
+  url.searchParams.delete("error");
+  url.searchParams.delete("error_description");
+  return url.toString();
+}
+
+function getCognitoBaseUrl(config = getSharedBackendConfig()) {
+  const domain = config.cognitoHostedUiDomain;
+  if (!domain) return "";
+  if (/^https?:\/\//i.test(domain)) return domain.replace(/\/+$/, "");
+  return `https://${domain.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+}
+
+function getCognitoCallbackParams() {
+  if (typeof window === "undefined" || !window.location) return null;
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+  const errorDescription = url.searchParams.get("error_description");
+  if (!code && !error) return null;
+  return { code, state, error, errorDescription };
+}
+
+function clearCognitoCallbackParams() {
+  if (typeof window === "undefined" || !window.location || !window.history?.replaceState) return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("code");
+  url.searchParams.delete("state");
+  url.searchParams.delete("error");
+  url.searchParams.delete("error_description");
+  window.history.replaceState({}, document.title, url.toString());
+}
+
+function base64UrlEncode(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+async function sha256Base64Url(text) {
+  const data = new TextEncoder().encode(text);
+  const digest = await window.crypto.subtle.digest("SHA-256", data);
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function createOpaqueToken(length = 24) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bytes = new Uint8Array(length);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (value) => chars[value % chars.length]).join("");
+}
+
+async function redirectToCognitoLogin() {
+  const config = getSharedBackendConfig();
+  if (!shouldUseAwsCognito(config)) {
+    throw new Error("Cognito auth is not fully configured. Set region, Cognito IDs, and hosted UI domain.");
+  }
+  const verifier = createOpaqueToken(64);
+  const challenge = await sha256Base64Url(verifier);
+  const stateToken = createOpaqueToken(32);
+  const redirectUri = getCurrentRedirectUrl(config);
+  writeStoredJson(COGNITO_PKCE_STORAGE_KEY, {
+    state: stateToken,
+    verifier,
+    redirectUri,
+    requestedAt: Date.now()
+  });
+  const authorizeUrl = new URL(`${getCognitoBaseUrl(config)}/oauth2/authorize`);
+  authorizeUrl.searchParams.set("client_id", config.cognitoUserPoolClientId);
+  authorizeUrl.searchParams.set("response_type", "code");
+  authorizeUrl.searchParams.set("redirect_uri", redirectUri);
+  authorizeUrl.searchParams.set("scope", config.cognitoScopes || "openid email profile");
+  authorizeUrl.searchParams.set("state", stateToken);
+  authorizeUrl.searchParams.set("code_challenge_method", "S256");
+  authorizeUrl.searchParams.set("code_challenge", challenge);
+  window.location.assign(authorizeUrl.toString());
+  throw createAuthRedirectError();
+}
+
+async function exchangeCognitoAuthCode(code, stateParam) {
+  const config = getSharedBackendConfig();
+  const pkce = readStoredJson(COGNITO_PKCE_STORAGE_KEY);
+  if (!pkce?.verifier || !pkce?.state || pkce.state !== stateParam) {
+    throw new Error("Cognito login callback state did not match the browser session.");
+  }
+  const tokenUrl = `${getCognitoBaseUrl(config)}/oauth2/token`;
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    client_id: config.cognitoUserPoolClientId,
+    code,
+    redirect_uri: pkce.redirectUri || getCurrentRedirectUrl(config),
+    code_verifier: pkce.verifier
+  });
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : {};
+  if (!response.ok) {
+    throw new Error(payload?.error_description || payload?.error || text || "Could not complete Cognito login.");
+  }
+  const session = {
+    idToken: payload.id_token || "",
+    accessToken: payload.access_token || "",
+    refreshToken: payload.refresh_token || "",
+    tokenType: payload.token_type || "Bearer",
+    expiresAt: Date.now() + (Number(payload.expires_in || 3600) * 1000) - 60_000
+  };
+  writeStoredJson(COGNITO_SESSION_STORAGE_KEY, session);
+  clearStoredJson(COGNITO_PKCE_STORAGE_KEY);
+  clearCognitoCallbackParams();
+  return session;
+}
+
+async function refreshCognitoSession(session) {
+  if (!session?.refreshToken) return null;
+  const config = getSharedBackendConfig();
+  const tokenUrl = `${getCognitoBaseUrl(config)}/oauth2/token`;
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    client_id: config.cognitoUserPoolClientId,
+    refresh_token: session.refreshToken
+  });
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : {};
+  if (!response.ok) {
+    clearStoredJson(COGNITO_SESSION_STORAGE_KEY);
+    throw new Error(payload?.error_description || payload?.error || text || "Could not refresh the Cognito session.");
+  }
+  const refreshed = {
+    ...session,
+    idToken: payload.id_token || session.idToken || "",
+    accessToken: payload.access_token || session.accessToken || "",
+    tokenType: payload.token_type || session.tokenType || "Bearer",
+    expiresAt: Date.now() + (Number(payload.expires_in || 3600) * 1000) - 60_000
+  };
+  writeStoredJson(COGNITO_SESSION_STORAGE_KEY, refreshed);
+  return refreshed;
+}
+
+async function getCognitoSession({ interactive = true } = {}) {
+  if (!shouldUseAwsCognito()) return null;
+  if (!cognitoSessionPromise) {
+    cognitoSessionPromise = (async () => {
+      const callback = getCognitoCallbackParams();
+      if (callback?.error) {
+        clearCognitoCallbackParams();
+        throw new Error(callback.errorDescription || callback.error || "Cognito login failed.");
+      }
+      if (callback?.code) {
+        return exchangeCognitoAuthCode(callback.code, callback.state || "");
+      }
+      const stored = readStoredJson(COGNITO_SESSION_STORAGE_KEY);
+      if (stored?.idToken && Number(stored.expiresAt || 0) > Date.now()) {
+        return stored;
+      }
+      if (stored?.refreshToken) {
+        return refreshCognitoSession(stored);
+      }
+      if (interactive) {
+        return redirectToCognitoLogin();
+      }
+      throw new Error("No Cognito browser session is available.");
+    })().finally(() => {
+      cognitoSessionPromise = null;
+    });
+  }
+  return cognitoSessionPromise;
+}
+
+async function loadAwsBrowserModules() {
+  if (!awsBrowserModulesPromise) {
+    awsBrowserModulesPromise = Promise.all([
+      import("https://esm.sh/aws4fetch@1.0.20?bundle"),
+      import("https://esm.sh/@aws-sdk/credential-providers@3.922.0?bundle")
+    ]).then(([aws4fetchModule, credentialProvidersModule]) => ({
+      AwsClient: aws4fetchModule.AwsClient,
+      fromCognitoIdentityPool: credentialProvidersModule.fromCognitoIdentityPool
+    }));
+  }
+  return awsBrowserModulesPromise;
+}
+
+function readWindowAwsCredentials() {
+  if (typeof window === "undefined") return null;
+  if (typeof window.getBillingAppAwsCredentials === "function") {
+    return window.getBillingAppAwsCredentials();
+  }
+  if (window.BILLING_APP_AWS_CREDENTIALS && typeof window.BILLING_APP_AWS_CREDENTIALS === "object") {
+    return window.BILLING_APP_AWS_CREDENTIALS;
+  }
+  return null;
+}
+
+async function getAwsCredentialProvider() {
+  const config = getSharedBackendConfig();
+  const windowCredentials = await Promise.resolve(readWindowAwsCredentials());
+  if (windowCredentials?.accessKeyId && windowCredentials?.secretAccessKey) {
+    return async () => windowCredentials;
+  }
+  if (!shouldUseAwsCognito(config)) {
+    throw new Error("AWS browser writes require Cognito auth configuration or injected temporary AWS credentials.");
+  }
+  const session = await getCognitoSession({ interactive: true });
+  const providerKey = [
+    config.awsRegion,
+    config.cognitoIdentityPoolId,
+    config.cognitoUserPoolId,
+    session?.idToken || ""
+  ].join("|");
+  if (awsCredentialProviderCache.provider && awsCredentialProviderCache.key === providerKey) {
+    return awsCredentialProviderCache.provider;
+  }
+  const { fromCognitoIdentityPool } = await loadAwsBrowserModules();
+  const provider = fromCognitoIdentityPool({
+    clientConfig: { region: config.awsRegion },
+    identityPoolId: config.cognitoIdentityPoolId,
+    logins: {
+      [buildCognitoIssuer(config.awsRegion, config.cognitoUserPoolId)]: session.idToken
+    }
+  });
+  awsCredentialProviderCache = { key: providerKey, provider };
+  return provider;
+}
+
+async function resolveAwsCredentials() {
+  const provider = await getAwsCredentialProvider();
+  return provider();
+}
+
+async function signedStorageFetch(url, init = {}) {
+  const config = getSharedBackendConfig();
+  const { AwsClient } = await loadAwsBrowserModules();
+  const credentials = await resolveAwsCredentials();
+  const client = new AwsClient({
+    accessKeyId: credentials.accessKeyId,
+    secretAccessKey: credentials.secretAccessKey,
+    sessionToken: credentials.sessionToken,
+    region: config.awsRegion,
+    service: "s3"
+  });
+  return client.fetch(url, init);
 }
 
 function buildHeaders(extra = {}) {
@@ -118,6 +472,16 @@ function buildHeaders(extra = {}) {
     ...extra
   };
   if (config.apiToken) headers.Authorization = `Bearer ${config.apiToken}`;
+  return headers;
+}
+
+async function buildApiHeaders(extra = {}, { includeCognitoToken = false } = {}) {
+  const headers = buildHeaders(extra);
+  if (!headers.Authorization && includeCognitoToken && shouldUseAwsCognito()) {
+    const session = await getCognitoSession({ interactive: true });
+    const bearer = session?.accessToken || session?.idToken;
+    if (bearer) headers.Authorization = `Bearer ${bearer}`;
+  }
   return headers;
 }
 
@@ -155,14 +519,19 @@ function normalizeBootstrapPayload(payload) {
   throw new Error("Shared workbook file did not include a valid snapshot.");
 }
 
-async function fetchConfiguredJson(url, fallbackMessage, { params = null, retries = 0, retryDelayMs = 350 } = {}) {
+async function fetchConfiguredJson(url, fallbackMessage, {
+  params = null,
+  retries = 0,
+  retryDelayMs = 350,
+  includeCognitoToken = false
+} = {}) {
   let lastError = null;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
       const payload = await parseApiResponse(
         await fetch(resolveUrl(url, params), {
           method: "GET",
-          headers: buildHeaders(),
+          headers: await buildApiHeaders({}, { includeCognitoToken }),
           cache: "no-store"
         }),
         fallbackMessage
@@ -170,18 +539,18 @@ async function fetchConfiguredJson(url, fallbackMessage, { params = null, retrie
       return payload;
     } catch (error) {
       lastError = error;
-      if (attempt >= retries) break;
+      if (attempt >= retries || isBillingAuthRedirectError(error)) break;
       await sleep(retryDelayMs * (attempt + 1));
     }
   }
   throw lastError || new Error(fallbackMessage);
 }
 
-async function postConfiguredJson(url, body, fallbackMessage) {
+async function postConfiguredJson(url, body, fallbackMessage, { includeCognitoToken = false } = {}) {
   return parseApiResponse(
     await fetch(resolveUrl(url), {
       method: "POST",
-      headers: buildHeaders({ "Content-Type": "application/json" }),
+      headers: await buildApiHeaders({ "Content-Type": "application/json" }, { includeCognitoToken }),
       body: JSON.stringify(body || {})
     }),
     fallbackMessage
@@ -198,22 +567,81 @@ function buildObjectUrl(baseUrl, objectKey) {
   return resolveUrl(`${ensureTrailingSlash(baseUrl)}${String(objectKey || "").replace(/^\/+/, "")}`);
 }
 
-function buildStorageHeaders(contentType) {
+function buildStorageHeaders(contentType, extra = {}) {
   const config = getSharedBackendConfig();
-  const headers = {};
+  const headers = {
+    ...extra
+  };
   if (contentType) headers["Content-Type"] = contentType;
-  if (config.apiToken) headers.Authorization = `Bearer ${config.apiToken}`;
+  if (!shouldUseAwsStorageAuth(config) && config.apiToken) {
+    headers.Authorization = `Bearer ${config.apiToken}`;
+  }
   return headers;
 }
 
-async function putConfiguredContent(url, content, contentType, fallbackMessage) {
-  const response = await fetch(resolveUrl(url), {
+async function fetchStorage(url, init = {}) {
+  const config = getSharedBackendConfig();
+  const resolvedUrl = resolveUrl(url);
+  if (shouldUseAwsStorageAuth(config)) {
+    return signedStorageFetch(resolvedUrl, init);
+  }
+  return fetch(resolvedUrl, init);
+}
+
+async function fetchStorageJson(url, fallbackMessage, { params = null, retries = 0, retryDelayMs = 350 } = {}) {
+  let lastError = null;
+  let response = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      response = await fetchStorage(resolveUrl(url, params), {
+        method: "GET",
+        headers: buildStorageHeaders("", { Accept: "application/json" }),
+        cache: "no-store"
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(text || "Storage access was denied. Confirm Cognito auth, IAM scope, and S3 CORS settings.");
+        }
+        throw new Error(text || fallbackMessage);
+      }
+      const text = await response.text();
+      let payload = null;
+      try {
+        payload = text ? JSON.parse(text) : null;
+      } catch (error) {
+        throw new Error("Storage response was not valid JSON.");
+      }
+      return {
+        payload,
+        etag: response.headers.get("etag") || "",
+        url: resolveUrl(url, params)
+      };
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries || isBillingAuthRedirectError(error)) break;
+      await sleep(retryDelayMs * (attempt + 1));
+    }
+  }
+  throw lastError || new Error(fallbackMessage);
+}
+
+async function putConfiguredContent(url, content, contentType, fallbackMessage, { ifMatch = "", extraHeaders = {} } = {}) {
+  const headers = buildStorageHeaders(contentType, extraHeaders);
+  if (ifMatch) headers["If-Match"] = ifMatch;
+  const response = await fetchStorage(resolveUrl(url), {
     method: "PUT",
-    headers: buildStorageHeaders(contentType),
+    headers,
     body: content
   });
   if (!response.ok) {
     const text = await response.text();
+    if (response.status === 412) {
+      throw new Error("The shared workbook changed since you loaded it. Refresh the latest snapshot and try again.");
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(text || "Storage access was denied. Confirm Cognito auth, IAM scope, and S3 CORS settings.");
+    }
     throw new Error(text || fallbackMessage);
   }
   return {
@@ -222,13 +650,6 @@ async function putConfiguredContent(url, content, contentType, fallbackMessage) 
     etag: response.headers.get("etag") || "",
     savedAt: new Date().toISOString()
   };
-}
-
-function createOpaqueToken(length = 24) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const bytes = new Uint8Array(length);
-  window.crypto.getRandomValues(bytes);
-  return Array.from(bytes, (value) => chars[value % chars.length]).join("");
 }
 
 function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
@@ -267,12 +688,14 @@ export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = 
   if (!staticUrl) {
     throw new Error("Shared workbook file is not configured. Set BILLING_APP_CONFIG.bootstrapUrl or workbookReadUrl.");
   }
-  const payload = await fetchConfiguredJson(staticUrl, "Could not load the shared workbook file.", {
+  const result = await fetchStorageJson(staticUrl, "Could not load the shared workbook file.", {
     params: { ts: Date.now() },
     retries,
     retryDelayMs
   });
-  return normalizeBootstrapPayload(payload);
+  sharedWorkbookState.etag = result.etag || "";
+  sharedWorkbookState.readUrl = result.url || resolveUrl(staticUrl);
+  return normalizeBootstrapPayload(result.payload);
 }
 
 export async function saveSharedWorkbookSnapshot(snapshot) {
@@ -287,7 +710,14 @@ export async function saveSharedWorkbookSnapshot(snapshot) {
     savedAt,
     mode: "workbook_save"
   }, null, 2);
-  await putConfiguredContent(writeUrl, serialized, "application/json", "Could not save the shared workbook.");
+  const writeResult = await putConfiguredContent(
+    writeUrl,
+    serialized,
+    "application/json",
+    "Could not save the shared workbook.",
+    { ifMatch: sharedWorkbookState.etag }
+  );
+  sharedWorkbookState.etag = writeResult.etag || "";
   const config = getSharedBackendConfig();
   let historyUrl = "";
   if (config.workbookHistoryWriteBaseUrl) {
@@ -295,7 +725,12 @@ export async function saveSharedWorkbookSnapshot(snapshot) {
     historyUrl = buildObjectUrl(config.workbookHistoryWriteBaseUrl, historyKey);
     await putConfiguredContent(historyUrl, serialized, "application/json", "Could not save the workbook history copy.");
   }
-  return { savedAt, url: resolveUrl(writeUrl), historyUrl };
+  return {
+    savedAt,
+    url: resolveUrl(writeUrl),
+    historyUrl,
+    etag: sharedWorkbookState.etag
+  };
 }
 
 export async function fetchSharedDraftInvoice(partner, startPeriod, endPeriod = startPeriod) {
@@ -381,9 +816,18 @@ export async function saveInvoiceArtifact(payload) {
 
 export async function generatePrivateInvoiceLink(payload) {
   const config = getSharedBackendConfig();
+  if (config.privateInvoiceLinkSignerUrl) {
+    return postConfiguredJson(
+      config.privateInvoiceLinkSignerUrl,
+      payload,
+      "Could not generate the private invoice link.",
+      { includeCognitoToken: true }
+    );
+  }
   if (!config.privateInvoiceLinkWriteBaseUrl) {
     throw new Error("Private invoice links are not configured.");
   }
+
   const token = payload?.token || createOpaqueToken(28);
   const writeBase = ensureTrailingSlash(config.privateInvoiceLinkWriteBaseUrl);
   const readBase = ensureTrailingSlash(config.privateInvoiceLinkReadBaseUrl || config.privateInvoiceLinkWriteBaseUrl);
@@ -443,7 +887,7 @@ export async function generatePrivateInvoiceLink(payload) {
   const summaryLines = [
     `${manifest.partner} · ${manifest.periodStart === manifest.periodEnd ? manifest.periodStart : `${manifest.periodStart} to ${manifest.periodEnd}`}`,
     `Generated ${savedAt}`,
-    `This delivery package contains the invoice files and transaction detail export.`
+    "This delivery package contains the invoice files and transaction detail export."
   ];
   const indexHtml = buildPrivateInvoiceIndexHtml({
     title: `${manifest.partner} Billing Package`,

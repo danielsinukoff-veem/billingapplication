@@ -19,6 +19,7 @@ import {
   extractContractText,
   getWorkspaceLabel,
   importLookerFileAndSave,
+  isBillingAuthRedirectError,
   isBillingCheckerEnabled,
   isContractExtractEnabled,
   isInvoiceArtifactEnabled,
@@ -32,7 +33,7 @@ import {
   parseContractText,
   saveInvoiceArtifact,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js?v=20260421c";
+} from "./shared-backend.js?v=20260422a";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
@@ -58,6 +59,7 @@ function scheduleSharedWorkspaceRetry(delayMs = 1500) {
 }
 
 function renderFatalAppError(error) {
+  if (isBillingAuthRedirectError(error)) return;
   const message = error instanceof Error ? error.message : String(error || "Unknown app error");
   const escaped = message
     .replaceAll("&", "&amp;")
@@ -4421,7 +4423,7 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
 
     if (!isPrivateInvoiceLinkEnabled()) {
       state.privateInvoiceLinkStatus = "error";
-      state.privateInvoiceLinkError = "Connect BILLING_APP_CONFIG.privateInvoiceLinkWriteBaseUrl to generate a private partner link.";
+      state.privateInvoiceLinkError = "Connect BILLING_APP_CONFIG.privateInvoiceLinkSignerUrl to generate a private partner link.";
       showToast("Private link not configured", state.privateInvoiceLinkError, "warning");
       render();
       return;
@@ -4440,7 +4442,7 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
     const result = await generatePrivateInvoiceLink(payload);
     const privateUrl = getPrivateInvoiceLinkUrl(result);
     if (!privateUrl) {
-      throw new Error("The direct-write private-link flow did not return a download URL.");
+      throw new Error("The private-link service did not return a download URL.");
     }
     state.privateInvoiceLinkResult = {
       ...result,
@@ -6713,7 +6715,7 @@ function renderInvoiceDeliveryPanel() {
       ? "success"
       : "";
   const archiveConfigured = !!config.invoiceArtifactWriteBaseUrl;
-  const linkConfigured = !!config.privateInvoiceLinkWriteBaseUrl;
+  const linkConfigured = !!(config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl);
   const archiveSummary = state.invoiceArtifactStatus === "saving"
     ? "Saving a timestamped invoice copy..."
     : state.invoiceArtifactStatus === "success" && state.invoiceArtifactRecord?.savedAt
@@ -6727,7 +6729,7 @@ function renderInvoiceDeliveryPanel() {
       ? "Private partner download link is ready."
       : linkConfigured
         ? "Private link generation is ready."
-        : "Connect BILLING_APP_CONFIG.privateInvoiceLinkWriteBaseUrl to generate a partner-safe private link.";
+        : "Connect BILLING_APP_CONFIG.privateInvoiceLinkSignerUrl to generate a partner-safe private link.";
   return `
     <div class="summary-banner ${tone}" style="margin-top:14px">
       <h4>Partner Delivery Package</h4>
@@ -8758,3 +8760,10 @@ window.addEventListener("unhandledrejection", (event) => {
 void initApp().catch((error) => {
   renderFatalAppError(error);
 });
+
+// Named exports for the test harness (tests/backtest.mjs, tests/batch-validate.mjs).
+// app.js runs as `<script type="module">` in the browser, so these exports are
+// inert there — the browser still evaluates the top-level code including
+// initApp(). Node harnesses stub document/window before importing and drive
+// the calc via calculateLocalInvoiceForPeriod.
+export { state, calculateLocalInvoiceForPeriod };

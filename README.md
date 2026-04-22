@@ -16,10 +16,10 @@ Then open [http://localhost:4173](http://localhost:4173).
 
 - The hosted frontend now reads its shared seed workbook from [data/current-workbook.json](/Users/danielsinukoff/Documents/billing-workbook/data/current-workbook.json) by default.
 - Runtime integration settings live in [app-config.js](/Users/danielsinukoff/Documents/billing-workbook/app-config.js).
-- Workbook data autosaves to browser `localStorage`, and can be written directly to AWS object storage when `workbookWriteUrl` is configured.
+- Workbook data autosaves to browser `localStorage`, and can be written directly to AWS object storage when `workbookWriteUrl` plus the Cognito/SigV4 auth settings are configured.
 - `Export Backup` downloads the full workbook as JSON.
 - `Import Backup` restores a saved workbook JSON file.
-- Contract parsing in this static build can always accept structured JSON directly. PDF extraction, raw-text parsing, manual Looker imports, and checker runs are enabled only when their matching webhook URLs are configured.
+- Contract parsing in this static build can always accept structured JSON directly. PDF extraction, raw-text parsing, manual Looker imports, and checker runs are enabled only when their matching automation URLs are configured.
 
 ## Conversion target
 
