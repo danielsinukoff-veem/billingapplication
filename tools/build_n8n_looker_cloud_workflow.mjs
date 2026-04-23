@@ -716,10 +716,6 @@ function buildWorkflow(config, runtimeSource) {
           queryParameters: {
             parameters: [
               {
-                name: "limit",
-                value: "-1",
-              },
-              {
                 name: "cache",
                 value: "false",
               },
@@ -811,10 +807,6 @@ function buildWorkflow(config, runtimeSource) {
       specifyQuery: "keypair",
       queryParameters: {
         parameters: [
-          {
-            name: "limit",
-            value: "-1",
-          },
           {
             name: "cache",
             value: "false",
