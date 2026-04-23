@@ -11,8 +11,8 @@ const DEFAULT_WORKBOOK_KEY = "partner-billing-form/data/current-workbook.json";
 const DEFAULT_SUMMARY_KEY = "partner-billing-form/data/looker-sync/latest-summary.json";
 const DEFAULT_WORKBOOK_HISTORY_PREFIX = "partner-billing-form/data/history/workbook";
 const OFFLINE_CHUNK_MONTH_OFFSETS = [-3, -2, -1, 0];
-const DEFAULT_QUERY_TASK_WAIT_MS = 30000;
-const OFFLINE_QUERY_TASK_WAIT_MS = 120000;
+const DEFAULT_QUERY_TASK_WAIT_SECONDS = 30;
+const OFFLINE_QUERY_TASK_WAIT_SECONDS = 120;
 
 function stripExports(source) {
   return source.replace(/^export\s+/gm, "");
@@ -212,13 +212,20 @@ function buildExportQueryCode(spec) {
   ].join("\n");
 }
 
-function buildPauseCode(waitMs) {
-  return [
-    "const input = $input.first();",
-    `const waitMs = ${JSON.stringify(waitMs)};`,
-    "await new Promise((resolve) => setTimeout(resolve, waitMs));",
-    "return [input];",
-  ].join("\n");
+function waitNode(name, position, amount, unit = "seconds") {
+  return {
+    parameters: {
+      resume: "timeInterval",
+      amount,
+      unit,
+    },
+    id: makeNodeId(name),
+    name,
+    type: "n8n-nodes-base.wait",
+    typeVersion: 1.1,
+    position,
+    webhookId: makeNodeId(`${name}-webhook`),
+  };
 }
 
 function buildParseReportCode(spec, buildExportNodeName, createExportNodeName, runtimeSource) {
@@ -756,7 +763,7 @@ function buildWorkflow(config, runtimeSource) {
             },
           },
         }));
-        addNode(codeNode(waitTaskChunkName, [groupX, 820 + (chunkIndex * 300)], buildPauseCode(OFFLINE_QUERY_TASK_WAIT_MS)));
+        addNode(waitNode(waitTaskChunkName, [groupX, 820 + (chunkIndex * 300)], OFFLINE_QUERY_TASK_WAIT_SECONDS, "seconds"));
         addNode(httpRequestNode(fetchChunkName, [groupX, 980 + (chunkIndex * 300)], {
           method: "GET",
           url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
@@ -870,7 +877,7 @@ function buildWorkflow(config, runtimeSource) {
         },
       },
     }));
-    addNode(codeNode(waitTaskName, [groupX, 820], buildPauseCode(DEFAULT_QUERY_TASK_WAIT_MS)));
+    addNode(waitNode(waitTaskName, [groupX, 820], DEFAULT_QUERY_TASK_WAIT_SECONDS, "seconds"));
     addNode(httpRequestNode(fetchCsvName, [groupX, 980], {
       method: "GET",
       url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",

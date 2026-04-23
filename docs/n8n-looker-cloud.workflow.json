@@ -290,18 +290,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 120,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-partner-offline-billing-chun",
       "name": "Wait For Query Task: Partner Offline Billing Chunk 1",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         1800,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-partner-offline-billing-chun"
     },
     {
       "parameters": {
@@ -458,18 +459,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 120,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-partner-offline-billing-chun",
       "name": "Wait For Query Task: Partner Offline Billing Chunk 2",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         1800,
         1120
-      ]
+      ],
+      "webhookId": "wait-for-query-task-partner-offline-billing-chun"
     },
     {
       "parameters": {
@@ -626,18 +628,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 120,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-partner-offline-billing-chun",
       "name": "Wait For Query Task: Partner Offline Billing Chunk 3",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         1800,
         1420
-      ]
+      ],
+      "webhookId": "wait-for-query-task-partner-offline-billing-chun"
     },
     {
       "parameters": {
@@ -794,18 +797,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 120,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-partner-offline-billing-chun",
       "name": "Wait For Query Task: Partner Offline Billing Chunk 4",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         1800,
         1720
-      ]
+      ],
+      "webhookId": "wait-for-query-task-partner-offline-billing-chun"
     },
     {
       "parameters": {
@@ -1047,18 +1051,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-partner-offline-billing-reve",
       "name": "Wait For Query Task: Partner Offline Billing (Reversals)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         2160,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-partner-offline-billing-reve"
     },
     {
       "parameters": {
@@ -1285,18 +1290,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-all-registered-accounts-offl",
       "name": "Wait For Query Task: All Registered Accounts - Offline Billing",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         2520,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-all-registered-accounts-offl"
     },
     {
       "parameters": {
@@ -1523,18 +1529,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-vba-accounts",
       "name": "Wait For Query Task: VBA ACCOUNTS",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         2880,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-vba-accounts-webhook"
     },
     {
       "parameters": {
@@ -1761,18 +1768,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-cc-citi-vba-txns-cc",
       "name": "Wait For Query Task: CC/Citi VBA Txns (CC)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         3240,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-cc-citi-vba-txns-cc-webhook"
     },
     {
       "parameters": {
@@ -1999,18 +2007,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-cc-citi-vba-txns-citi",
       "name": "Wait For Query Task: CC/Citi VBA Txns (Citi)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         3600,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-cc-citi-vba-txns-citi-webhoo"
     },
     {
       "parameters": {
@@ -2237,18 +2246,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-revenue-share-report",
       "name": "Wait For Query Task: Revenue Share Report",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         3960,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-revenue-share-report-webhook"
     },
     {
       "parameters": {
@@ -2475,18 +2485,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-rev-share-reversals",
       "name": "Wait For Query Task: Rev Share Reversals",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         4320,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-rev-share-reversals-webhook"
     },
     {
       "parameters": {
@@ -2713,18 +2724,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-all-registered-accounts-rev-",
       "name": "Wait For Query Task: All Registered Accounts - Rev Share",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         4680,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-all-registered-accounts-rev-"
     },
     {
       "parameters": {
@@ -2951,18 +2963,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-stampli-fx-revenue-share",
       "name": "Wait For Query Task: Stampli FX Revenue Share",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         5040,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-stampli-fx-revenue-share-web"
     },
     {
       "parameters": {
@@ -3189,18 +3202,19 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
       },
       "id": "wait-for-query-task-stampli-fx-revenue-reversal",
       "name": "Wait For Query Task: Stampli FX Revenue Reversal",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
       "position": [
         5400,
         820
-      ]
+      ],
+      "webhookId": "wait-for-query-task-stampli-fx-revenue-reversal-"
     },
     {
       "parameters": {
