@@ -1457,9 +1457,17 @@ function partnerHasImportedActivityThroughPeriod(partner, period, source = state
 }
 
 function isRecurringBillingLiveForPeriod(partner, period, source = state) {
+  // `notYetLive` on pBilling is authoritative: if set, the partner does NOT bill
+  // recurring fees (minimums, subscriptions, rev-share, etc.), regardless of any
+  // planned go-live date captured in the impl table. Impl rows are projections
+  // from the sales handoff, not evidence the partner has actually started
+  // transacting. Confirmed 2026-04-22 with user ("only if they're live"):
+  // HubSpot Integration Status is the source of truth, synced into pBilling by
+  // tools/apply-hubspot-partner-status.py. To mark a partner live, clear
+  // notYetLive on their pBilling row (or set pBilling.goLiveDate explicitly).
+  if (isPartnerNotYetLive(partner, source)) return false;
   const goLiveDate = getPartnerGoLiveDate(partner, source);
   const goLiveMonth = normalizeMonthKey(goLiveDate);
-  if (isPartnerNotYetLive(partner, source) && !goLiveMonth) return partnerHasImportedActivityThroughPeriod(partner, period, source);
   if (!goLiveMonth) return true;
   return comparePeriods(normalizeMonthKey(period), goLiveMonth) >= 0;
 }
