@@ -4000,20 +4000,99 @@ function detailManifestKey(partner, period) {
   return `${partner}|${period}`;
 }
 
+function buildFallbackDetailFilePath(partner, period) {
+  const partnerSlug = slugifyFilenamePart(partner || "partner");
+  const periodSlug = slugifyFilenamePart(period || "period");
+  return `./looker-detail-files/${partnerSlug}-${periodSlug}-details.json`;
+}
+
+function buildFallbackDetailCsvPath(partner, period) {
+  const partnerSlug = slugifyFilenamePart(partner || "partner");
+  const periodSlug = slugifyFilenamePart(period || "period");
+  return `./looker-detail-files/${partnerSlug}-${periodSlug}-details.csv`;
+}
+
+function parseDetailCsv(textValue) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  const input = String(textValue || "").replace(/^\uFEFF/, "").replace(/\u0000/g, "");
+  for (let i = 0; i < input.length; i += 1) {
+    const char = input[i];
+    const next = input[i + 1];
+    if (inQuotes) {
+      if (char === '"' && next === '"') {
+        cell += '"';
+        i += 1;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+    if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n") {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else if (char === "\r") {
+      if (next !== "\n") {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
+      }
+    } else {
+      cell += char;
+    }
+  }
+  row.push(cell);
+  if (row.length > 1 || row[0] !== "") rows.push(row);
+  if (!rows.length) return [];
+  const headers = rows[0].map((value) => String(value || "").trim());
+  return rows.slice(1).map((values) => {
+    const output = {};
+    headers.forEach((header, index) => {
+      if (!header) return;
+      output[header] = values[index] ?? "";
+    });
+    return output;
+  }).filter((entry) => Object.values(entry).some((value) => String(value || "").trim()));
+}
+
 async function loadInvoiceDetailRows(partner, period) {
   const key = detailManifestKey(partner, period);
   let baseRows = [];
   if (detailFileCache.has(key)) {
     baseRows = detailFileCache.get(key);
   } else {
-    const filePath = LOOKER_DETAIL_MANIFEST[key];
-    if (filePath) {
+    const fileCandidates = Array.from(new Set([
+      buildFallbackDetailCsvPath(partner, period),
+      LOOKER_DETAIL_MANIFEST[key],
+      buildFallbackDetailFilePath(partner, period),
+    ].filter(Boolean)));
+    for (const filePath of fileCandidates) {
       const response = await fetch(filePath);
+      if (response.status === 403 || response.status === 404) {
+        continue;
+      }
       if (!response.ok) {
         throw new Error(`Could not load detail rows (${response.status})`);
       }
-      baseRows = await response.json();
+      if (filePath.endsWith(".csv")) {
+        baseRows = parseDetailCsv(await response.text());
+      } else {
+        baseRows = await response.json();
+      }
       detailFileCache.set(key, baseRows);
+      break;
     }
   }
   const overrideRows = (state.lookerImportedDetailRows || []).filter((row) => norm(row.partner) === norm(partner) && norm(row.period) === norm(period));
