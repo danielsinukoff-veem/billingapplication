@@ -412,7 +412,7 @@ const state = {
   lookerImportContext: {},
   lookerImportedDetailRows: [],
   lookerImportAudit: null,
-  workspaceMode: isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? "shared" : "local",
+  workspaceMode: isSharedWorkbookEnabled() ? "shared" : "local",
   workspaceLabel: getWorkspaceLabel(),
   workspaceRefreshing: false,
   lastSharedAutoRefreshAt: 0,
@@ -820,21 +820,6 @@ async function loadState() {
       const payload = await loadSharedBootstrap();
       let saved = payload?.snapshot;
       if (saved && saved._version) {
-        if (!isSharedWorkbookWriteEnabled()) {
-          try {
-            const rawLocal = localStorage.getItem(STORAGE_KEY);
-            const localSnapshot = rawLocal ? JSON.parse(rawLocal) : null;
-            if (localSnapshot?._version) {
-              const sharedSavedAt = new Date(saved._saved || 0).getTime();
-              const localSavedAt = new Date(localSnapshot._saved || 0).getTime();
-              if (localSavedAt > sharedSavedAt) {
-                saved = localSnapshot;
-              }
-            }
-          } catch (error) {
-            console.warn("Could not compare local workbook draft against the shared seed file", error);
-          }
-        }
         const { snapshot, changed } = migrateSnapshot(saved);
         DATA_KEYS.forEach((key) => {
           if (snapshot[key] != null) state[key] = snapshot[key];
@@ -856,7 +841,7 @@ async function loadState() {
         state.lastSavedAt = savedAt || seededSnapshot._saved;
         state.lastSaved = savedAt ? new Date(savedAt).toLocaleTimeString() : null;
       }
-      state.workspaceMode = isSharedWorkbookWriteEnabled() ? "shared" : "local-seeded";
+      state.workspaceMode = "shared";
       state.workspaceLabel = payload?.workspace?.label || getWorkspaceLabel();
       state.currentUserRole = payload?.user?.role || "";
       state.currentUserEmail = payload?.user?.email || "";
@@ -894,7 +879,6 @@ async function loadState() {
 
 async function refreshSharedWorkspace({ showSuccessToast = true, showErrorToast = true, retries = 3, retryDelayMs = 500 } = {}) {
   if (!isSharedWorkbookEnabled()) return;
-  if (!isSharedWorkbookWriteEnabled()) return false;
   if (sharedWorkspaceRefreshPromise) return sharedWorkspaceRefreshPromise;
   state.workspaceRefreshing = true;
   render();
@@ -982,7 +966,6 @@ const SHARED_WORKSPACE_AUTO_REFRESH_MS = 30 * 1000;
 
 async function maybeAutoRefreshSharedWorkspace({ force = false } = {}) {
   if (!isSharedWorkbookEnabled()) return;
-  if (!isSharedWorkbookWriteEnabled()) return;
   if (state.workspaceRefreshing) return;
   const now = Date.now();
   const lastRefreshAt = Number(state.lastSharedAutoRefreshAt || 0);
@@ -3305,7 +3288,7 @@ function resetToDefaults() {
   state.accessLogs = [];
   state.adminSettings = buildDefaultAdminSettings();
   localStorage.removeItem(STORAGE_KEY);
-  state.workspaceMode = isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? "shared" : "local";
+  state.workspaceMode = isSharedWorkbookEnabled() ? "shared" : "local";
   state.workspaceLabel = getWorkspaceLabel();
   if (!isSharedWorkbookEnabled()) {
     render();
@@ -6825,7 +6808,7 @@ function renderHeader() {
           ${sessionLabel ? `<span class="status-pill">${html(sessionLabel)}</span>` : ""}
           ${isAdminAuthenticated() ? `
             <button class="button secondary small" data-action="open-admin-portal">Admin Portal</button>
-            ${isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled() ? `<button class="button ghost small" data-action="refresh-shared-workspace"${state.workspaceRefreshing ? " disabled" : ""}>${state.workspaceRefreshing ? "Refreshing..." : state.workspaceMode === "local-fallback" ? "Retry Shared Refresh" : "Refresh Shared Data"}</button>` : ""}
+            ${isSharedWorkbookEnabled() ? `<button class="button ghost small" data-action="refresh-shared-workspace"${state.workspaceRefreshing ? " disabled" : ""}>${state.workspaceRefreshing ? "Refreshing..." : state.workspaceMode === "local-fallback" ? "Retry Shared Refresh" : "Refresh Shared Data"}</button>` : ""}
             <button class="button ghost small" data-action="export-backup">Export Backup</button>
             <button class="button ghost small" data-action="import-backup">Import Backup</button>
             <button class="button warning small" data-action="reset-defaults">Reset to Defaults</button>

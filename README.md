@@ -12,6 +12,16 @@ python3 -m http.server 4173
 
 Then open [http://localhost:4173](http://localhost:4173).
 
+## Shared local + cloud mode
+
+If you want your local browser app to work against the same shared workbook as the hosted cloud app:
+
+1. Copy [app-config.local.example.js](/Users/danielsinukoff/Documents/billing-workbook/app-config.local.example.js) to `app-config.local.js`
+2. Point it at the shared S3 `current-workbook.json` object and history prefix
+3. Add local-only browser AWS credentials in `aws-credentials.local.js`
+
+Those two local override files are ignored by git. The hosted app will keep using [app-config.js](/Users/danielsinukoff/Documents/billing-workbook/app-config.js), while your local app can read and write the same shared workbook without changing the cloud bundle.
+
 ## Notes
 
 - The hosted frontend now reads its shared seed workbook from [data/current-workbook.json](/Users/danielsinukoff/Documents/billing-workbook/data/current-workbook.json) by default.

@@ -9,7 +9,31 @@
   </head>
   <body>
     <div id="app"></div>
-    <script src="./app-config.js"></script>
-    <script type="module" src="./app.js"></script>
+    <script>
+      (async () => {
+        const loadScript = (src, { type = "text/javascript", optional = false } = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          if (type === "module") script.type = "module";
+          script.onload = () => resolve();
+          script.onerror = () => {
+            if (optional) {
+              resolve();
+              return;
+            }
+            reject(new Error(`Could not load ${src}`));
+          };
+          document.body.appendChild(script);
+        });
+        try {
+          await loadScript("./app-config.js");
+          await loadScript("./app-config.local.js", { optional: true });
+          await loadScript("./aws-credentials.local.js", { optional: true });
+          await loadScript("./app.js", { type: "module" });
+        } catch (error) {
+          console.error("Billing app bootstrap failed", error);
+        }
+      })();
+    </script>
   </body>
 </html>

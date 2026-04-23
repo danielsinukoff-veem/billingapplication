@@ -9,6 +9,8 @@ __pycache__/
 .env
 .env.*
 !.env.example
+app-config.local.js
+aws-credentials.local.js
 
 # Local partner and billing data
 /Historical Partner Data/
