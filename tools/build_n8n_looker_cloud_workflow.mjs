@@ -529,7 +529,7 @@ function buildWorkflow(config, runtimeSource) {
     tags: [],
   };
 
-  return [workflow];
+  return workflow;
 }
 
 function main() {
