@@ -4009,7 +4009,7 @@ function buildFallbackDetailFilePath(partner, period) {
 function buildFallbackDetailCsvPath(partner, period) {
   const partnerSlug = slugifyFilenamePart(partner || "partner");
   const periodSlug = slugifyFilenamePart(period || "period");
-  return `./looker-detail-files/${partnerSlug}-${periodSlug}-details.csv`;
+  return `./hosted-detail-files-v1/${partnerSlug}-${periodSlug}-details.csv`;
 }
 
 function looksLikeHtmlDocument(textValue, contentType = "") {

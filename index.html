@@ -29,7 +29,7 @@
           await loadScript("./app-config.js");
           await loadScript("./app-config.local.js", { optional: true });
           await loadScript("./aws-credentials.local.js", { optional: true });
-          await loadScript("./app.js", { type: "module" });
+          await loadScript("./app.js?v=20260423-detailfix", { type: "module" });
         } catch (error) {
           console.error("Billing app bootstrap failed", error);
         }

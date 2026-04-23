@@ -43,7 +43,7 @@ def main() -> int:
     generated: list[tuple[str, str, Path, Path]] = []
 
     for partner, period, csv_path in iter_transaction_exports():
-        output_path = REPO_ROOT / "looker-detail-files" / f"{slugify(partner)}-{period}-details.csv"
+        output_path = REPO_ROOT / "hosted-detail-files-v1" / f"{slugify(partner)}-{period}-details.csv"
         write_csv_copy(output_path, csv_path)
         generated.append((partner, period, csv_path, output_path))
 
