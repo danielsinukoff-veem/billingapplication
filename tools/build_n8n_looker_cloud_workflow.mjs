@@ -57,7 +57,6 @@ function buildContextCode(config, runtimeSource) {
     `  forceProduction: ${JSON.stringify(Boolean(config.forceProduction))},`,
     "  lookerClientId: \"SET_LOOKER_CLIENT_ID\",",
     "  lookerClientSecret: \"SET_LOOKER_CLIENT_SECRET\",",
-    `  runtimeSource: ${JSON.stringify(runtimeSource)},`,
     "} }];",
   ].join("\n");
 }
@@ -159,7 +158,7 @@ function buildExportQueryCode(spec) {
   ].join("\n");
 }
 
-function buildApplyReportCode(spec, previousStateNodeName, buildExportNodeName, createExportNodeName) {
+function buildApplyReportCode(spec, previousStateNodeName, buildExportNodeName, createExportNodeName, runtimeSource) {
   const specJson = JSON.stringify({
     fileType: spec.fileType,
     fileName: spec.fileName,
@@ -170,8 +169,7 @@ function buildApplyReportCode(spec, previousStateNodeName, buildExportNodeName, 
   return [
     `const state = $(\"${previousStateNodeName}\").all()[0].json || {};`,
     "const ctx = $(\"Build Run Context\").all()[0].json || {};",
-    "const runtimeSource = ctx.runtimeSource || \"\";",
-    "if (!runtimeSource) throw new Error(\"Missing embedded JS runtime in Build Run Context.\");",
+    `const runtimeSource = ${JSON.stringify(runtimeSource)};`,
     "const { applyLookerCsvToWorkbook } = new Function(`${runtimeSource}; return { applyLookerCsvToWorkbook };`)();",
     "const input = $input.first();",
     "if (!input.binary?.reportCsv) throw new Error(\"Looker CSV response binary was not present on the current item.\");",
@@ -211,12 +209,11 @@ function buildApplyReportCode(spec, previousStateNodeName, buildExportNodeName, 
   ].join("\n");
 }
 
-function buildFinalizeCode(lastStateNodeName) {
+function buildFinalizeCode(lastStateNodeName, runtimeSource) {
   return [
     `const state = $(\"${lastStateNodeName}\").all()[0].json || {};`,
     "const ctx = $(\"Build Run Context\").all()[0].json || {};",
-    "const runtimeSource = ctx.runtimeSource || \"\";",
-    "if (!runtimeSource) throw new Error(\"Missing embedded JS runtime in Build Run Context.\");",
+    `const runtimeSource = ${JSON.stringify(runtimeSource)};`,
     "const { normalizeCloudSyncSummary } = new Function(`${runtimeSource}; return { normalizeCloudSyncSummary };`)();",
     "let workbookPayload = state.workbookPayload || { workspace: { label: \"Veem Billing Workspace\" }, user: {}, snapshot: {} };",
     "const reportResults = Array.isArray(state.reportResults) ? state.reportResults : [];",
@@ -350,7 +347,7 @@ function buildWorkflow(config, runtimeSource) {
     position: [220, 420],
   });
 
-  addNode(codeNode("Build Run Context", [520, 320], buildContextCode(config, runtimeSource)));
+  addNode(codeNode("Build Run Context", [520, 320], buildContextCode(config)));
 
   addNode({
     parameters: {
@@ -551,7 +548,7 @@ function buildWorkflow(config, runtimeSource) {
       },
     }));
 
-    addNode(codeNode(applyName, [groupX, 820], buildApplyReportCode(report, previousStateNodeName, buildExportName, createExportName)));
+    addNode(codeNode(applyName, [groupX, 820], buildApplyReportCode(report, previousStateNodeName, buildExportName, createExportName, runtimeSource)));
 
     connect(previousTriggerNodeName, getLookName);
     connect(getLookName, getQueryName);
@@ -565,7 +562,7 @@ function buildWorkflow(config, runtimeSource) {
   }
 
   const finalX = reportStartX + ((config.reports || []).length * reportSpacing) + 240;
-  addNode(codeNode("Finalize Cloud Sync", [finalX, 820], buildFinalizeCode(previousStateNodeName)));
+  addNode(codeNode("Finalize Cloud Sync", [finalX, 820], buildFinalizeCode(previousStateNodeName, runtimeSource)));
 
   addNode({
     parameters: {
