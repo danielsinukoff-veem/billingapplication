@@ -4012,6 +4012,13 @@ function buildFallbackDetailCsvPath(partner, period) {
   return `./looker-detail-files/${partnerSlug}-${periodSlug}-details.csv`;
 }
 
+function looksLikeHtmlDocument(textValue, contentType = "") {
+  const normalizedType = String(contentType || "").toLowerCase();
+  if (normalizedType.includes("text/html")) return true;
+  const trimmed = String(textValue || "").trimStart().toLowerCase();
+  return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html") || trimmed.startsWith("<body") || (trimmed.startsWith("<") && trimmed.includes("</html>"));
+}
+
 function parseDetailCsv(textValue) {
   const rows = [];
   let row = [];
@@ -4086,10 +4093,18 @@ async function loadInvoiceDetailRows(partner, period) {
       if (!response.ok) {
         throw new Error(`Could not load detail rows (${response.status})`);
       }
+      const rawText = await response.text();
+      if (looksLikeHtmlDocument(rawText, response.headers.get("content-type"))) {
+        continue;
+      }
       if (filePath.endsWith(".csv")) {
-        baseRows = parseDetailCsv(await response.text());
+        baseRows = parseDetailCsv(rawText);
       } else {
-        baseRows = await response.json();
+        try {
+          baseRows = JSON.parse(rawText);
+        } catch (error) {
+          throw new Error(`Could not parse detail rows for ${partner} ${period}.`);
+        }
       }
       detailFileCache.set(key, baseRows);
       break;
