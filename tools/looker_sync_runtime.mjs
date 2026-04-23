@@ -376,8 +376,8 @@ function inferPartner(row) {
   return "";
 }
 
-function buildOfflinePaymentSeed(row) {
-  return {
+function buildOfflinePaymentSeed(row, { includeDetailRows = true } = {}) {
+  const seed = {
     "Txn Type": rowValueFirst(row, "** Payment For Sales DV ** Txn Type (Dom/Fx/Abroad..", "Txn Type", "Payment Type", { patterns: ["txntype", "paymenttype"] }),
     "Payment Type": rowValueFirst(row, "** Payment For Sales DV ** Payment Type", "Payment Type", { patterns: ["paymenttype"] }),
     "** Payment For Sales DV ** Payer Funding Method Type": rowValueFirst(row, "** Payment For Sales DV ** Payer Funding Method Type", "Payer Funding Method", { patterns: ["payerfundingmethodtype", "payerfundingmethod"] }),
@@ -392,6 +392,11 @@ function buildOfflinePaymentSeed(row) {
     "** Payment For Sales DV ** Payee Amount Number": rowValueFirst(row, "** Payment For Sales DV ** Payee Amount Number", "Foreign Currency Amount (Payee Amount Number)", { patterns: ["payeeamountnumber"] }),
     "USD Amount Debited to the Customer": rowValueFirst(row, "USD Amount Debited to the Customer", "** Payment For Sales DV ** Total USD Amount Number", "** Payment For Sales DV ** USD Amount Number", { patterns: ["usdamountdebited", "totalusdamountnumber", "usdamountnumber"] }),
     "Payment USD Equivalent Amount": rowValueFirst(row, "Payment USD Equivalent Amount", "** Payment For Sales DV ** Total USD Amount Number", "** Payment For Sales DV ** USD Amount Number", { patterns: ["paymentusdequivalentamount", "totalusdamountnumber", "usdamountnumber"] }),
+    __estRevenue: extractEstRevenue(row),
+  };
+  if (!includeDetailRows) return seed;
+  return {
+    ...seed,
     "Payer Email": text(row["Payer Email"] || rowValueByPatterns(row, "payeremail", "payeraccountprimaryemail")),
     "Payer Business Name": text(row["Payer Business Name"] || rowValueByPatterns(row, "payerbusinessname", "payeraccountname")),
     "Payee Email": text(row["Payee Email"] || rowValueByPatterns(row, "payeeemail", "payeeaccountprimaryemail")),
@@ -402,7 +407,6 @@ function buildOfflinePaymentSeed(row) {
     "**  Initiator Customer Account ** Partner Group Source": text(row["**  Initiator Customer Account ** Partner Group Source"] || rowValueByPatterns(row, "partnergroupsource")),
     "** Payment For Sales DV ** Initiator Status": text(row["** Payment For Sales DV ** Initiator Status"] || rowValueByPatterns(row, "initiatorstatus")),
     "**  Initiator Customer Account ** Type Defn": text(row["**  Initiator Customer Account ** Type Defn"] || rowValueByPatterns(row, "typedefn")),
-    __estRevenue: extractEstRevenue(row),
   };
 }
 
@@ -475,7 +479,7 @@ function iterateCsvRows(textValue, onRow) {
   let cell = "";
   let inQuotes = false;
   let headers = null;
-  const input = String(textValue || "").replace(/^\uFEFF/, "").replace(/\u0000/g, "");
+  let sawFirstChar = false;
 
   const commitRow = () => {
     if (!headers) {
@@ -489,41 +493,127 @@ function iterateCsvRows(textValue, onRow) {
     }
   };
 
-  for (let i = 0; i < input.length; i += 1) {
-    const char = input[i];
-    const next = input[i + 1];
-    if (inQuotes) {
-      if (char === '"' && next === '"') {
-        cell += '"';
-        i += 1;
-      } else if (char === '"') {
-        inQuotes = false;
-      } else {
-        cell += char;
+  const processChunk = (chunkValue) => {
+    const input = String(chunkValue || "");
+    for (let i = 0; i < input.length; i += 1) {
+      const char = input[i];
+      const next = input[i + 1];
+      if (!sawFirstChar) {
+        sawFirstChar = true;
+        if (char === "\uFEFF") continue;
       }
-      continue;
-    }
-    if (char === '"') {
-      inQuotes = true;
-    } else if (char === ",") {
-      row.push(cell);
-      cell = "";
-    } else if (char === "\n") {
-      row.push(cell);
-      commitRow();
-      row = [];
-      cell = "";
-    } else if (char === "\r") {
-      if (next !== "\n") {
+      if (char === "\u0000") continue;
+      if (inQuotes) {
+        if (char === '"' && next === '"') {
+          cell += '"';
+          i += 1;
+        } else if (char === '"') {
+          inQuotes = false;
+        } else {
+          cell += char;
+        }
+        continue;
+      }
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (char === "\n") {
         row.push(cell);
         commitRow();
         row = [];
         cell = "";
+      } else if (char === "\r") {
+        if (next !== "\n") {
+          row.push(cell);
+          commitRow();
+          row = [];
+          cell = "";
+        }
+      } else {
+        cell += char;
       }
-    } else {
-      cell += char;
     }
+  };
+
+  processChunk(textValue);
+  row.push(cell);
+  if (row.length > 1 || row[0] !== "") {
+    commitRow();
   }
+}
+
+function iterateCsvBufferRows(bufferValue, onRow, { chunkSize = 65536 } = {}) {
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  let headers = null;
+  let sawFirstChar = false;
+  const decoder = new TextDecoder("utf-8");
+  const inputBuffer = Buffer.isBuffer(bufferValue) ? bufferValue : Buffer.from(bufferValue || "");
+
+  const commitRow = () => {
+    if (!headers) {
+      headers = row.map((value) => text(value));
+      return;
+    }
+    if (!row.length) return;
+    const entry = csvRowToObject(headers, row);
+    if (Object.values(entry).some((value) => text(value))) {
+      onRow(entry);
+    }
+  };
+
+  const processChunk = (chunkValue) => {
+    const input = String(chunkValue || "");
+    for (let i = 0; i < input.length; i += 1) {
+      const char = input[i];
+      const next = input[i + 1];
+      if (!sawFirstChar) {
+        sawFirstChar = true;
+        if (char === "\uFEFF") continue;
+      }
+      if (char === "\u0000") continue;
+      if (inQuotes) {
+        if (char === '"' && next === '"') {
+          cell += '"';
+          i += 1;
+        } else if (char === '"') {
+          inQuotes = false;
+        } else {
+          cell += char;
+        }
+        continue;
+      }
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (char === "\n") {
+        row.push(cell);
+        commitRow();
+        row = [];
+        cell = "";
+      } else if (char === "\r") {
+        if (next !== "\n") {
+          row.push(cell);
+          commitRow();
+          row = [];
+          cell = "";
+        }
+      } else {
+        cell += char;
+      }
+    }
+  };
+
+  for (let offset = 0; offset < inputBuffer.length; offset += chunkSize) {
+    const end = Math.min(offset + chunkSize, inputBuffer.length);
+    processChunk(decoder.decode(inputBuffer.subarray(offset, end), { stream: end < inputBuffer.length }));
+  }
+  processChunk(decoder.decode());
   row.push(cell);
   if (row.length > 1 || row[0] !== "") {
     commitRow();
@@ -1307,13 +1397,13 @@ function finalizeOfflineTransactions(paymentAggs, periodsSeen, { includeDetailRo
     const txDate = parseDateish(creditComplete);
     if (accountId && txDate) {
       const isoDay = txDate.toISOString().slice(0, 10);
-      accountActivity[accountId] ||= [];
-      accountActivity[accountId].push(isoDay);
+      accountActivity[accountId] ||= new Set();
+      accountActivity[accountId].add(isoDay);
     }
     if (txDate) {
       const key2 = `${partner}|${month}`;
-      settlementDays[key2] ||= [];
-      settlementDays[key2].push(txDate.toISOString().slice(0, 10));
+      settlementDays[key2] ||= new Set();
+      settlementDays[key2].add(txDate.toISOString().slice(0, 10));
     }
 
     if (includeDetailRows) {
@@ -1394,8 +1484,8 @@ function finalizeOfflineTransactions(paymentAggs, periodsSeen, { includeDetailRo
       unmatchedPaymentIds: unmatchedPaymentIds.size,
       unmatchedExamples: [...unmatchedExamples.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15),
     },
-    Object.fromEntries(Object.entries(accountActivity).map(([accountId, days]) => [accountId, [...new Set(days)].sort()])),
-    Object.fromEntries(Object.entries(settlementDays).map(([key, days]) => [key, [...new Set(days)].sort()])),
+    Object.fromEntries(Object.entries(accountActivity).map(([accountId, days]) => [accountId, [...days].sort()])),
+    Object.fromEntries(Object.entries(settlementDays).map(([key, days]) => [key, [...days].sort()])),
     [...periodsSeen].sort(),
     detailRows,
   ];
@@ -1426,7 +1516,7 @@ function buildOfflineTransactions(rows, period, { includeDetailRows = true } = {
       paymentAggs.set(paymentId, {
         month,
         partner: inferPartner(row),
-        row: buildOfflinePaymentSeed(row),
+        row: buildOfflinePaymentSeed(row, { includeDetailRows }),
         isRtp,
         fasterAch,
         methods: method ? new Set([method]) : new Set(),
@@ -1442,10 +1532,11 @@ function buildOfflineTransactions(rows, period, { includeDetailRows = true } = {
   return finalizeOfflineTransactions(paymentAggs, periodsSeen, { includeDetailRows });
 }
 
-function buildOfflineTransactionsFromCsv(csvText, period, { includeDetailRows = true } = {}) {
+function buildOfflineTransactionsFromCsv(csvSource, period, { includeDetailRows = true } = {}) {
   const paymentAggs = new Map();
   const periodsSeen = new Set();
-  iterateCsvRows(csvText, (row) => {
+  const iterateRows = Buffer.isBuffer(csvSource) ? iterateCsvBufferRows : iterateCsvRows;
+  iterateRows(csvSource, (row) => {
     const creditCompleteValue = rowValueFirst(
       row,
       "Credit Complete Date",
@@ -1466,7 +1557,7 @@ function buildOfflineTransactionsFromCsv(csvText, period, { includeDetailRows = 
       paymentAggs.set(paymentId, {
         month,
         partner: inferPartner(row),
-        row: buildOfflinePaymentSeed(row),
+        row: buildOfflinePaymentSeed(row, { includeDetailRows }),
         isRtp,
         fasterAch,
         methods: method ? new Set([method]) : new Set(),
@@ -1797,7 +1888,7 @@ function filterRowsForPeriod(rows, period) {
   return (rows || []).filter((row) => text(row.period) === text(period));
 }
 
-export function parseLookerCsvImport({ fileType, period = "", csvText = "", context = {}, includeDetailRows = true }) {
+export function parseLookerCsvImport({ fileType, period = "", csvText = "", csvBuffer = null, context = {}, includeDetailRows = true }) {
   const sections = {};
   let detailRows = [];
   const warnings = [];
@@ -1805,7 +1896,8 @@ export function parseLookerCsvImport({ fileType, period = "", csvText = "", cont
   const stats = { fileType, period };
 
   if (fileType === "partner_offline_billing") {
-    const [ltxn, meta, accountActivity, settlementDays, periodsSeen, parsedDetailRows] = buildOfflineTransactionsFromCsv(csvText, null, { includeDetailRows });
+    const offlineCsvSource = Buffer.isBuffer(csvBuffer) ? csvBuffer : csvText;
+    const [ltxn, meta, accountActivity, settlementDays, periodsSeen, parsedDetailRows] = buildOfflineTransactionsFromCsv(offlineCsvSource, null, { includeDetailRows });
     sections.ltxn = ltxn;
     detailRows = parsedDetailRows;
     contextUpdate.offlineContext = serializeOfflineContext(accountActivity, settlementDays);
