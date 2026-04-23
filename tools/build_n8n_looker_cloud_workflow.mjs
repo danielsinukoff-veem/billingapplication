@@ -711,20 +711,6 @@ function buildWorkflow(config, runtimeSource) {
         addNode(httpRequestNode(runChunkName, [groupX, 660 + (chunkIndex * 300)], {
           method: "GET",
           url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
-          sendQuery: true,
-          specifyQuery: "keypair",
-          queryParameters: {
-            parameters: [
-              {
-                name: "cache",
-                value: "false",
-              },
-              {
-                name: "force_production",
-                value: "={{ $(\"Build Run Context\").all()[0].json.forceProduction ? 'true' : 'false' }}",
-              },
-            ],
-          },
           sendHeaders: true,
           specifyHeaders: "keypair",
           headerParameters: {
@@ -803,20 +789,6 @@ function buildWorkflow(config, runtimeSource) {
     addNode(httpRequestNode(runCsvName, [groupX, 660], {
       method: "GET",
       url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
-      sendQuery: true,
-      specifyQuery: "keypair",
-      queryParameters: {
-        parameters: [
-          {
-            name: "cache",
-            value: "false",
-          },
-          {
-            name: "force_production",
-            value: "={{ $(\"Build Run Context\").all()[0].json.forceProduction ? 'true' : 'false' }}",
-          },
-        ],
-      },
       sendHeaders: true,
       specifyHeaders: "keypair",
       headerParameters: {
