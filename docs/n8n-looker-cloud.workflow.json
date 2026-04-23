@@ -254,10 +254,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -381,10 +377,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -510,10 +502,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -637,10 +625,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -851,10 +835,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -1048,10 +1028,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -1247,10 +1223,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -1444,10 +1416,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -1643,10 +1611,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -1840,10 +1804,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -2039,10 +1999,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -2236,10 +2192,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
@@ -2435,10 +2387,6 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "limit",
-              "value": "-1"
-            },
-            {
               "name": "cache",
               "value": "false"
             },
@@ -2632,10 +2580,6 @@
         "specifyQuery": "keypair",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "limit",
-              "value": "-1"
-            },
             {
               "name": "cache",
               "value": "false"
