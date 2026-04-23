@@ -61,6 +61,7 @@ function stripUntrustedDirectInvoiceRows(rows) {
 const SAVE_DELAY_MS = 1200;
 const ADMIN_USERNAME = "VeemAdmin";
 const ADMIN_PASSWORD = "VeemBilling123$";
+const DEFAULT_REVERSAL_FEE_PER_TXN = 2.5;
 const DEFAULT_ADMIN_SETTINGS = Object.freeze({
   guestAllowedTabs: ["invoice", "partner", "rates", "looker", "costs", "import"],
   guestAccessCustomized: false
@@ -5844,6 +5845,7 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
     subscriptionSummaryRows.some((summary) => String(summary.summaryComputation || "").includes("+"))
     || summaryChargeRows.some((summary) => isSubscriptionComponentSummary(summary))
   );
+  let usedDefaultReversalFee = false;
 
   if (recurringBillingActive && !authoritativeRecurringChargeSummary) {
     txns.forEach((txn) => {
@@ -6253,18 +6255,19 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
     if (!authoritativeRecurringChargeSummary) {
       revs.forEach((row) => {
         const match = partnerReversalFees.find((fee) => (!fee.payerFunding || fee.payerFunding === row.payerFunding));
-        if (match) {
-          const amount = match.feePerReversal * row.reversalCount;
-          appendLine({
-            cat: "Reversal",
-            desc: `${row.payerFunding || "All"} ${row.reversalCount}x${fmt(match.feePerReversal)}`,
-            amount,
-            dir: "charge",
-            groupLabel: `${row.payerFunding || "All"} reversals`,
-            minimumEligible: true,
-            activityRows: [row]
-          });
-        }
+        const hasConfiguredReversalFee = !!match && match.feePerReversal !== "" && match.feePerReversal != null && Number.isFinite(Number(match.feePerReversal));
+        const feePerReversal = hasConfiguredReversalFee ? Number(match.feePerReversal) : DEFAULT_REVERSAL_FEE_PER_TXN;
+        if (!hasConfiguredReversalFee) usedDefaultReversalFee = true;
+        const amount = feePerReversal * row.reversalCount;
+        appendLine({
+          cat: "Reversal",
+          desc: `${row.payerFunding || "All"} ${row.reversalCount}x${fmt(feePerReversal)}${hasConfiguredReversalFee ? "" : " default"}`,
+          amount,
+          dir: "charge",
+          groupLabel: `${row.payerFunding || "All"} reversals`,
+          minimumEligible: true,
+          activityRows: [row]
+        });
       });
     }
 
@@ -6391,6 +6394,9 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
     if ((partnerVaFees.length || accountSetupRows.length || dailySettlementRows.length) && !vaData) {
       notes.push("Virtual-account, account-setup, or settlement fees are configured for this partner, but no account-usage upload was imported for this period. Those charges may be missing.");
     }
+  }
+  if (usedDefaultReversalFee) {
+    notes.push(`Default reversal fee applied at ${fmt(DEFAULT_REVERSAL_FEE_PER_TXN)} per reversal where no partner-specific reversal fee was defined in the contract.`);
   }
   if (preCollectedRevenueUsed > 0 || preCollectedRevenueTotal > 0) {
     notes.push(`Pre-collected revenue from transaction-time charges: ${fmt(preCollectedRevenueTotal)}. ${fmt(preCollectedRevenueUsed)} was excluded from this invoice to avoid double charging and still counts toward monthly minimum calculations.`);
