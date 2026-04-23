@@ -10,6 +10,7 @@ const DEFAULT_BUCKET = "veem-prod-virginia-poc-billing-fe-delete-me";
 const DEFAULT_WORKBOOK_KEY = "partner-billing-form/data/current-workbook.json";
 const DEFAULT_SUMMARY_KEY = "partner-billing-form/data/looker-sync/latest-summary.json";
 const DEFAULT_WORKBOOK_HISTORY_PREFIX = "partner-billing-form/data/history/workbook";
+const OFFLINE_CHUNK_MONTH_OFFSETS = [-3, -2, -1, 0];
 
 function stripExports(source) {
   return source.replace(/^export\s+/gm, "");
@@ -89,6 +90,11 @@ function buildExportQueryCode(spec) {
     historyFilterKey: spec.historyFilterKey || "",
     periodFilterKey: spec.periodFilterKey || "",
     periodFilterMode: spec.periodFilterMode || "",
+    chunkMonthOffset: Number.isInteger(spec.chunkMonthOffset) ? spec.chunkMonthOffset : null,
+    chunkLabel: spec.chunkLabel || "",
+    chunkFieldHints: spec.chunkFieldHints || [],
+    chunkFallbackKeys: spec.chunkFallbackKeys || [],
+    chunkPeriodFilterMode: spec.chunkPeriodFilterMode || "date_range",
   }, null, 2);
 
   return [
@@ -125,6 +131,52 @@ function buildExportQueryCode(spec) {
     "function buildHistoryFilterValue(historyWindowDays) {",
     "  return `${Math.max(1, Number(historyWindowDays || 0))} day`;",
     "}",
+    "function shiftPeriod(period, offset) {",
+    "  const [yearRaw, monthRaw] = String(period || \"\").split(\"-\").map(Number);",
+    "  if (!yearRaw || !monthRaw) throw new Error(`Invalid base period: ${period}`);",
+    "  const shifted = new Date(Date.UTC(yearRaw, monthRaw - 1 + Number(offset || 0), 1));",
+    "  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, \"0\")}`;",
+    "}",
+    "function inferChunkFilterKey(baseQuery, spec) {",
+    "  const hints = (spec.chunkFieldHints || []).map((value) => String(value || \"\").toLowerCase()).filter(Boolean);",
+    "  const fallbackKeys = (spec.chunkFallbackKeys || []).map((value) => String(value || \"\")).filter(Boolean);",
+    "  const candidates = [",
+    "    ...Object.keys(baseQuery.filters || {}),",
+    "    ...(Array.isArray(baseQuery.fields) ? baseQuery.fields : []),",
+    "    ...fallbackKeys,",
+    "  ];",
+    "  let bestKey = \"\";",
+    "  let bestScore = -1;",
+    "  for (const candidate of candidates) {",
+    "    const rawCandidate = String(candidate || \"\");",
+    "    const normalized = rawCandidate.toLowerCase().replace(/[^a-z0-9]/g, \"\");",
+    "    let score = -1;",
+    "    for (const hint of hints) {",
+    "      const normalizedHint = hint.replace(/[^a-z0-9]/g, \"\");",
+    "      if (!normalizedHint) continue;",
+    "      if (normalized === normalizedHint) score = Math.max(score, 5);",
+    "      else if (normalized.endsWith(normalizedHint)) score = Math.max(score, 4);",
+    "      else if (normalized.includes(normalizedHint)) score = Math.max(score, 3);",
+    "    }",
+    "    if (score > bestScore) {",
+    "      bestScore = score;",
+    "      bestKey = rawCandidate;",
+    "    }",
+    "  }",
+    "  return bestKey;",
+    "}",
+    "if (spec.chunkMonthOffset !== null && spec.chunkMonthOffset !== undefined) {",
+    "  const targetPeriod = shiftPeriod(ctx.period, spec.chunkMonthOffset);",
+    "  const filterKey = spec.periodFilterKey || inferChunkFilterKey(baseQuery, spec);",
+    "  if (!filterKey) throw new Error(`Could not infer Looker filter key for ${spec.reportName} ${spec.chunkLabel || targetPeriod}`);",
+    "  const filterValue = buildPeriodFilterValue(targetPeriod, spec.chunkPeriodFilterMode || \"date_range\");",
+    "  mergedFilters[filterKey] = filterValue;",
+    "  sourceMetadata.periodFilterKey = filterKey;",
+    "  sourceMetadata.periodFilterMode = spec.chunkPeriodFilterMode || \"date_range\";",
+    "  sourceMetadata.periodFilterValue = filterValue;",
+    "  sourceMetadata.chunkPeriod = targetPeriod;",
+    "  sourceMetadata.chunkLabel = spec.chunkLabel || targetPeriod;",
+    "} else ",
     "if (spec.periodFilterKey) {",
     "  const filterValue = buildPeriodFilterValue(ctx.period, spec.periodFilterMode);",
     "  mergedFilters[spec.periodFilterKey] = filterValue;",
@@ -155,6 +207,31 @@ function buildExportQueryCode(spec) {
     "  dynamic_fields: baseQuery.dynamic_fields,",
     "};",
     "return [{ json: { payload, sourceMetadata } }];",
+  ].join("\n");
+}
+
+function buildParseReportCode(spec, buildExportNodeName, createExportNodeName, runtimeSource) {
+  const specJson = JSON.stringify({
+    fileType: spec.fileType,
+    fileName: spec.fileName,
+    lookId: spec.lookId,
+    reportName: spec.reportName,
+  }, null, 2);
+
+  return [
+    "const ctx = $(\"Build Run Context\").all()[0].json || {};",
+    `const runtimeSource = ${JSON.stringify(runtimeSource)};`,
+    "const { parseLookerCsvImport } = new Function(`${runtimeSource}; return { parseLookerCsvImport };`)();",
+    "const input = $input.first();",
+    "if (!input.binary?.reportCsv) throw new Error(\"Looker CSV response binary was not present on the current item.\");",
+    "const csvBuffer = await this.helpers.getBinaryDataBuffer(0, \"reportCsv\");",
+    `const spec = ${specJson};`,
+    `const sourceMetadata = { ...($(\"${buildExportNodeName}\").all()[0].json.sourceMetadata || {}), queryId: String($(\"${createExportNodeName}\").all()[0].json.id || \"\"), fetchedAt: new Date().toISOString(), byteCount: csvBuffer.length };`,
+    "const importPayload = { fileType: spec.fileType, period: sourceMetadata.chunkPeriod || ctx.period, csvBuffer, includeDetailRows: false };",
+    "if (spec.fileType !== \"partner_offline_billing\") importPayload.csvText = csvBuffer.toString(\"utf8\");",
+    "const parsedResult = parseLookerCsvImport(importPayload);",
+    "parsedResult.sourceMetadata = sourceMetadata;",
+    "return [{ json: { fileType: spec.fileType, reportName: spec.reportName, parsedResult, sourceMetadata } }];",
   ].join("\n");
 }
 
@@ -202,6 +279,114 @@ function buildApplyReportCode(spec, previousStateNodeName, buildExportNodeName, 
     "  sourceMetadata,",
     "  sectionKeys: Object.keys(result.sections || {}),",
     "  byteCount: sourceMetadata.byteCount || 0,",
+    "};",
+    "reportResults.push(entry);",
+    "return [{ json: { ...state, workbookPayload: workbook, reportResults, lastReportEntry: entry } }];",
+  ].join("\n");
+}
+
+function buildApplyChunkedReportCode(spec, previousStateNodeName, parseNodeNames, runtimeSource) {
+  const specJson = JSON.stringify({
+    fileType: spec.fileType,
+    fileName: spec.fileName,
+    lookId: spec.lookId,
+    reportName: spec.reportName,
+  }, null, 2);
+
+  return [
+    `const state = $(\"${previousStateNodeName}\").all()[0].json || {};`,
+    "const ctx = $(\"Build Run Context\").all()[0].json || {};",
+    `const runtimeSource = ${JSON.stringify(runtimeSource)};`,
+    "const { applyLookerImportResult } = new Function(`${runtimeSource}; return { applyLookerImportResult };`)();",
+    `const spec = ${specJson};`,
+    `const parseNodeNames = ${JSON.stringify(parseNodeNames)};`,
+    "const parsedItems = parseNodeNames.map((name) => $(name).all()[0]?.json).filter(Boolean);",
+    "if (!parsedItems.length) throw new Error(`No parsed chunk items were found for ${spec.reportName}`);",
+    "const workbookPayload = state.workbookPayload || { workspace: { label: \"Veem Billing Workspace\" }, user: {}, snapshot: {} };",
+    "const snapshot = workbookPayload?.snapshot && typeof workbookPayload.snapshot === \"object\" ? workbookPayload.snapshot : (workbookPayload || {});",
+    "const reportResults = Array.isArray(state.reportResults) ? [...state.reportResults] : [];",
+    "const accountActivity = {};",
+    "const settlementDays = {};",
+    "const mergedRows = [];",
+    "const warnings = [];",
+    "const periodsSeen = new Set();",
+    "let paymentIdsProcessed = 0;",
+    "let paymentIdsImported = 0;",
+    "let totalBytes = 0;",
+    "const chunkMetadata = [];",
+    "for (const item of parsedItems) {",
+    "  const result = item.parsedResult || {};",
+    "  const rows = result.sections?.ltxn || [];",
+    "  mergedRows.push(...rows);",
+    "  warnings.push(...(result.warnings || []));",
+    "  const stats = result.stats || {};",
+    "  paymentIdsProcessed += Number(stats.paymentIdsProcessed || 0);",
+    "  paymentIdsImported += Number(stats.paymentIdsImported || 0);",
+    "  for (const period of stats.periodsSeen || []) periodsSeen.add(period);",
+    "  const offlineContext = result.contextUpdate?.offlineContext || {};",
+    "  for (const [accountId, days] of Object.entries(offlineContext.accountActivity || {})) {",
+    "    accountActivity[accountId] ||= new Set();",
+    "    for (const day of days || []) accountActivity[accountId].add(day);",
+    "  }",
+    "  for (const [key, days] of Object.entries(offlineContext.settlementDays || {})) {",
+    "    settlementDays[key] ||= new Set();",
+    "    for (const day of days || []) settlementDays[key].add(day);",
+    "  }",
+    "  const sourceMetadata = item.sourceMetadata || {};",
+    "  totalBytes += Number(sourceMetadata.byteCount || 0);",
+    "  chunkMetadata.push(sourceMetadata);",
+    "}",
+    "mergedRows.sort((a, b) => `${a.partner}|${a.period}|${a.txnType}|${a.speedFlag}|${a.processingMethod}`.localeCompare(`${b.partner}|${b.period}|${b.txnType}|${b.speedFlag}|${b.processingMethod}`));",
+    "const mergedResult = {",
+    "  fileType: spec.fileType,",
+    "  fileLabel: spec.fileType,",
+    "  period: \"\",",
+    "  sections: { ltxn: mergedRows },",
+    "  detailRows: [],",
+    "  contextUpdate: {",
+    "    offlineContext: {",
+    "      accountActivity: Object.fromEntries(Object.entries(accountActivity).map(([key, days]) => [key, [...days].sort()])),",
+    "      settlementDays: Object.fromEntries(Object.entries(settlementDays).map(([key, days]) => [key, [...days].sort()])),",
+    "    },",
+    "  },",
+    "  warnings,",
+    "  stats: {",
+    "    fileType: spec.fileType,",
+    "    period: ctx.period,",
+    "    periodsSeen: [...periodsSeen].sort(),",
+    "    paymentIdsProcessed,",
+    "    paymentIdsImported,",
+    "    sectionCounts: { ltxn: mergedRows.length },",
+    "  },",
+    "};",
+    "const savedAt = new Date().toISOString();",
+    "const updatedSnapshot = applyLookerImportResult(snapshot, mergedResult, {",
+    "  includeDetailRows: false,",
+    "  savedAt,",
+    "  runId: ctx.runId,",
+    "  source: \"n8n-cloud\",",
+    "});",
+    "const workbook = workbookPayload?.snapshot && typeof workbookPayload.snapshot === \"object\"",
+    "  ? { ...workbookPayload, snapshot: updatedSnapshot, savedAt }",
+    "  : updatedSnapshot;",
+    "mergedResult.sourceMetadata = {",
+    "  chunkCount: parsedItems.length,",
+    "  byteCount: totalBytes,",
+    "  chunks: chunkMetadata,",
+    "};",
+    "const entry = {",
+    "  fileType: spec.fileType,",
+    "  fileName: spec.fileName,",
+    "  lookId: spec.lookId,",
+    "  reportName: spec.reportName,",
+    "  status: \"imported\",",
+    "  savedAt,",
+    "  warnings: mergedResult.warnings || [],",
+    "  stats: mergedResult.stats || {},",
+    "  changeSummary: mergedResult.changeSummary || {},",
+    "  sourceMetadata: mergedResult.sourceMetadata,",
+    "  sectionKeys: Object.keys(mergedResult.sections || {}),",
+    "  byteCount: totalBytes,",
     "};",
     "reportResults.push(entry);",
     "return [{ json: { ...state, workbookPayload: workbook, reportResults, lastReportEntry: entry } }];",
@@ -464,6 +649,124 @@ function buildWorkflow(config, runtimeSource) {
         },
       },
     }));
+
+    const isChunkedOfflineReport = report.fileType === "partner_offline_billing";
+
+    if (isChunkedOfflineReport) {
+      const chunkParseNodeNames = [];
+      connect(previousTriggerNodeName, getLookName);
+      connect(getLookName, getQueryName);
+      let previousChunkNodeName = getQueryName;
+      for (const [chunkIndex, monthOffset] of OFFLINE_CHUNK_MONTH_OFFSETS.entries()) {
+        const chunkLabel = `${safeLabel} ${monthOffset}`;
+        const buildChunkName = `Build Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const createChunkName = `Create Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const runChunkName = `Run CSV: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const parseChunkName = `Parse ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const chunkSpec = {
+          ...report,
+          chunkMonthOffset: monthOffset,
+          chunkLabel: `month-${monthOffset}`,
+          chunkFieldHints: ["creditcomplete", "creditcompletetimestampdate"],
+          chunkFallbackKeys: [
+            "transaction_lookup_dates.credit_complete_timestamp_date",
+            "credit_complete_timestamp_date",
+          ],
+          chunkPeriodFilterMode: "date_range",
+        };
+        addNode(codeNode(buildChunkName, [groupX, 340 + (chunkIndex * 300)], buildExportQueryCode(chunkSpec)));
+        addNode(httpRequestNode(createChunkName, [groupX, 500 + (chunkIndex * 300)], {
+          method: "POST",
+          url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries' }}",
+          sendHeaders: true,
+          specifyHeaders: "keypair",
+          headerParameters: {
+            parameters: [
+              {
+                name: "Authorization",
+                value: "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}",
+              },
+              {
+                name: "Accept",
+                value: "application/json",
+              },
+              {
+                name: "Content-Type",
+                value: "application/json",
+              },
+            ],
+          },
+          sendBody: true,
+          contentType: "json",
+          specifyBody: "json",
+          jsonBody: "={{ $json.payload }}",
+          options: {
+            response: {
+              response: {
+                responseFormat: "json",
+              },
+            },
+          },
+        }));
+        addNode(httpRequestNode(runChunkName, [groupX, 660 + (chunkIndex * 300)], {
+          method: "GET",
+          url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+          sendQuery: true,
+          specifyQuery: "keypair",
+          queryParameters: {
+            parameters: [
+              {
+                name: "limit",
+                value: "-1",
+              },
+              {
+                name: "cache",
+                value: "false",
+              },
+              {
+                name: "force_production",
+                value: "={{ $(\"Build Run Context\").all()[0].json.forceProduction ? 'true' : 'false' }}",
+              },
+            ],
+          },
+          sendHeaders: true,
+          specifyHeaders: "keypair",
+          headerParameters: {
+            parameters: [
+              {
+                name: "Authorization",
+                value: "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}",
+              },
+              {
+                name: "Accept",
+                value: "text/csv",
+              },
+            ],
+          },
+          options: {
+            timeout: report.reportTimeout ? report.reportTimeout * 1000 : 600000,
+            response: {
+              response: {
+                responseFormat: "file",
+                outputPropertyName: "reportCsv",
+              },
+            },
+          },
+        }));
+        addNode(codeNode(parseChunkName, [groupX, 820 + (chunkIndex * 300)], buildParseReportCode(chunkSpec, buildChunkName, createChunkName, runtimeSource)));
+        connect(previousChunkNodeName, buildChunkName);
+        connect(buildChunkName, createChunkName);
+        connect(createChunkName, runChunkName);
+        connect(runChunkName, parseChunkName);
+        previousChunkNodeName = parseChunkName;
+        chunkParseNodeNames.push(parseChunkName);
+      }
+      addNode(codeNode(applyName, [groupX, 820 + (OFFLINE_CHUNK_MONTH_OFFSETS.length * 300)], buildApplyChunkedReportCode(report, previousStateNodeName, chunkParseNodeNames, runtimeSource)));
+      connect(previousChunkNodeName, applyName);
+      previousStateNodeName = applyName;
+      previousTriggerNodeName = applyName;
+      continue;
+    }
 
     addNode(codeNode(buildExportName, [groupX, 340], buildExportQueryCode(report)));
 
