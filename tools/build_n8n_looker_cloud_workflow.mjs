@@ -81,7 +81,7 @@ function buildInitializeWorkbookCode() {
   ].join("\n");
 }
 
-function buildExportQueryCode(spec) {
+function buildExportQueryCode(spec, baseQueryNodeName = "") {
   const specJson = JSON.stringify({
     fileType: spec.fileType,
     fileName: spec.fileName,
@@ -101,7 +101,9 @@ function buildExportQueryCode(spec) {
 
   return [
     "const ctx = $(\"Build Run Context\").all()[0].json || {};",
-    "const baseQuery = $input.first().json || {};",
+    baseQueryNodeName
+      ? `const baseQuery = $(\"${baseQueryNodeName}\").all()[0].json || {};`
+      : "const baseQuery = $input.first().json || {};",
     `const spec = ${specJson};`,
     "const sourceMetadata = {",
     "  lookId: String(spec.lookId),",
@@ -696,7 +698,7 @@ function buildWorkflow(config, runtimeSource) {
           ],
           chunkPeriodFilterMode: "date_range",
         };
-        addNode(codeNode(buildChunkName, [groupX, 340 + (chunkIndex * 300)], buildExportQueryCode(chunkSpec)));
+        addNode(codeNode(buildChunkName, [groupX, 340 + (chunkIndex * 300)], buildExportQueryCode(chunkSpec, getQueryName)));
         addNode(httpRequestNode(createChunkName, [groupX, 500 + (chunkIndex * 300)], {
           method: "POST",
           url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries' }}",
