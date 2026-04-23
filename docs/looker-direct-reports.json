@@ -1,0 +1,137 @@
+{
+  "baseUrl": "https://veem.looker.com",
+  "apiVersion": "4.0",
+  "forceProduction": true,
+  "clientID": "SET_LOOKER_CLIENT_ID",
+  "clientSecret": "SET_LOOKER_CLIENT_SECRET",
+  "reports": [
+    {
+      "fileType": "partner_offline_billing",
+      "fileName": "partner_offline_billing.csv",
+      "dashboardId": null,
+      "lookId": 6876,
+      "tileId": null,
+      "reportName": "Partner Offline Billing",
+      "reportTimeout": 1800,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "partner_offline_billing_reversals",
+      "fileName": "partner_offline_billing_reversals.csv",
+      "dashboardId": null,
+      "lookId": 6877,
+      "tileId": null,
+      "reportName": "Partner Offline Billing (Reversals)",
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "all_registered_accounts_offline",
+      "fileName": "all_registered_accounts_offline.csv",
+      "dashboardId": null,
+      "lookId": 6878,
+      "tileId": null,
+      "reportName": "All Registered Accounts - Offline Billing",
+      "reportTimeout": 300,
+      "historyWindowDays": 90
+    },
+    {
+      "fileType": "vba_accounts",
+      "fileName": "vba_accounts.csv",
+      "dashboardId": null,
+      "lookId": 6874,
+      "tileId": null,
+      "reportName": "VBA ACCOUNTS",
+      "reportTimeout": 300,
+      "historyWindowDays": 90
+    },
+    {
+      "fileType": "vba_transactions_cc",
+      "fileName": "vba_transactions_cc.csv",
+      "dashboardId": null,
+      "lookId": 6875,
+      "tileId": null,
+      "reportName": "CC/Citi VBA Txns (CC)",
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
+      "historyFilterKey": "cc_virtual_bank_account_payments.COMPLETED_AT_date",
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "vba_transactions_citi",
+      "fileName": "vba_transactions_citi.csv",
+      "dashboardId": null,
+      "lookId": 6875,
+      "tileId": null,
+      "reportName": "CC/Citi VBA Txns (Citi)",
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
+      "historyFilterKey": "citi_virtual_bank_transaction_report.COMPLETED_AT_date",
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "revenue_share_report",
+      "fileName": "revenue_share_report.csv",
+      "dashboardId": null,
+      "lookId": 6879,
+      "tileId": null,
+      "reportName": "Revenue Share Report",
+      "reportTimeout": 1800,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "rev_share_reversals",
+      "fileName": "rev_share_reversals.csv",
+      "dashboardId": null,
+      "lookId": 6880,
+      "tileId": null,
+      "reportName": "Rev Share Reversals",
+      "reportTimeout": 1200,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "all_registered_accounts_rev_share",
+      "fileName": "all_registered_accounts_rev_share.csv",
+      "dashboardId": null,
+      "lookId": 6881,
+      "tileId": null,
+      "reportName": "All Registered Accounts - Rev Share",
+      "reportTimeout": 300,
+      "historyWindowDays": 90
+    },
+    {
+      "fileType": "stampli_fx_revenue_share",
+      "fileName": "stampli_fx_revenue_share.csv",
+      "dashboardId": null,
+      "lookId": 6870,
+      "tileId": null,
+      "reportName": "Stampli FX Revenue Share",
+      "reportTimeout": 600,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    },
+    {
+      "fileType": "stampli_fx_revenue_reversal",
+      "fileName": "stampli_fx_revenue_reversal.csv",
+      "dashboardId": null,
+      "lookId": 6873,
+      "tileId": null,
+      "reportName": "Stampli FX Revenue Reversal",
+      "reportTimeout": 600,
+      "historyWindowDays": 90,
+      "periodFilterKey": null,
+      "periodFilterMode": null
+    }
+  ]
+}
