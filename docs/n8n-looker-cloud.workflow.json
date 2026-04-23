@@ -247,8 +247,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -259,7 +259,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-partner-offline-billing-chunk-",
+      "name": "Create Query Task: Partner Offline Billing Chunk 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-partner-offline-billing-chun",
+      "name": "Wait For Query Task: Partner Offline Billing Chunk 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -273,13 +331,13 @@
           }
         }
       },
-      "id": "run-csv-partner-offline-billing-chunk-1",
-      "name": "Run CSV: Partner Offline Billing Chunk 1",
+      "id": "fetch-csv-partner-offline-billing-chunk-1",
+      "name": "Fetch CSV: Partner Offline Billing Chunk 1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         1800,
-        660
+        980
       ]
     },
     {
@@ -294,7 +352,7 @@
       "typeVersion": 2,
       "position": [
         1800,
-        820
+        1140
       ]
     },
     {
@@ -357,8 +415,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -369,7 +427,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-partner-offline-billing-chunk-",
+      "name": "Create Query Task: Partner Offline Billing Chunk 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-partner-offline-billing-chun",
+      "name": "Wait For Query Task: Partner Offline Billing Chunk 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -383,13 +499,13 @@
           }
         }
       },
-      "id": "run-csv-partner-offline-billing-chunk-2",
-      "name": "Run CSV: Partner Offline Billing Chunk 2",
+      "id": "fetch-csv-partner-offline-billing-chunk-2",
+      "name": "Fetch CSV: Partner Offline Billing Chunk 2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         1800,
-        960
+        1280
       ]
     },
     {
@@ -404,7 +520,7 @@
       "typeVersion": 2,
       "position": [
         1800,
-        1120
+        1440
       ]
     },
     {
@@ -467,8 +583,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -479,7 +595,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-partner-offline-billing-chunk-",
+      "name": "Create Query Task: Partner Offline Billing Chunk 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        1260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-partner-offline-billing-chun",
+      "name": "Wait For Query Task: Partner Offline Billing Chunk 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        1420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -493,13 +667,13 @@
           }
         }
       },
-      "id": "run-csv-partner-offline-billing-chunk-3",
-      "name": "Run CSV: Partner Offline Billing Chunk 3",
+      "id": "fetch-csv-partner-offline-billing-chunk-3",
+      "name": "Fetch CSV: Partner Offline Billing Chunk 3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         1800,
-        1260
+        1580
       ]
     },
     {
@@ -514,7 +688,7 @@
       "typeVersion": 2,
       "position": [
         1800,
-        1420
+        1740
       ]
     },
     {
@@ -577,8 +751,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -589,7 +763,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-partner-offline-billing-chunk-",
+      "name": "Create Query Task: Partner Offline Billing Chunk 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 120000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-partner-offline-billing-chun",
+      "name": "Wait For Query Task: Partner Offline Billing Chunk 4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        1720
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -603,13 +835,13 @@
           }
         }
       },
-      "id": "run-csv-partner-offline-billing-chunk-4",
-      "name": "Run CSV: Partner Offline Billing Chunk 4",
+      "id": "fetch-csv-partner-offline-billing-chunk-4",
+      "name": "Fetch CSV: Partner Offline Billing Chunk 4",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         1800,
-        1560
+        1880
       ]
     },
     {
@@ -624,7 +856,7 @@
       "typeVersion": 2,
       "position": [
         1800,
-        1720
+        2040
       ]
     },
     {
@@ -639,7 +871,7 @@
       "typeVersion": 2,
       "position": [
         1800,
-        2020
+        2340
       ]
     },
     {
@@ -772,8 +1004,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -784,7 +1016,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-partner-offline-billing-revers",
+      "name": "Create Query Task: Partner Offline Billing (Reversals)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-partner-offline-billing-reve",
+      "name": "Wait For Query Task: Partner Offline Billing (Reversals)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -798,13 +1088,13 @@
           }
         }
       },
-      "id": "run-csv-partner-offline-billing-reversals",
-      "name": "Run CSV: Partner Offline Billing (Reversals)",
+      "id": "fetch-csv-partner-offline-billing-reversals",
+      "name": "Fetch CSV: Partner Offline Billing (Reversals)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         2160,
-        660
+        980
       ]
     },
     {
@@ -819,7 +1109,7 @@
       "typeVersion": 2,
       "position": [
         2160,
-        820
+        1140
       ]
     },
     {
@@ -952,8 +1242,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -964,7 +1254,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-all-registered-accounts-offlin",
+      "name": "Create Query Task: All Registered Accounts - Offline Billing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2520,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-all-registered-accounts-offl",
+      "name": "Wait For Query Task: All Registered Accounts - Offline Billing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2520,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -978,13 +1326,13 @@
           }
         }
       },
-      "id": "run-csv-all-registered-accounts-offline-billing",
-      "name": "Run CSV: All Registered Accounts - Offline Billing",
+      "id": "fetch-csv-all-registered-accounts-offline-billin",
+      "name": "Fetch CSV: All Registered Accounts - Offline Billing",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         2520,
-        660
+        980
       ]
     },
     {
@@ -999,7 +1347,7 @@
       "typeVersion": 2,
       "position": [
         2520,
-        820
+        1140
       ]
     },
     {
@@ -1132,8 +1480,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -1144,7 +1492,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-vba-accounts",
+      "name": "Create Query Task: VBA ACCOUNTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-vba-accounts",
+      "name": "Wait For Query Task: VBA ACCOUNTS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -1158,13 +1564,13 @@
           }
         }
       },
-      "id": "run-csv-vba-accounts",
-      "name": "Run CSV: VBA ACCOUNTS",
+      "id": "fetch-csv-vba-accounts",
+      "name": "Fetch CSV: VBA ACCOUNTS",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         2880,
-        660
+        980
       ]
     },
     {
@@ -1179,7 +1585,7 @@
       "typeVersion": 2,
       "position": [
         2880,
-        820
+        1140
       ]
     },
     {
@@ -1312,8 +1718,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -1324,7 +1730,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-cc-citi-vba-txns-cc",
+      "name": "Create Query Task: CC/Citi VBA Txns (CC)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3240,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-cc-citi-vba-txns-cc",
+      "name": "Wait For Query Task: CC/Citi VBA Txns (CC)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3240,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -1338,13 +1802,13 @@
           }
         }
       },
-      "id": "run-csv-cc-citi-vba-txns-cc",
-      "name": "Run CSV: CC/Citi VBA Txns (CC)",
+      "id": "fetch-csv-cc-citi-vba-txns-cc",
+      "name": "Fetch CSV: CC/Citi VBA Txns (CC)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         3240,
-        660
+        980
       ]
     },
     {
@@ -1359,7 +1823,7 @@
       "typeVersion": 2,
       "position": [
         3240,
-        820
+        1140
       ]
     },
     {
@@ -1492,8 +1956,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -1504,7 +1968,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-cc-citi-vba-txns-citi",
+      "name": "Create Query Task: CC/Citi VBA Txns (Citi)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3600,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-cc-citi-vba-txns-citi",
+      "name": "Wait For Query Task: CC/Citi VBA Txns (Citi)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -1518,13 +2040,13 @@
           }
         }
       },
-      "id": "run-csv-cc-citi-vba-txns-citi",
-      "name": "Run CSV: CC/Citi VBA Txns (Citi)",
+      "id": "fetch-csv-cc-citi-vba-txns-citi",
+      "name": "Fetch CSV: CC/Citi VBA Txns (Citi)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         3600,
-        660
+        980
       ]
     },
     {
@@ -1539,7 +2061,7 @@
       "typeVersion": 2,
       "position": [
         3600,
-        820
+        1140
       ]
     },
     {
@@ -1672,8 +2194,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -1684,7 +2206,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-revenue-share-report",
+      "name": "Create Query Task: Revenue Share Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3960,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-revenue-share-report",
+      "name": "Wait For Query Task: Revenue Share Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -1698,13 +2278,13 @@
           }
         }
       },
-      "id": "run-csv-revenue-share-report",
-      "name": "Run CSV: Revenue Share Report",
+      "id": "fetch-csv-revenue-share-report",
+      "name": "Fetch CSV: Revenue Share Report",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         3960,
-        660
+        980
       ]
     },
     {
@@ -1719,7 +2299,7 @@
       "typeVersion": 2,
       "position": [
         3960,
-        820
+        1140
       ]
     },
     {
@@ -1852,8 +2432,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -1864,7 +2444,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-rev-share-reversals",
+      "name": "Create Query Task: Rev Share Reversals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4320,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-rev-share-reversals",
+      "name": "Wait For Query Task: Rev Share Reversals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4320,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -1878,13 +2516,13 @@
           }
         }
       },
-      "id": "run-csv-rev-share-reversals",
-      "name": "Run CSV: Rev Share Reversals",
+      "id": "fetch-csv-rev-share-reversals",
+      "name": "Fetch CSV: Rev Share Reversals",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         4320,
-        660
+        980
       ]
     },
     {
@@ -1899,7 +2537,7 @@
       "typeVersion": 2,
       "position": [
         4320,
-        820
+        1140
       ]
     },
     {
@@ -2032,8 +2670,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -2044,7 +2682,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-all-registered-accounts-rev-sh",
+      "name": "Create Query Task: All Registered Accounts - Rev Share",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4680,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-all-registered-accounts-rev-",
+      "name": "Wait For Query Task: All Registered Accounts - Rev Share",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4680,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -2058,13 +2754,13 @@
           }
         }
       },
-      "id": "run-csv-all-registered-accounts-rev-share",
-      "name": "Run CSV: All Registered Accounts - Rev Share",
+      "id": "fetch-csv-all-registered-accounts-rev-share",
+      "name": "Fetch CSV: All Registered Accounts - Rev Share",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         4680,
-        660
+        980
       ]
     },
     {
@@ -2079,7 +2775,7 @@
       "typeVersion": 2,
       "position": [
         4680,
-        820
+        1140
       ]
     },
     {
@@ -2212,8 +2908,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -2224,7 +2920,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-stampli-fx-revenue-share",
+      "name": "Create Query Task: Stampli FX Revenue Share",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5040,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-stampli-fx-revenue-share",
+      "name": "Wait For Query Task: Stampli FX Revenue Share",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5040,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -2238,13 +2992,13 @@
           }
         }
       },
-      "id": "run-csv-stampli-fx-revenue-share",
-      "name": "Run CSV: Stampli FX Revenue Share",
+      "id": "fetch-csv-stampli-fx-revenue-share",
+      "name": "Fetch CSV: Stampli FX Revenue Share",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         5040,
-        660
+        980
       ]
     },
     {
@@ -2259,7 +3013,7 @@
       "typeVersion": 2,
       "position": [
         5040,
-        820
+        1140
       ]
     },
     {
@@ -2392,8 +3146,8 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        "method": "POST",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "headerParameters": {
@@ -2404,7 +3158,65 @@
             },
             {
               "name": "Accept",
-              "value": "text/csv"
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "create-query-task-stampli-fx-revenue-reversal",
+      "name": "Create Query Task: Stampli FX Revenue Reversal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5400,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst waitMs = 30000;\nawait new Promise((resolve) => setTimeout(resolve, waitMs));\nreturn [input];"
+      },
+      "id": "wait-for-query-task-stampli-fx-revenue-reversal",
+      "name": "Wait For Query Task: Stampli FX Revenue Reversal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5400,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
             }
           ]
         },
@@ -2418,13 +3230,13 @@
           }
         }
       },
-      "id": "run-csv-stampli-fx-revenue-reversal",
-      "name": "Run CSV: Stampli FX Revenue Reversal",
+      "id": "fetch-csv-stampli-fx-revenue-reversal",
+      "name": "Fetch CSV: Stampli FX Revenue Reversal",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         5400,
-        660
+        980
       ]
     },
     {
@@ -2439,7 +3251,7 @@
       "typeVersion": 2,
       "position": [
         5400,
-        820
+        1140
       ]
     },
     {
@@ -2625,14 +3437,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Partner Offline Billing Chunk 1",
+            "node": "Create Query Task: Partner Offline Billing Chunk 1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Partner Offline Billing Chunk 1": {
+    "Create Query Task: Partner Offline Billing Chunk 1": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Partner Offline Billing Chunk 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Partner Offline Billing Chunk 1": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Partner Offline Billing Chunk 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Partner Offline Billing Chunk 1": {
       "main": [
         [
           {
@@ -2669,14 +3503,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Partner Offline Billing Chunk 2",
+            "node": "Create Query Task: Partner Offline Billing Chunk 2",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Partner Offline Billing Chunk 2": {
+    "Create Query Task: Partner Offline Billing Chunk 2": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Partner Offline Billing Chunk 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Partner Offline Billing Chunk 2": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Partner Offline Billing Chunk 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Partner Offline Billing Chunk 2": {
       "main": [
         [
           {
@@ -2713,14 +3569,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Partner Offline Billing Chunk 3",
+            "node": "Create Query Task: Partner Offline Billing Chunk 3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Partner Offline Billing Chunk 3": {
+    "Create Query Task: Partner Offline Billing Chunk 3": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Partner Offline Billing Chunk 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Partner Offline Billing Chunk 3": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Partner Offline Billing Chunk 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Partner Offline Billing Chunk 3": {
       "main": [
         [
           {
@@ -2757,14 +3635,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Partner Offline Billing Chunk 4",
+            "node": "Create Query Task: Partner Offline Billing Chunk 4",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Partner Offline Billing Chunk 4": {
+    "Create Query Task: Partner Offline Billing Chunk 4": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Partner Offline Billing Chunk 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Partner Offline Billing Chunk 4": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Partner Offline Billing Chunk 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Partner Offline Billing Chunk 4": {
       "main": [
         [
           {
@@ -2834,14 +3734,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Partner Offline Billing (Reversals)",
+            "node": "Create Query Task: Partner Offline Billing (Reversals)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Partner Offline Billing (Reversals)": {
+    "Create Query Task: Partner Offline Billing (Reversals)": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Partner Offline Billing (Reversals)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Partner Offline Billing (Reversals)": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Partner Offline Billing (Reversals)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Partner Offline Billing (Reversals)": {
       "main": [
         [
           {
@@ -2900,14 +3822,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: All Registered Accounts - Offline Billing",
+            "node": "Create Query Task: All Registered Accounts - Offline Billing",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: All Registered Accounts - Offline Billing": {
+    "Create Query Task: All Registered Accounts - Offline Billing": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: All Registered Accounts - Offline Billing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: All Registered Accounts - Offline Billing": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: All Registered Accounts - Offline Billing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: All Registered Accounts - Offline Billing": {
       "main": [
         [
           {
@@ -2966,14 +3910,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: VBA ACCOUNTS",
+            "node": "Create Query Task: VBA ACCOUNTS",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: VBA ACCOUNTS": {
+    "Create Query Task: VBA ACCOUNTS": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: VBA ACCOUNTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: VBA ACCOUNTS": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: VBA ACCOUNTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: VBA ACCOUNTS": {
       "main": [
         [
           {
@@ -3032,14 +3998,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: CC/Citi VBA Txns (CC)",
+            "node": "Create Query Task: CC/Citi VBA Txns (CC)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: CC/Citi VBA Txns (CC)": {
+    "Create Query Task: CC/Citi VBA Txns (CC)": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: CC/Citi VBA Txns (CC)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: CC/Citi VBA Txns (CC)": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: CC/Citi VBA Txns (CC)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: CC/Citi VBA Txns (CC)": {
       "main": [
         [
           {
@@ -3098,14 +4086,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: CC/Citi VBA Txns (Citi)",
+            "node": "Create Query Task: CC/Citi VBA Txns (Citi)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: CC/Citi VBA Txns (Citi)": {
+    "Create Query Task: CC/Citi VBA Txns (Citi)": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: CC/Citi VBA Txns (Citi)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: CC/Citi VBA Txns (Citi)": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: CC/Citi VBA Txns (Citi)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: CC/Citi VBA Txns (Citi)": {
       "main": [
         [
           {
@@ -3164,14 +4174,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Revenue Share Report",
+            "node": "Create Query Task: Revenue Share Report",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Revenue Share Report": {
+    "Create Query Task: Revenue Share Report": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Revenue Share Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Revenue Share Report": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Revenue Share Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Revenue Share Report": {
       "main": [
         [
           {
@@ -3230,14 +4262,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Rev Share Reversals",
+            "node": "Create Query Task: Rev Share Reversals",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Rev Share Reversals": {
+    "Create Query Task: Rev Share Reversals": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Rev Share Reversals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Rev Share Reversals": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Rev Share Reversals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Rev Share Reversals": {
       "main": [
         [
           {
@@ -3296,14 +4350,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: All Registered Accounts - Rev Share",
+            "node": "Create Query Task: All Registered Accounts - Rev Share",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: All Registered Accounts - Rev Share": {
+    "Create Query Task: All Registered Accounts - Rev Share": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: All Registered Accounts - Rev Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: All Registered Accounts - Rev Share": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: All Registered Accounts - Rev Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: All Registered Accounts - Rev Share": {
       "main": [
         [
           {
@@ -3362,14 +4438,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Stampli FX Revenue Share",
+            "node": "Create Query Task: Stampli FX Revenue Share",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Stampli FX Revenue Share": {
+    "Create Query Task: Stampli FX Revenue Share": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Stampli FX Revenue Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Stampli FX Revenue Share": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Stampli FX Revenue Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Stampli FX Revenue Share": {
       "main": [
         [
           {
@@ -3428,14 +4526,36 @@
       "main": [
         [
           {
-            "node": "Run CSV: Stampli FX Revenue Reversal",
+            "node": "Create Query Task: Stampli FX Revenue Reversal",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run CSV: Stampli FX Revenue Reversal": {
+    "Create Query Task: Stampli FX Revenue Reversal": {
+      "main": [
+        [
+          {
+            "node": "Wait For Query Task: Stampli FX Revenue Reversal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Query Task: Stampli FX Revenue Reversal": {
+      "main": [
+        [
+          {
+            "node": "Fetch CSV: Stampli FX Revenue Reversal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CSV: Stampli FX Revenue Reversal": {
       "main": [
         [
           {

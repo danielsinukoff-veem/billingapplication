@@ -11,6 +11,8 @@ const DEFAULT_WORKBOOK_KEY = "partner-billing-form/data/current-workbook.json";
 const DEFAULT_SUMMARY_KEY = "partner-billing-form/data/looker-sync/latest-summary.json";
 const DEFAULT_WORKBOOK_HISTORY_PREFIX = "partner-billing-form/data/history/workbook";
 const OFFLINE_CHUNK_MONTH_OFFSETS = [-3, -2, -1, 0];
+const DEFAULT_QUERY_TASK_WAIT_MS = 30000;
+const OFFLINE_QUERY_TASK_WAIT_MS = 120000;
 
 function stripExports(source) {
   return source.replace(/^export\s+/gm, "");
@@ -207,6 +209,15 @@ function buildExportQueryCode(spec) {
     "  dynamic_fields: baseQuery.dynamic_fields,",
     "};",
     "return [{ json: { payload, sourceMetadata } }];",
+  ].join("\n");
+}
+
+function buildPauseCode(waitMs) {
+  return [
+    "const input = $input.first();",
+    `const waitMs = ${JSON.stringify(waitMs)};`,
+    "await new Promise((resolve) => setTimeout(resolve, waitMs));",
+    "return [input];",
   ].join("\n");
 }
 
@@ -595,7 +606,9 @@ function buildWorkflow(config, runtimeSource) {
     const getQueryName = `Get Query: ${safeLabel}`;
     const buildExportName = `Build Export Query: ${safeLabel}`;
     const createExportName = `Create Export Query: ${safeLabel}`;
-    const runCsvName = `Run CSV: ${safeLabel}`;
+    const createTaskName = `Create Query Task: ${safeLabel}`;
+    const waitTaskName = `Wait For Query Task: ${safeLabel}`;
+    const fetchCsvName = `Fetch CSV: ${safeLabel}`;
     const applyName = `Apply ${safeLabel}`;
 
     addNode(httpRequestNode(getLookName, [groupX, 60], {
@@ -661,7 +674,9 @@ function buildWorkflow(config, runtimeSource) {
         const chunkLabel = `${safeLabel} ${monthOffset}`;
         const buildChunkName = `Build Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
         const createChunkName = `Create Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
-        const runChunkName = `Run CSV: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const createTaskChunkName = `Create Query Task: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const waitTaskChunkName = `Wait For Query Task: ${safeLabel} Chunk ${chunkIndex + 1}`;
+        const fetchChunkName = `Fetch CSV: ${safeLabel} Chunk ${chunkIndex + 1}`;
         const parseChunkName = `Parse ${safeLabel} Chunk ${chunkIndex + 1}`;
         const chunkSpec = {
           ...report,
@@ -708,9 +723,9 @@ function buildWorkflow(config, runtimeSource) {
             },
           },
         }));
-        addNode(httpRequestNode(runChunkName, [groupX, 660 + (chunkIndex * 300)], {
-          method: "GET",
-          url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+        addNode(httpRequestNode(createTaskChunkName, [groupX, 660 + (chunkIndex * 300)], {
+          method: "POST",
+          url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
           sendHeaders: true,
           specifyHeaders: "keypair",
           headerParameters: {
@@ -721,7 +736,41 @@ function buildWorkflow(config, runtimeSource) {
               },
               {
                 name: "Accept",
-                value: "text/csv",
+                value: "application/json",
+              },
+              {
+                name: "Content-Type",
+                value: "application/json",
+              },
+            ],
+          },
+          sendBody: true,
+          contentType: "json",
+          specifyBody: "json",
+          jsonBody: "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+          options: {
+            response: {
+              response: {
+                responseFormat: "json",
+              },
+            },
+          },
+        }));
+        addNode(codeNode(waitTaskChunkName, [groupX, 820 + (chunkIndex * 300)], buildPauseCode(OFFLINE_QUERY_TASK_WAIT_MS)));
+        addNode(httpRequestNode(fetchChunkName, [groupX, 980 + (chunkIndex * 300)], {
+          method: "GET",
+          url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+          sendHeaders: true,
+          specifyHeaders: "keypair",
+          headerParameters: {
+            parameters: [
+              {
+                name: "Authorization",
+                value: "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}",
+              },
+              {
+                name: "Accept",
+                value: "*/*",
               },
             ],
           },
@@ -735,15 +784,17 @@ function buildWorkflow(config, runtimeSource) {
             },
           },
         }));
-        addNode(codeNode(parseChunkName, [groupX, 820 + (chunkIndex * 300)], buildParseReportCode(chunkSpec, buildChunkName, createChunkName, runtimeSource)));
+        addNode(codeNode(parseChunkName, [groupX, 1140 + (chunkIndex * 300)], buildParseReportCode(chunkSpec, buildChunkName, createChunkName, runtimeSource)));
         connect(previousChunkNodeName, buildChunkName);
         connect(buildChunkName, createChunkName);
-        connect(createChunkName, runChunkName);
-        connect(runChunkName, parseChunkName);
+        connect(createChunkName, createTaskChunkName);
+        connect(createTaskChunkName, waitTaskChunkName);
+        connect(waitTaskChunkName, fetchChunkName);
+        connect(fetchChunkName, parseChunkName);
         previousChunkNodeName = parseChunkName;
         chunkParseNodeNames.push(parseChunkName);
       }
-      addNode(codeNode(applyName, [groupX, 820 + (OFFLINE_CHUNK_MONTH_OFFSETS.length * 300)], buildApplyChunkedReportCode(report, previousStateNodeName, chunkParseNodeNames, runtimeSource)));
+      addNode(codeNode(applyName, [groupX, 1140 + (OFFLINE_CHUNK_MONTH_OFFSETS.length * 300)], buildApplyChunkedReportCode(report, previousStateNodeName, chunkParseNodeNames, runtimeSource)));
       connect(previousChunkNodeName, applyName);
       previousStateNodeName = applyName;
       previousTriggerNodeName = applyName;
@@ -786,9 +837,9 @@ function buildWorkflow(config, runtimeSource) {
       },
     }));
 
-    addNode(httpRequestNode(runCsvName, [groupX, 660], {
-      method: "GET",
-      url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/queries/' + $json.id + '/run/csv' }}",
+    addNode(httpRequestNode(createTaskName, [groupX, 660], {
+      method: "POST",
+      url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks' }}",
       sendHeaders: true,
       specifyHeaders: "keypair",
       headerParameters: {
@@ -799,7 +850,41 @@ function buildWorkflow(config, runtimeSource) {
           },
           {
             name: "Accept",
-            value: "text/csv",
+            value: "application/json",
+          },
+          {
+            name: "Content-Type",
+            value: "application/json",
+          },
+        ],
+      },
+      sendBody: true,
+      contentType: "json",
+      specifyBody: "json",
+      jsonBody: "={{ (() => { const payload = { query_id: String($json.id), result_format: 'csv', source: 'billing-workbook-cloud-sync' }; if ($(\"Build Run Context\").all()[0].json.forceProduction) payload.force_production = true; return payload; })() }}",
+      options: {
+        response: {
+          response: {
+            responseFormat: "json",
+          },
+        },
+      },
+    }));
+    addNode(codeNode(waitTaskName, [groupX, 820], buildPauseCode(DEFAULT_QUERY_TASK_WAIT_MS)));
+    addNode(httpRequestNode(fetchCsvName, [groupX, 980], {
+      method: "GET",
+      url: "={{ $(\"Build Run Context\").all()[0].json.lookerBaseUrl.replace(/\\/+$/, '') + '/api/' + $(\"Build Run Context\").all()[0].json.lookerApiVersion + '/query_tasks/' + $json.id + '/results' }}",
+      sendHeaders: true,
+      specifyHeaders: "keypair",
+      headerParameters: {
+        parameters: [
+          {
+            name: "Authorization",
+            value: "={{ 'token ' + $(\"Looker Login\").all()[0].json.access_token }}",
+          },
+          {
+            name: "Accept",
+            value: "*/*",
           },
         ],
       },
@@ -814,14 +899,16 @@ function buildWorkflow(config, runtimeSource) {
       },
     }));
 
-    addNode(codeNode(applyName, [groupX, 820], buildApplyReportCode(report, previousStateNodeName, buildExportName, createExportName, runtimeSource)));
+    addNode(codeNode(applyName, [groupX, 1140], buildApplyReportCode(report, previousStateNodeName, buildExportName, createExportName, runtimeSource)));
 
     connect(previousTriggerNodeName, getLookName);
     connect(getLookName, getQueryName);
     connect(getQueryName, buildExportName);
     connect(buildExportName, createExportName);
-    connect(createExportName, runCsvName);
-    connect(runCsvName, applyName);
+    connect(createExportName, createTaskName);
+    connect(createTaskName, waitTaskName);
+    connect(waitTaskName, fetchCsvName);
+    connect(fetchCsvName, applyName);
 
     previousStateNodeName = applyName;
     previousTriggerNodeName = applyName;
