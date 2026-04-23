@@ -1,4 +1,4 @@
-import { importedLookerData } from "./looker-import.js?v=20260316e";
+import { importedLookerData } from "./looker-import.js";
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 

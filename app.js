@@ -10,7 +10,7 @@ import {
   TERTIARY,
   createInitialWorkbookData,
   getCorridor
-} from "./data.js?v=20260417b";
+} from "./data.js";
 import {
   fetchSharedDraftInvoice,
   generatePrivateInvoiceLink,
@@ -33,11 +33,31 @@ import {
   parseContractText,
   saveInvoiceArtifact,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js?v=20260422a";
+} from "./shared-backend.js";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
-const STORAGE_VERSION = 34;
+const STORAGE_VERSION = 35;
+
+// Feed markers for dedicated Stampli USD Abroad / credit-complete Looker feeds that
+// were confirmed wrong on 2026-04-21 and must never contribute to the calc. The
+// authoritative source for those transactions is partner_offline_billing (plus
+// partner_offline_billing_reversals). See docs/calc-coverage-report-2026-04-21.md.
+// Any ltxn row carrying one of these markers is purged on ingest, purged on
+// snapshot migration, and defensively filtered out again at calc time.
+const UNTRUSTED_DIRECT_INVOICE_SOURCES = new Set([
+  "stampli_credit_complete_billing",
+  "stampli_direct_billing",
+  "stampli_usd_abroad_revenue",
+  "stampli_usd_abroad_reversal"
+]);
+function isUntrustedDirectInvoiceRow(row) {
+  return !!row && UNTRUSTED_DIRECT_INVOICE_SOURCES.has(row.directInvoiceSource);
+}
+function stripUntrustedDirectInvoiceRows(rows) {
+  if (!Array.isArray(rows)) return rows;
+  return rows.filter((row) => !isUntrustedDirectInvoiceRow(row));
+}
 const SAVE_DELAY_MS = 1200;
 const ADMIN_USERNAME = "VeemAdmin";
 const ADMIN_PASSWORD = "VeemBilling123$";
@@ -3212,6 +3232,16 @@ function migrateSnapshot(saved) {
     snapshot.lva = rewritePartnerRows(snapshot.lva ?? defaults.lva);
   }
 
+  if (version < 35) {
+    // 2026-04-21: Dedicated Stampli USD Abroad / credit-complete Looker feeds were
+    // confirmed incorrect. partner_offline_billing is authoritative for those
+    // transactions. Purge any lingering rows so the calc can no longer be
+    // contaminated by a previously ingested snapshot.
+    snapshot.ltxn = Array.isArray(snapshot.ltxn)
+      ? snapshot.ltxn.filter((row) => !(row && UNTRUSTED_DIRECT_INVOICE_SOURCES.has(row.directInvoiceSource)))
+      : defaults.ltxn;
+  }
+
   snapshot._version = STORAGE_VERSION;
   snapshot._saved = new Date().toISOString();
   return { snapshot, changed: version < STORAGE_VERSION };
@@ -4072,14 +4102,20 @@ function revenueSourceKey(row) {
 }
 
 function applyLookerSectionUpdate(section, fileType, period, incomingRows) {
-  const rows = incomingRows || [];
+  const rows = stripUntrustedDirectInvoiceRows(incomingRows || []);
   if (section === "ltxn") {
+    // Always purge any existing rows with untrusted direct-invoice markers for this
+    // period, regardless of which fileType is being imported. Belt-and-suspenders:
+    // partner_offline_billing is authoritative for Stampli USD Abroad.
+    state.ltxn = state.ltxn.filter((row) => !(row.period === period && isUntrustedDirectInvoiceRow(row)));
     if (fileType === "partner_offline_billing") {
       state.ltxn = replaceRows(state.ltxn, rows, (row) => row.period === period && !row.revenueBasis && !row.directInvoiceSource);
       return;
     }
     if (fileType === "all_stampli_credit_complete") {
-      state.ltxn = replaceRows(state.ltxn, rows, (row) => row.period === period && row.directInvoiceSource === "stampli_credit_complete_billing");
+      // Dropped on 2026-04-21: dedicated Stampli credit-complete / USD Abroad feeds
+      // were confirmed incorrect. partner_offline_billing is authoritative. Ignore
+      // this fileType entirely so stale runs can't reintroduce bad rows.
       return;
     }
     if (fileType === "partner_rev_share_v2" || fileType === "partner_revenue_share") {
@@ -5602,7 +5638,10 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   }
   const lines = [];
   const notes = [];
-  const txns = state.ltxn.filter((row) => row.partner === activePartner && row.period === activePeriod);
+  // Defensive filter: dedicated Stampli USD Abroad / credit-complete feeds were
+  // confirmed wrong on 2026-04-21; offline_billing is authoritative. Ingest paths
+  // and snapshot migrations also strip these, this is belt-and-suspenders.
+  const txns = state.ltxn.filter((row) => row.partner === activePartner && row.period === activePeriod && !isUntrustedDirectInvoiceRow(row));
   const revs = state.lrev.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const revShareSummaries = state.lrs.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const fxPartnerPayoutRows = state.lfxp.filter((row) => row.partner === activePartner && row.period === activePeriod);

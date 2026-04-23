@@ -1,4 +1,4 @@
-import { billingAppConfig } from "./shared-config.js?v=20260422a";
+import { billingAppConfig } from "./shared-config.js";
 
 const AUTH_REDIRECT_ERROR_CODE = "billing-auth-redirect";
 const COGNITO_SESSION_STORAGE_KEY = "billing-workbook-cognito-session";
