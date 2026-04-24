@@ -1,4 +1,5 @@
 window.BILLING_APP_CONFIG = {
+  dataBucket: "veem-qa-billing-data",
   authMethod: "cognito-user-pool-identity-pool",
   awsRegion: "us-west-2",
   cognitoUserPoolId: "us-west-2_wTsjrgmhb",
@@ -12,18 +13,19 @@ window.BILLING_APP_CONFIG = {
   workbookWriteUrl: "",
   workbookHistoryWriteBaseUrl: "",
   invoiceDraftUrl: "",
+  invoiceArtifactWriteUrl: "https://2cm57gp365lualmea7uydm2wci0cjtgq.lambda-url.us-west-2.on.aws/",
   invoiceArtifactWriteBaseUrl: "https://veem-qa-billing-data.s3.us-west-2.amazonaws.com/artifacts/invoices/",
   privateInvoiceLinkSignerUrl: "https://nrv23fgl77gbs2qbmmtlk6rbje0ffoof.lambda-url.us-west-2.on.aws/",
   privateInvoiceLinkWriteBaseUrl: "",
-  privateInvoiceLinkReadBaseUrl: "",
+  privateInvoiceLinkReadBaseUrl: "https://billing.qa-us-west-2.veem.com/partner-downloads/",
   automationOutboxUrl: "",
   lookerImportWebhookUrl: "",
   contractParseWebhookUrl: "",
   contractExtractWebhookUrl: "",
   enableSharedWorkbook: true,
   enableRemoteInvoiceReads: false,
-  enableInvoiceArtifacts: false,
-  enablePrivateInvoiceLinks: false,
+  enableInvoiceArtifacts: true,
+  enablePrivateInvoiceLinks: true,
   enableLookerImports: false,
   enableContractAutomation: false
 };

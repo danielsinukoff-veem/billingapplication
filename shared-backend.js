@@ -47,12 +47,14 @@ export function getSharedBackendConfig() {
   };
   return {
     ...merged,
+    dataBucket: normalizeConfigUrl(merged.dataBucket),
     authMethod: normalizeAuthMethod(merged.authMethod),
     bootstrapUrl: normalizeConfigUrl(merged.bootstrapUrl),
     workbookReadUrl: normalizeConfigUrl(merged.workbookReadUrl),
     workbookWriteUrl: normalizeConfigUrl(merged.workbookWriteUrl),
     workbookHistoryWriteBaseUrl: normalizeConfigUrl(merged.workbookHistoryWriteBaseUrl),
     invoiceDraftUrl: normalizeConfigUrl(merged.invoiceDraftUrl),
+    invoiceArtifactWriteUrl: normalizeConfigUrl(merged.invoiceArtifactWriteUrl),
     invoiceArtifactWriteBaseUrl: normalizeConfigUrl(merged.invoiceArtifactWriteBaseUrl),
     privateInvoiceLinkWriteBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkWriteBaseUrl),
     privateInvoiceLinkReadBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkReadBaseUrl),
@@ -138,7 +140,7 @@ export function isRemoteInvoiceReadEnabled() {
 
 export function isInvoiceArtifactEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableInvoiceArtifacts && config.invoiceArtifactWriteBaseUrl);
+  return !!(config.enableInvoiceArtifacts && (config.invoiceArtifactWriteUrl || config.invoiceArtifactWriteBaseUrl));
 }
 
 export function isPrivateInvoiceLinkEnabled() {
@@ -786,6 +788,35 @@ export async function fetchSharedDraftInvoice(partner, startPeriod, endPeriod = 
 
 export async function saveInvoiceArtifact(payload) {
   const config = getSharedBackendConfig();
+  if (config.invoiceArtifactWriteUrl) {
+    const artifactId = String(payload?.bundleKey || `invoice-${Date.now()}`);
+    const requestPayload = {
+      mode: "invoice_artifact_write",
+      artifactId,
+      target: {
+        bucket: config.dataBucket || "",
+        prefix: "artifacts/invoices",
+        privateDownloadPrefix: "partner-downloads",
+        privateDownloadReadBaseUrl: config.privateInvoiceLinkReadBaseUrl || ""
+      },
+      invoiceArtifact: payload,
+      payload
+    };
+    const result = await postConfiguredJson(
+      config.invoiceArtifactWriteUrl,
+      requestPayload,
+      "Could not save the invoice package."
+    );
+    return {
+      artifactId: result?.artifactId || result?.id || artifactId,
+      savedAt: result?.savedAt || payload?.generatedAt || new Date().toISOString(),
+      manifestUrl: result?.manifestUrl || result?.manifest?.url || "",
+      transactionsUrl: result?.transactionsUrl || result?.transactions?.url || "",
+      documents: Array.isArray(result?.documents) ? result.documents : [],
+      fileCount: Number(result?.fileCount || result?.documents?.length || 0),
+      ...result
+    };
+  }
   if (!config.invoiceArtifactWriteBaseUrl) {
     throw new Error("Invoice artifact saving is not configured.");
   }
@@ -858,9 +889,13 @@ export async function generatePrivateInvoiceLink(payload) {
   if (config.privateInvoiceLinkSignerUrl) {
     return postConfiguredJson(
       config.privateInvoiceLinkSignerUrl,
-      payload,
-      "Could not generate the private invoice link.",
-      { includeCognitoToken: true }
+      {
+        mode: "invoice_private_link",
+        action: "generate_private_invoice_link",
+        readBaseUrl: config.privateInvoiceLinkReadBaseUrl || "",
+        ...payload
+      },
+      "Could not generate the private invoice link."
     );
   }
   if (!config.privateInvoiceLinkWriteBaseUrl) {

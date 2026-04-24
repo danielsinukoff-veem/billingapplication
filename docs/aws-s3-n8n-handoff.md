@@ -28,7 +28,7 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 1. The app reads `app-config.js` at load time.
 2. The app reads the current workbook snapshot from `data/current-workbook.json` or another S3 JSON path configured in `app-config.js`.
 3. User edits continue locally in the browser unless `workbookWriteUrl` is configured.
-4. When Cognito-authenticated S3 object URLs are configured, the frontend writes the current workbook and invoice artifacts directly to object storage. Private partner links are generated through a signer endpoint instead of direct browser writes to the delivery prefix.
+4. For invoice delivery, the frontend can call Lambda Function URLs as a serverless AWS bridge: one endpoint writes timestamped invoice artifacts to S3 and the signer endpoint returns the private partner download URL. Direct browser S3 writes remain a fallback only when Cognito or temporary AWS credentials are configured.
 5. The frontend reloads the refreshed S3 artifacts on the next load or refresh.
 
 ## Current repo components that matter
@@ -48,6 +48,7 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 
 - `workbookWriteUrl`
 - `workbookHistoryWriteBaseUrl`
+- `invoiceArtifactWriteUrl`
 - `invoiceArtifactWriteBaseUrl`
 - `authMethod`
 - `awsRegion`

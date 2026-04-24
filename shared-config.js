@@ -1,6 +1,7 @@
 export const billingAppConfig = {
   mode: "frontend-static",
   workspaceLabel: "Veem Billing Workspace",
+  dataBucket: "",
   authMethod: "",
   awsRegion: "",
   cognitoUserPoolId: "",
@@ -14,6 +15,7 @@ export const billingAppConfig = {
   workbookWriteUrl: "",
   workbookHistoryWriteBaseUrl: "",
   invoiceDraftUrl: "",
+  invoiceArtifactWriteUrl: "",
   invoiceArtifactWriteBaseUrl: "",
   privateInvoiceLinkSignerUrl: "",
   privateInvoiceLinkWriteBaseUrl: "",

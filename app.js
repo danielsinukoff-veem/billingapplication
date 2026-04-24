@@ -4385,8 +4385,11 @@ function getPrivateInvoiceLinkUrl(result) {
   return String(
     result?.privateUrl
     || result?.downloadUrl
+    || result?.signedUrl
+    || result?.privateDownloadUrl
     || result?.url
     || result?.link
+    || result?.download_url
     || ""
   ).trim();
 }
@@ -4470,13 +4473,14 @@ async function archiveInvoiceArtifactCopy(inv = state.inv, {
   const payload = await buildInvoiceArtifactPayload(inv, { trigger });
   if (!isInvoiceArtifactEnabled()) {
     const config = getSharedBackendConfig();
+    const archiveConfigured = !!(config.invoiceArtifactWriteUrl || config.invoiceArtifactWriteBaseUrl);
     state.invoiceArtifactStatus = "idle";
     state.invoiceArtifactError = "";
     state.invoiceArtifactRecord = null;
     if (showUnavailableToast) {
-      const warningMessage = config.invoiceArtifactWriteBaseUrl
-        ? "Timestamped invoice storage is configured, but Cognito browser auth is not fully configured yet."
-        : "Connect BILLING_APP_CONFIG.invoiceArtifactWriteBaseUrl to save a timestamped invoice copy on each run.";
+      const warningMessage = archiveConfigured
+        ? "Timestamped invoice storage is configured but not enabled."
+        : "Connect BILLING_APP_CONFIG.invoiceArtifactWriteUrl to save a timestamped invoice copy on each run.";
       showToast("Archive not configured", warningMessage, "warning");
     }
     render();
@@ -4543,7 +4547,7 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
       const config = getSharedBackendConfig();
       state.privateInvoiceLinkStatus = "error";
       state.privateInvoiceLinkError = (config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl)
-        ? "Private-link delivery is configured, but Cognito browser auth is not fully configured yet."
+        ? "Private-link delivery is configured but not enabled."
         : "Connect BILLING_APP_CONFIG.privateInvoiceLinkSignerUrl to generate a private partner link.";
       showToast("Private link not configured", state.privateInvoiceLinkError, "warning");
       render();
@@ -6643,7 +6647,7 @@ function renderInvoiceDeliveryPanel() {
     : state.privateInvoiceLinkStatus === "success" || state.invoiceArtifactStatus === "success"
       ? "success"
       : "";
-  const archiveConfigured = !!config.invoiceArtifactWriteBaseUrl;
+  const archiveConfigured = !!(config.invoiceArtifactWriteUrl || config.invoiceArtifactWriteBaseUrl);
   const linkConfigured = !!(config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl);
   const archiveEnabled = isInvoiceArtifactEnabled();
   const linkEnabled = isPrivateInvoiceLinkEnabled();
@@ -6654,8 +6658,8 @@ function renderInvoiceDeliveryPanel() {
       : archiveEnabled
         ? "Timestamped invoice archiving is ready."
         : archiveConfigured
-          ? "Timestamped invoice storage is configured, but Cognito browser auth is not fully configured yet."
-          : "Connect BILLING_APP_CONFIG.invoiceArtifactWriteBaseUrl to save a timestamped copy on each invoice run.";
+          ? "Timestamped invoice storage is configured but not enabled."
+          : "Connect BILLING_APP_CONFIG.invoiceArtifactWriteUrl to save a timestamped copy on each invoice run.";
   const linkSummary = state.privateInvoiceLinkStatus === "creating"
     ? "Generating a private partner download link..."
     : state.privateInvoiceLinkStatus === "success" && privateUrl
@@ -6663,7 +6667,7 @@ function renderInvoiceDeliveryPanel() {
       : linkEnabled
         ? "Private link generation is ready."
         : linkConfigured
-          ? "Private-link delivery is configured, but Cognito browser auth is not fully configured yet."
+          ? "Private-link delivery is configured but not enabled."
           : "Connect BILLING_APP_CONFIG.privateInvoiceLinkSignerUrl to generate a partner-safe private link.";
   return `
     <div class="summary-banner ${tone}" style="margin-top:14px">
