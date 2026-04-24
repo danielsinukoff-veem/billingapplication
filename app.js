@@ -38,11 +38,12 @@ const ACCESS_SESSION_KEY = "billing-workbook-access-session";
 const STORAGE_VERSION = 35;
 
 // Feed markers for dedicated Stampli USD Abroad / credit-complete Looker feeds that
-// were confirmed wrong on 2026-04-21 and must never contribute to the calc. The
-// authoritative source for those transactions is partner_offline_billing (plus
+// were confirmed wrong on 2026-04-21 and must never generate invoice charge lines.
+// The authoritative source for those transactions is partner_offline_billing (plus
 // partner_offline_billing_reversals). See docs/calc-coverage-report-2026-04-21.md.
-// Any ltxn row carrying one of these markers is purged on ingest, purged on
-// snapshot migration, and defensively filtered out again at calc time.
+// Older snapshots can still carry these rows, so the calculator filters them out
+// defensively and only treats positive direct revenue as a monthly-minimum fallback
+// when no trusted activity rows are available.
 const UNTRUSTED_DIRECT_INVOICE_SOURCES = new Set([
   "stampli_credit_complete_billing",
   "stampli_direct_billing",
@@ -58,6 +59,17 @@ function isUntrustedDirectInvoiceRow(row) {
 }
 function isUntrustedInvoiceDetailRow(row) {
   return !!row && UNTRUSTED_DETAIL_SOURCES.has(row.detailSource);
+}
+function getPreCollectedRevenueAmount(row) {
+  const estRevenue = Number(row?.estRevenue || 0);
+  if (estRevenue > 0) return roundCurrency(estRevenue);
+  const directInvoiceAmount = Number(row?.directInvoiceAmount || 0);
+  if (directInvoiceAmount > 0) return roundCurrency(directInvoiceAmount);
+  if (row?.directInvoiceSource) {
+    const customerRevenue = Number(row.customerRevenue || 0);
+    if (customerRevenue > 0) return roundCurrency(customerRevenue);
+  }
+  return 0;
 }
 function stripUntrustedDirectInvoiceRows(rows) {
   if (!Array.isArray(rows)) return rows;
@@ -4174,11 +4186,12 @@ async function hydrateMissingInvoiceSummaryRowsForRange(partner, startPeriod, en
   const periods = enumeratePeriods(startPeriod, endPeriod);
   let hydratedCount = 0;
   for (const period of periods) {
-    const hasAnySummary = (state.ltxn || []).some((row) => (
+    const hasTrustedSummary = (state.ltxn || []).some((row) => (
       norm(row.partner) === norm(partner)
       && row.period === period
+      && !isUntrustedDirectInvoiceRow(row)
     ));
-    if (hasAnySummary) continue;
+    if (hasTrustedSummary) continue;
     const detailRows = await loadInvoiceDetailRows(partner, period);
     const summaryRows = detailRows
       .map((row) => normalizeDetailSummaryTxnRow(row))
@@ -5845,13 +5858,17 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   // Defensive filter: dedicated Stampli USD Abroad / credit-complete feeds were
   // confirmed wrong on 2026-04-21; offline_billing is authoritative. Ingest paths
   // and snapshot migrations also strip these, this is belt-and-suspenders.
-  const txns = state.ltxn.filter((row) => row.partner === activePartner && row.period === activePeriod && !isUntrustedDirectInvoiceRow(row));
+  const rawTxns = state.ltxn.filter((row) => row.partner === activePartner && row.period === activePeriod);
+  const txns = rawTxns.filter((row) => !isUntrustedDirectInvoiceRow(row));
+  const minimumSupportTxns = txns.length
+    ? txns
+    : rawTxns.filter((row) => !isUntrustedDirectInvoiceRow(row) || getPreCollectedRevenueAmount(row) > 0);
   const revs = state.lrev.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const revShareSummaries = state.lrs.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const fxPartnerPayoutRows = state.lfxp.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const revShareRows = state.rs.filter((row) => row.partner === activePartner && inRange(activePeriod + "-15", row.startDate, row.endDate));
   const isIncremental = !!state.pConfig[activePartner];
-  const periodVolume = txns.reduce((sum, row) => sum + row.totalVolume, 0);
+  const periodVolume = minimumSupportTxns.reduce((sum, row) => sum + Number(row.totalVolume || 0), 0);
   const recurringBillingActive = isRecurringBillingLiveForPeriod(activePartner, activePeriod);
     const summaryChargeRows = revShareSummaries.filter((row) => Number(row.revenueOwed || 0) > 0);
     const summaryPayRows = revShareSummaries.filter((row) => Number(row.partnerRevenueShare || 0) > 0);
@@ -5863,7 +5880,7 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const summaryMinimumAmount = revShareSummaries.reduce((max, row) => Math.max(max, Number(row.monthlyMinimumRevenue || 0)), 0);
   const effectiveMinimumAmount = minimumRow?.minAmount > 0 ? minimumRow.minAmount : summaryMinimumAmount;
   const fxMarkupActivityRows = txns.filter((row) => (row.txnType === "FX" || (row.payerCcy === "USD" && row.payeeCcy && row.payeeCcy !== "USD")) && row.processingMethod === "Wire");
-  const preCollectedRevenueTotal = roundCurrency(txns.reduce((sum, row) => sum + Number(row.estRevenue || 0), 0));
+  const preCollectedRevenueTotal = roundCurrency(minimumSupportTxns.reduce((sum, row) => sum + getPreCollectedRevenueAmount(row), 0));
   const appendLine = ({ activityRows = [], groupLabel = "", groupKey = "", active = true, minimumEligible = false, ...line }) => {
     const normalizedGroupLabel = groupLabel || line.desc;
     lines.push({
@@ -5880,9 +5897,9 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
     if (!recurringBillingActive) return 0;
     if (authoritativeRecurringChargeSummary) return 0;
     const remainingByActivityKey = new Map(
-      txns
-        .filter((row) => Number(row.estRevenue || 0) > 0)
-        .map((row) => [activityRowKey(row), roundCurrency(Number(row.estRevenue || 0))])
+      minimumSupportTxns
+        .filter((row) => getPreCollectedRevenueAmount(row) > 0)
+        .map((row) => [activityRowKey(row), getPreCollectedRevenueAmount(row)])
     );
     if (!remainingByActivityKey.size) return 0;
     let usedTotal = 0;
@@ -6580,7 +6597,7 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const preCollectedRevenueUsed = applyPreCollectedRevenueOffsets();
 
   if (recurringBillingActive && !authoritativeRecurringChargeSummary) {
-    if (configuredTransactionFeeRows.length && !txns.length) {
+    if (configuredTransactionFeeRows.length && !minimumSupportTxns.length) {
       notes.push("Transaction-priced fees are configured for this partner, but no transaction upload was imported for this period. Offline, volume, FX, and surcharge charges may be missing.");
     }
     if (partnerReversalFees.length && !revs.length) {
