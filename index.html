@@ -27,12 +27,12 @@
           document.body.appendChild(script);
         });
         try {
-          await loadScript("./app-config-20260424-fixes1.js");
+          await loadScript("./app-config-20260424-adminrestore.js");
           if (isLocalRuntime) {
             await loadScript("./app-config.local.js", { optional: true });
             await loadScript("./aws-credentials.local.js", { optional: true });
           }
-          await loadScript("./app-20260424-fixes1.js", { type: "module" });
+          await loadScript("./app-20260424-adminrestore.js", { type: "module" });
         } catch (error) {
           console.error("Billing app bootstrap failed", error);
         }
