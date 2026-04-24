@@ -6,10 +6,10 @@ const RUNTIME_PATH = path.join(ROOT_DIR, "tools", "looker_sync_runtime.mjs");
 const CONFIG_PATH = path.join(ROOT_DIR, "docs", "looker-direct-reports.json");
 const OUTPUT_PATH = path.join(ROOT_DIR, "docs", "n8n-looker-cloud.workflow.json");
 
-const DEFAULT_BUCKET = "veem-prod-virginia-poc-billing-fe-delete-me";
-const DEFAULT_WORKBOOK_KEY = "partner-billing-form/data/current-workbook.json";
-const DEFAULT_SUMMARY_KEY = "partner-billing-form/data/looker-sync/latest-summary.json";
-const DEFAULT_WORKBOOK_HISTORY_PREFIX = "partner-billing-form/data/history/workbook";
+const DEFAULT_BUCKET = "veem-qa-billing-data";
+const DEFAULT_WORKBOOK_KEY = "current/workbook.json";
+const DEFAULT_SUMMARY_KEY = "looker-sync/latest-summary.json";
+const DEFAULT_WORKBOOK_HISTORY_PREFIX = "history/workbook";
 const OFFLINE_CHUNK_MONTH_OFFSETS = [-3, -2, -1, 0];
 const DEFAULT_QUERY_TASK_WAIT_SECONDS = 30;
 const OFFLINE_QUERY_TASK_WAIT_SECONDS = 120;

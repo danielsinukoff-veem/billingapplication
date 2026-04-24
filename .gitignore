@@ -18,6 +18,13 @@ aws-credentials.local.js
 /server/data/
 /reports/
 /looker-detail-files/
+/server/
+/tests/
+/docs/calc-coverage-report-2026-04-*.md
+/tools/apply-hubspot-partner-status.py
+/tools/generate_looker_import.py
+/tools/pull_looker_and_push.py
+/tools/sync_looker_to_s3.py
 
 # Local runtime / temp artifacts
 /tmp/

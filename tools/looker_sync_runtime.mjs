@@ -2044,8 +2044,14 @@ export function normalizeCloudSyncSummary(results) {
   };
 }
 
-export function buildS3WorkbookKeys(prefix = "partner-billing-form/data") {
+export function buildS3WorkbookKeys(prefix = "") {
   const normalized = text(prefix).replace(/^\/+|\/+$/g, "");
+  if (!normalized) {
+    return {
+      workbookKey: "current/workbook.json",
+      summaryKey: "looker-sync/latest-summary.json",
+    };
+  }
   return {
     workbookKey: `${normalized}/current-workbook.json`,
     summaryKey: `${normalized}/looker-sync/latest-summary.json`,

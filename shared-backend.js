@@ -92,7 +92,7 @@ function getSharedWorkbookWriteUrl() {
   return getSharedBackendConfig().workbookWriteUrl;
 }
 
-function shouldUseAwsStorageAuth(config = getSharedBackendConfig()) {
+function isAwsStorageAuthMethod(config = getSharedBackendConfig()) {
   const method = normalizeAuthMethod(config.authMethod);
   return method === "aws-cognito"
     || method === "cognito-sigv4"
@@ -102,12 +102,23 @@ function shouldUseAwsStorageAuth(config = getSharedBackendConfig()) {
 }
 
 function shouldUseAwsCognito(config = getSharedBackendConfig()) {
-  return shouldUseAwsStorageAuth(config)
+  return isAwsStorageAuthMethod(config)
     && !!config.awsRegion
     && !!config.cognitoUserPoolId
     && !!config.cognitoUserPoolClientId
     && !!config.cognitoIdentityPoolId
     && !!config.cognitoHostedUiDomain;
+}
+
+function hasInjectedAwsCredentialObject() {
+  const credentials = readWindowAwsCredentials();
+  if (!credentials || typeof credentials.then === "function") return false;
+  return !!(credentials.accessKeyId && credentials.secretAccessKey);
+}
+
+function shouldUseAwsStorageAuth(config = getSharedBackendConfig()) {
+  return isAwsStorageAuthMethod(config)
+    && (shouldUseAwsCognito(config) || hasInjectedAwsCredentialObject());
 }
 
 export function isSharedWorkbookEnabled() {
@@ -565,6 +576,29 @@ function buildObjectUrl(baseUrl, objectKey) {
   return resolveUrl(`${ensureTrailingSlash(baseUrl)}${String(objectKey || "").replace(/^\/+/, "")}`);
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function safeLinkHref(value) {
+  const href = normalizeConfigUrl(value);
+  if (!href) return "#";
+  try {
+    const base = typeof window !== "undefined" && window.location ? window.location.href : "https://billing.qa-us-west-2.veem.com/";
+    const url = new URL(href, base);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "#";
+    return url.toString();
+  } catch (error) {
+    return "#";
+  }
+}
+
 function buildStorageHeaders(contentType, extra = {}) {
   const config = getSharedBackendConfig();
   const headers = {
@@ -651,12 +685,19 @@ async function putConfiguredContent(url, content, contentType, fallbackMessage, 
 }
 
 function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
+  const safeTitle = escapeHtml(title || "Partner Invoice Package");
+  const safeSummary = (summaryLines || []).map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+  const safeLinks = (links || []).map((item) => {
+    const href = escapeHtml(safeLinkHref(item?.href));
+    const label = escapeHtml(item?.label || "Download");
+    return `<a href="${href}" target="_blank" rel="noopener">${label}</a>`;
+  }).join("");
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>
+    <title>${safeTitle}</title>
     <style>
       body { font-family: system-ui, sans-serif; background: #faf7f2; color: #2f241d; margin: 0; padding: 32px; }
       .card { max-width: 760px; margin: 0 auto; background: white; border: 1px solid #e7ddd1; border-radius: 20px; padding: 28px; }
@@ -669,12 +710,12 @@ function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
   </head>
   <body>
     <div class="card">
-      <h1>${title}</h1>
+      <h1>${safeTitle}</h1>
       <div class="muted">
-        ${summaryLines.map((line) => `<p>${line}</p>`).join("")}
+        ${safeSummary}
       </div>
       <div class="downloads">
-        ${links.map((item) => `<a href="${item.href}" target="_blank" rel="noopener">${item.label}</a>`).join("")}
+        ${safeLinks}
       </div>
     </div>
   </body>
