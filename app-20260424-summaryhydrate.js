@@ -63,13 +63,18 @@ function isUntrustedInvoiceDetailRow(row) {
 function getPreCollectedRevenueAmount(row) {
   const estRevenue = Number(row?.estRevenue || 0);
   if (estRevenue > 0) return roundCurrency(estRevenue);
+  return 0;
+}
+function getUntrustedDirectRevenueSupportAmount(row) {
+  if (!isUntrustedDirectInvoiceRow(row)) return 0;
   const directInvoiceAmount = Number(row?.directInvoiceAmount || 0);
   if (directInvoiceAmount > 0) return roundCurrency(directInvoiceAmount);
-  if (row?.directInvoiceSource) {
-    const customerRevenue = Number(row.customerRevenue || 0);
-    if (customerRevenue > 0) return roundCurrency(customerRevenue);
-  }
+  const customerRevenue = Number(row?.customerRevenue || 0);
+  if (customerRevenue > 0) return roundCurrency(customerRevenue);
   return 0;
+}
+function getMonthlyMinimumRevenueSupportAmount(row) {
+  return getPreCollectedRevenueAmount(row) || getUntrustedDirectRevenueSupportAmount(row);
 }
 function stripUntrustedDirectInvoiceRows(rows) {
   if (!Array.isArray(rows)) return rows;
@@ -5862,7 +5867,7 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const txns = rawTxns.filter((row) => !isUntrustedDirectInvoiceRow(row));
   const minimumSupportTxns = txns.length
     ? txns
-    : rawTxns.filter((row) => !isUntrustedDirectInvoiceRow(row) || getPreCollectedRevenueAmount(row) > 0);
+    : rawTxns.filter((row) => !isUntrustedDirectInvoiceRow(row) || getMonthlyMinimumRevenueSupportAmount(row) > 0);
   const revs = state.lrev.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const revShareSummaries = state.lrs.filter((row) => row.partner === activePartner && row.period === activePeriod);
   const fxPartnerPayoutRows = state.lfxp.filter((row) => row.partner === activePartner && row.period === activePeriod);
@@ -5880,7 +5885,7 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const summaryMinimumAmount = revShareSummaries.reduce((max, row) => Math.max(max, Number(row.monthlyMinimumRevenue || 0)), 0);
   const effectiveMinimumAmount = minimumRow?.minAmount > 0 ? minimumRow.minAmount : summaryMinimumAmount;
   const fxMarkupActivityRows = txns.filter((row) => (row.txnType === "FX" || (row.payerCcy === "USD" && row.payeeCcy && row.payeeCcy !== "USD")) && row.processingMethod === "Wire");
-  const preCollectedRevenueTotal = roundCurrency(minimumSupportTxns.reduce((sum, row) => sum + getPreCollectedRevenueAmount(row), 0));
+  const preCollectedRevenueTotal = roundCurrency(minimumSupportTxns.reduce((sum, row) => sum + getMonthlyMinimumRevenueSupportAmount(row), 0));
   const appendLine = ({ activityRows = [], groupLabel = "", groupKey = "", active = true, minimumEligible = false, ...line }) => {
     const normalizedGroupLabel = groupLabel || line.desc;
     lines.push({
