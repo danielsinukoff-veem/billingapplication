@@ -61,7 +61,6 @@ We want the app to stay mostly front end driven while moving the heavy work out 
 - `privateInvoiceLinkSignerUrl`
 - `invoiceDraftUrl`
 - `automationOutboxUrl`
-- `checkerWebhookUrl`
 - `lookerImportWebhookUrl`
 - `contractParseWebhookUrl`
 - `contractExtractWebhookUrl`

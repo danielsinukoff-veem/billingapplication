@@ -58,7 +58,6 @@ export function getSharedBackendConfig() {
     privateInvoiceLinkReadBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkReadBaseUrl),
     privateInvoiceLinkSignerUrl: normalizeConfigUrl(merged.privateInvoiceLinkSignerUrl),
     automationOutboxUrl: normalizeConfigUrl(merged.automationOutboxUrl),
-    checkerWebhookUrl: normalizeConfigUrl(merged.checkerWebhookUrl),
     lookerImportWebhookUrl: normalizeConfigUrl(merged.lookerImportWebhookUrl),
     contractParseWebhookUrl: normalizeConfigUrl(merged.contractParseWebhookUrl),
     contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl),
@@ -130,11 +129,6 @@ export function isInvoiceArtifactEnabled() {
 export function isPrivateInvoiceLinkEnabled() {
   const config = getSharedBackendConfig();
   return !!(config.enablePrivateInvoiceLinks && (config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl));
-}
-
-export function isBillingCheckerEnabled() {
-  const config = getSharedBackendConfig();
-  return !!(config.enableCheckerRuns && config.checkerWebhookUrl);
 }
 
 export function isLookerImportEnabled() {
@@ -923,14 +917,6 @@ export async function fetchBillingAutomationOutbox(asOf = "", lookaheadDays = 45
     "Could not load the billing automation outbox.",
     { params: { asOf, lookaheadDays } }
   );
-}
-
-export async function fetchBillingCheckerReport(payload) {
-  const config = getSharedBackendConfig();
-  if (!config.checkerWebhookUrl) {
-    throw new Error("Billing checker is not configured.");
-  }
-  return postConfiguredJson(config.checkerWebhookUrl, payload, "Could not run the billing checker.");
 }
 
 export async function importLookerFileAndSave(payload) {

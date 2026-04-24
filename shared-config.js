@@ -19,7 +19,6 @@ export const billingAppConfig = {
   privateInvoiceLinkWriteBaseUrl: "",
   privateInvoiceLinkReadBaseUrl: "",
   automationOutboxUrl: "",
-  checkerWebhookUrl: "",
   lookerImportWebhookUrl: "",
   contractParseWebhookUrl: "",
   contractExtractWebhookUrl: "",
@@ -27,7 +26,6 @@ export const billingAppConfig = {
   enableRemoteInvoiceReads: false,
   enableInvoiceArtifacts: false,
   enablePrivateInvoiceLinks: false,
-  enableCheckerRuns: false,
   enableLookerImports: false,
   enableContractAutomation: false
 };

@@ -29,11 +29,11 @@ Those two local override files are ignored by git. The hosted app will keep usin
 - Workbook data autosaves to browser `localStorage`, and can be written directly to AWS object storage when `workbookWriteUrl` plus the Cognito/SigV4 auth settings are configured.
 - `Export Backup` downloads the full workbook as JSON.
 - `Import Backup` restores a saved workbook JSON file.
-- Contract parsing in this static build can always accept structured JSON directly. PDF extraction, raw-text parsing, manual Looker imports, and checker runs are enabled only when their matching automation URLs are configured.
+- Contract parsing in this static build can always accept structured JSON directly. PDF extraction, raw-text parsing, and manual Looker imports are enabled only when their matching automation URLs are configured.
 
 ## Conversion target
 
-The target architecture is AWS + S3 + n8n, with the browser app acting as the main user interface and n8n handling file processing, checker runs, and writes back to hosted JSON artifacts.
+The target architecture is AWS + S3 + n8n, with the browser app acting as the main user interface and n8n handling file processing and writes back to hosted JSON artifacts.
 
 Recommended handoff docs:
 
