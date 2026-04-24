@@ -1,8 +1,6 @@
 export const billingAppConfig = {
   mode: "frontend-static",
   workspaceLabel: "Veem Billing Workspace",
-  adminUsername: "VeemAdmin",
-  adminPassword: "",
   authMethod: "",
   awsRegion: "",
   cognitoUserPoolId: "",

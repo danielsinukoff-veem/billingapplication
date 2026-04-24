@@ -1,6 +1,4 @@
 window.BILLING_APP_CONFIG = {
-  adminUsername: "VeemAdmin",
-  adminPassword: "",
   authMethod: "cognito-user-pool-identity-pool",
   awsRegion: "us-west-2",
   cognitoUserPoolId: "us-west-2_wTsjrgmhb",

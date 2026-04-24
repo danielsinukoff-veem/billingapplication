@@ -57,25 +57,13 @@ function stripUntrustedDirectInvoiceRows(rows) {
   return rows.filter((row) => !isUntrustedDirectInvoiceRow(row));
 }
 const SAVE_DELAY_MS = 1200;
-const DEFAULT_ADMIN_USERNAME = "VeemAdmin";
+const ADMIN_USERNAME = "VeemAdmin";
+const ADMIN_PASSWORD = "VeemBilling123$";
 const DEFAULT_REVERSAL_FEE_PER_TXN = 2.5;
 const DEFAULT_ADMIN_SETTINGS = Object.freeze({
   guestAllowedTabs: ["invoice", "partner", "rates", "looker", "costs", "import"],
   guestAccessCustomized: false
 });
-
-function getConfiguredAdminUsername() {
-  return String(getSharedBackendConfig().adminUsername || DEFAULT_ADMIN_USERNAME);
-}
-
-function getConfiguredAdminPassword() {
-  const config = getSharedBackendConfig();
-  return String(config.adminPassword || (typeof window !== "undefined" ? window.BILLING_APP_LOCAL_ADMIN_PASSWORD : "") || "");
-}
-
-function isAdminPasswordLoginConfigured() {
-  return !!getConfiguredAdminPassword();
-}
 
 const root = document.getElementById("app");
 let sharedWorkspaceRefreshPromise = null;
@@ -640,14 +628,7 @@ function beginGuestSession() {
 function beginAdminSession() {
   const username = String(state.authUsername || "").trim();
   const password = String(state.authPassword || "");
-  const adminUsername = getConfiguredAdminUsername();
-  const adminPassword = getConfiguredAdminPassword();
-  if (!adminPassword) {
-    state.authError = "Admin login is not configured for this hosted build.";
-    render();
-    return;
-  }
-  if (username !== adminUsername || password !== adminPassword) {
+  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     state.authError = "Username or password is incorrect.";
     render();
     return;
@@ -655,7 +636,7 @@ function beginAdminSession() {
   const switchingFromGuest = isGuestAuthenticated() ? state.authSession.name : "";
   state.authSession = {
     role: "admin",
-    name: adminUsername,
+    name: ADMIN_USERNAME,
     loggedInAt: new Date().toISOString()
   };
   persistAccessSession(state.authSession);
@@ -664,7 +645,7 @@ function beginAdminSession() {
   state.authError = "";
   state.authPassword = "";
   state.tab = "admin";
-  recordAccessActivity("admin_login", switchingFromGuest ? `Admin signed in from guest session ${switchingFromGuest}.` : "Admin signed in.", { username: adminUsername, category: "access" });
+  recordAccessActivity("admin_login", switchingFromGuest ? `Admin signed in from guest session ${switchingFromGuest}.` : "Admin signed in.", { username: ADMIN_USERNAME, category: "access" });
   render();
 }
 
@@ -6776,14 +6757,13 @@ function renderAccessGate({ overlay = false } = {}) {
   const choiceView = state.authView === "choice";
   const adminView = state.authView === "admin";
   const guestView = state.authView === "guest";
-  const adminLoginConfigured = isAdminPasswordLoginConfigured();
   return `
     <div class="${wrapperClass}">
       <div class="${contentClass}">
         ${overlay ? `<button class="access-close" data-action="close-auth-overlay" aria-label="Close">×</button>` : ""}
         <div class="access-badge">${overlay ? "Admin access required" : "Welcome"}</div>
         <h1>${overlay ? "Admin Portal Access" : "Partner Billing Workbook"}</h1>
-        <p>${overlay ? (adminLoginConfigured ? "Enter the admin username and password to unlock admin tools and protected tabs." : "Admin login is disabled for this hosted build until server-side auth is connected.") : ""}</p>
+        <p>${overlay ? "Enter the admin username and password to unlock admin tools and protected tabs." : ""}</p>
         ${choiceView ? `
           <div class="access-choice-grid">
             <button class="button primary" data-action="open-auth-admin">Admin</button>
@@ -6792,28 +6772,18 @@ function renderAccessGate({ overlay = false } = {}) {
         ` : ""}
         ${adminView ? `
           <div class="stack">
-            ${adminLoginConfigured ? `
-              <label class="field">
-                <span class="label">Username</span>
-                <input class="input" value="${html(state.authUsername)}" data-bind="authUsername" data-bind-live="true" placeholder="${html(getConfiguredAdminUsername())}">
-              </label>
-              <label class="field">
-                <span class="label">Password</span>
-                <input class="input" type="password" value="${html(state.authPassword)}" data-bind="authPassword" data-bind-live="true" placeholder="Password">
-              </label>
-              <div class="button-row">
-                <button class="button primary" data-action="submit-admin-login">Enter Admin Portal</button>
-                <button class="button ghost" data-action="open-auth-choice">Back</button>
-              </div>
-            ` : `
-              <div class="summary-banner warning">
-                <h4>Admin login disabled</h4>
-                <p>This hosted build no longer ships an admin password in public JavaScript. Use guest mode until a server-side admin auth path is connected.</p>
-              </div>
-              <div class="button-row">
-                <button class="button ghost" data-action="open-auth-choice">Back</button>
-              </div>
-            `}
+            <label class="field">
+              <span class="label">Username</span>
+              <input class="input" value="${html(state.authUsername)}" data-bind="authUsername" data-bind-live="true" placeholder="VeemAdmin">
+            </label>
+            <label class="field">
+              <span class="label">Password</span>
+              <input class="input" type="password" value="${html(state.authPassword)}" data-bind="authPassword" data-bind-live="true" placeholder="Password">
+            </label>
+            <div class="button-row">
+              <button class="button primary" data-action="submit-admin-login">Enter Admin Portal</button>
+              <button class="button ghost" data-action="open-auth-choice">Back</button>
+            </div>
           </div>
         ` : ""}
         ${guestView ? `

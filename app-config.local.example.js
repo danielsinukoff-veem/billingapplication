@@ -3,8 +3,6 @@ window.BILLING_APP_CONFIG = {
   authMethod: "aws-cognito",
   awsRegion: "us-east-1",
   workspaceLabel: "Veem Billing Workspace",
-  adminUsername: "VeemAdmin",
-  adminPassword: "replace-with-local-only-password",
   bootstrapUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
   workbookReadUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
   workbookWriteUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
