@@ -9,6 +9,9 @@ const sharedWorkbookState = {
   readUrl: ""
 };
 
+const LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES = 5_500_000;
+const INVOICE_ARTIFACT_CHUNK_CHAR_LIMIT = 1_500_000;
+
 let awsBrowserModulesPromise = null;
 let cognitoSessionPromise = null;
 let awsCredentialProviderCache = {
@@ -29,10 +32,26 @@ function normalizeConfigList(value) {
 }
 
 function readWindowOverrides() {
-  if (typeof window === "undefined" || !window.BILLING_APP_CONFIG || typeof window.BILLING_APP_CONFIG !== "object") {
+  if (typeof window === "undefined") {
     return {};
   }
-  return window.BILLING_APP_CONFIG;
+  const billingConfig = window.BILLING_APP_CONFIG && typeof window.BILLING_APP_CONFIG === "object"
+    ? window.BILLING_APP_CONFIG
+    : {};
+  const veemConfig = window.VEEM_BILLING_FE_CONFIG && typeof window.VEEM_BILLING_FE_CONFIG === "object"
+    ? window.VEEM_BILLING_FE_CONFIG
+    : {};
+  const token = billingConfig.apiToken
+    || billingConfig.bearerToken
+    || veemConfig.apiToken
+    || veemConfig.bearerToken
+    || "";
+  return {
+    ...billingConfig,
+    ...veemConfig,
+    apiToken: token,
+    bearerToken: token
+  };
 }
 
 function normalizeAuthMethod(value) {
@@ -63,6 +82,8 @@ export function getSharedBackendConfig() {
     lookerImportWebhookUrl: normalizeConfigUrl(merged.lookerImportWebhookUrl),
     contractParseWebhookUrl: normalizeConfigUrl(merged.contractParseWebhookUrl),
     contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl),
+    apiToken: normalizeConfigUrl(merged.apiToken || merged.bearerToken),
+    bearerToken: normalizeConfigUrl(merged.bearerToken || merged.apiToken),
     awsRegion: normalizeConfigUrl(merged.awsRegion),
     cognitoUserPoolId: normalizeConfigUrl(merged.cognitoUserPoolId),
     cognitoUserPoolClientId: normalizeConfigUrl(merged.cognitoUserPoolClientId),
@@ -482,8 +503,15 @@ function buildHeaders(extra = {}) {
     Accept: "application/json",
     ...extra
   };
-  if (config.apiToken) headers.Authorization = `Bearer ${config.apiToken}`;
+  const authorization = buildBearerAuthorization(config.apiToken);
+  if (authorization) headers.Authorization = authorization;
   return headers;
+}
+
+function buildBearerAuthorization(token) {
+  const value = normalizeConfigUrl(token);
+  if (!value) return "";
+  return value.toLowerCase().startsWith("bearer ") ? value : `Bearer ${value}`;
 }
 
 async function buildApiHeaders(extra = {}, { includeCognitoToken = false } = {}) {
@@ -568,6 +596,31 @@ async function postConfiguredJson(url, body, fallbackMessage, { includeCognitoTo
   );
 }
 
+function jsonByteLength(value) {
+  return new TextEncoder().encode(JSON.stringify(value || {})).byteLength;
+}
+
+function textByteLength(value) {
+  return new TextEncoder().encode(String(value ?? "")).byteLength;
+}
+
+function sizeLabel(bytes) {
+  const value = Number(bytes || 0);
+  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${value} bytes`;
+}
+
+function chunkText(value, maxChars = INVOICE_ARTIFACT_CHUNK_CHAR_LIMIT) {
+  const text = String(value ?? "");
+  if (!text) return [""];
+  const chunks = [];
+  for (let index = 0; index < text.length; index += maxChars) {
+    chunks.push(text.slice(index, index + maxChars));
+  }
+  return chunks;
+}
+
 function ensureTrailingSlash(value) {
   const trimmed = normalizeConfigUrl(value);
   if (!trimmed) return "";
@@ -607,8 +660,9 @@ function buildStorageHeaders(contentType, extra = {}) {
     ...extra
   };
   if (contentType) headers["Content-Type"] = contentType;
-  if (!shouldUseAwsStorageAuth(config) && config.apiToken) {
-    headers.Authorization = `Bearer ${config.apiToken}`;
+  const authorization = buildBearerAuthorization(config.apiToken);
+  if (!shouldUseAwsStorageAuth(config) && authorization) {
+    headers.Authorization = authorization;
   }
   return headers;
 }
@@ -786,22 +840,214 @@ export async function fetchSharedDraftInvoice(partner, startPeriod, endPeriod = 
   );
 }
 
+function buildInvoiceArtifactTarget(config) {
+  return {
+    bucket: config.dataBucket || "",
+    prefix: "artifacts/invoices",
+    privateDownloadPrefix: "partner-downloads",
+    privateDownloadReadBaseUrl: config.privateInvoiceLinkReadBaseUrl || ""
+  };
+}
+
+function buildInvoiceArtifactDocumentManifest(doc) {
+  return {
+    kind: doc?.kind || "",
+    title: doc?.title || "",
+    amountDue: Number(doc?.amountDue || 0),
+    fileName: doc?.fileName || `${doc?.kind || "invoice"}.html`
+  };
+}
+
+function buildInvoiceArtifactManifest(payload, { artifactId = "", documents = null, transactionsUrl = "" } = {}) {
+  const transactionFileName = payload?.transactions?.fileName || "transactions.csv";
+  const documentEntries = documents || (Array.isArray(payload?.documents) ? payload.documents.map(buildInvoiceArtifactDocumentManifest) : []);
+  return {
+    artifactId: artifactId || String(payload?.bundleKey || `invoice-${Date.now()}`),
+    savedAt: payload?.generatedAt || new Date().toISOString(),
+    generatedAt: payload?.generatedAt || "",
+    bundleKey: payload?.bundleKey || "",
+    partner: payload?.partner || "",
+    period: payload?.period || "",
+    periodStart: payload?.periodStart || "",
+    periodEnd: payload?.periodEnd || "",
+    periodKey: payload?.periodKey || "",
+    periodLabel: payload?.periodLabel || "",
+    periodDateRange: payload?.periodDateRange || "",
+    summary: payload?.summary || {},
+    workspace: payload?.workspace || {},
+    actor: payload?.actor || {},
+    invoiceSummary: payload?.invoiceSummary || {},
+    warnings: Array.isArray(payload?.warnings) ? payload.warnings : [],
+    documents: documentEntries,
+    transactions: {
+      fileName: transactionFileName,
+      rowCount: Number(payload?.transactions?.rowCount || 0),
+      url: transactionsUrl || ""
+    }
+  };
+}
+
+function buildInvoiceArtifactFiles(payload, artifactId) {
+  const files = [];
+  const documentEntries = Array.isArray(payload?.documents) ? payload.documents : [];
+  documentEntries.forEach((doc) => {
+    const fileName = doc?.fileName || `${doc?.kind || "invoice"}.html`;
+    const content = String(doc?.pdfHtml || "");
+    files.push({
+      role: doc?.kind === "payable" ? "ap_invoice" : "ar_invoice",
+      kind: doc?.kind || "",
+      title: doc?.title || "",
+      amountDue: Number(doc?.amountDue || 0),
+      fileName,
+      contentType: "text/html;charset=utf-8",
+      content,
+      byteLength: textByteLength(content)
+    });
+  });
+  const transactionFileName = payload?.transactions?.fileName || `${artifactId || "invoice"}-transactions.csv`;
+  const transactionContent = String(payload?.transactions?.csvText || "");
+  files.push({
+    role: "transactions",
+    fileName: transactionFileName,
+    contentType: "text/csv;charset=utf-8",
+    content: transactionContent,
+    byteLength: textByteLength(transactionContent),
+    rowCount: Number(payload?.transactions?.rowCount || 0)
+  });
+  return files;
+}
+
+function stripInvoiceArtifactFileContents(payload) {
+  if (!payload) return null;
+  return {
+    mode: payload.mode || "invoice_artifact",
+    trigger: payload.trigger || "",
+    generatedAt: payload.generatedAt || "",
+    bundleKey: payload.bundleKey || "",
+    partner: payload.partner || "",
+    period: payload.period || "",
+    periodStart: payload.periodStart || "",
+    periodEnd: payload.periodEnd || "",
+    periodKey: payload.periodKey || "",
+    periodLabel: payload.periodLabel || "",
+    periodDateRange: payload.periodDateRange || "",
+    summary: payload.summary || {},
+    workspace: payload.workspace || {},
+    actor: payload.actor || {},
+    invoiceSummary: payload.invoiceSummary || {},
+    warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+    documents: Array.isArray(payload.documents) ? payload.documents.map(buildInvoiceArtifactDocumentManifest) : [],
+    transactions: {
+      fileName: payload.transactions?.fileName || "transactions.csv",
+      rowCount: Number(payload.transactions?.rowCount || 0)
+    }
+  };
+}
+
+async function postInvoiceArtifactInChunks(config, payload, artifactId, target, fallbackMessage) {
+  const files = buildInvoiceArtifactFiles(payload, artifactId);
+  const manifest = buildInvoiceArtifactManifest(payload, {
+    artifactId,
+    documents: files
+      .filter((file) => file.role === "ar_invoice" || file.role === "ap_invoice")
+      .map((file) => ({
+        kind: file.kind,
+        title: file.title,
+        amountDue: file.amountDue,
+        fileName: file.fileName
+      }))
+  });
+  files.push({
+    role: "manifest",
+    fileName: "manifest.json",
+    contentType: "application/json",
+    content: JSON.stringify(manifest, null, 2),
+    byteLength: textByteLength(JSON.stringify(manifest, null, 2))
+  });
+  const beginPayload = {
+    mode: "invoice_artifact_upload_begin",
+    action: "begin_invoice_artifact_upload",
+    artifactId,
+    target,
+    manifest,
+    files: files.map(({ content, ...file }) => file)
+  };
+  const beginSize = jsonByteLength(beginPayload);
+  if (beginSize > LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES) {
+    throw new Error(`Invoice package metadata is ${sizeLabel(beginSize)}, above the Lambda Function URL safe payload size. The write endpoint must create S3 upload URLs or read source files server-side.`);
+  }
+  const beginResult = await postConfiguredJson(config.invoiceArtifactWriteUrl, beginPayload, fallbackMessage);
+  const uploadId = String(beginResult?.uploadId || beginResult?.id || artifactId);
+
+  for (const file of files) {
+    const chunks = chunkText(file.content);
+    for (let index = 0; index < chunks.length; index += 1) {
+      const chunkPayload = {
+        mode: "invoice_artifact_upload_chunk",
+        action: "put_invoice_artifact_chunk",
+        artifactId,
+        uploadId,
+        target,
+        file: {
+          role: file.role,
+          kind: file.kind || "",
+          title: file.title || "",
+          amountDue: Number(file.amountDue || 0),
+          fileName: file.fileName,
+          contentType: file.contentType,
+          byteLength: file.byteLength,
+          rowCount: Number(file.rowCount || 0)
+        },
+        chunkIndex: index,
+        chunkCount: chunks.length,
+        chunk: chunks[index]
+      };
+      const chunkSize = jsonByteLength(chunkPayload);
+      if (chunkSize > LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES) {
+        throw new Error(`Invoice package chunk ${file.fileName} #${index + 1} is ${sizeLabel(chunkSize)}, above the Lambda Function URL safe payload size.`);
+      }
+      await postConfiguredJson(config.invoiceArtifactWriteUrl, chunkPayload, fallbackMessage);
+    }
+  }
+
+  const completePayload = {
+    mode: "invoice_artifact_upload_complete",
+    action: "complete_invoice_artifact_upload",
+    artifactId,
+    uploadId,
+    target,
+    manifest
+  };
+  const result = await postConfiguredJson(config.invoiceArtifactWriteUrl, completePayload, fallbackMessage);
+  return {
+    artifactId: result?.artifactId || result?.id || artifactId,
+    savedAt: result?.savedAt || payload?.generatedAt || new Date().toISOString(),
+    manifestUrl: result?.manifestUrl || result?.manifest?.url || "",
+    transactionsUrl: result?.transactionsUrl || result?.transactions?.url || "",
+    documents: Array.isArray(result?.documents) ? result.documents : [],
+    fileCount: Number(result?.fileCount || result?.documents?.length || files.length),
+    ...result
+  };
+}
+
 export async function saveInvoiceArtifact(payload) {
   const config = getSharedBackendConfig();
   if (config.invoiceArtifactWriteUrl) {
     const artifactId = String(payload?.bundleKey || `invoice-${Date.now()}`);
+    const target = buildInvoiceArtifactTarget(config);
     const requestPayload = {
       mode: "invoice_artifact_write",
       artifactId,
-      target: {
-        bucket: config.dataBucket || "",
-        prefix: "artifacts/invoices",
-        privateDownloadPrefix: "partner-downloads",
-        privateDownloadReadBaseUrl: config.privateInvoiceLinkReadBaseUrl || ""
-      },
-      invoiceArtifact: payload,
-      payload
+      target,
+      invoiceArtifact: payload
     };
+    const requestSize = jsonByteLength(requestPayload);
+    if (requestSize > LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES) {
+      if (config.enableInvoiceArtifactChunkUpload) {
+        return postInvoiceArtifactInChunks(config, payload, artifactId, target, "Could not save the invoice package.");
+      }
+      throw new Error(`Invoice package is ${sizeLabel(requestSize)} after frontend de-duplication, above the Lambda Function URL safe payload size. This package needs a direct S3 or presigned upload path for artifacts/invoices/* instead of posting the file through Lambda.`);
+    }
     const result = await postConfiguredJson(
       config.invoiceArtifactWriteUrl,
       requestPayload,
@@ -887,14 +1133,23 @@ export async function saveInvoiceArtifact(payload) {
 export async function generatePrivateInvoiceLink(payload) {
   const config = getSharedBackendConfig();
   if (config.privateInvoiceLinkSignerUrl) {
+    const archivedArtifact = payload?.archivedArtifact || null;
+    const requestPayload = {
+      ...payload,
+      mode: "invoice_private_link",
+      action: "generate_private_invoice_link",
+      readBaseUrl: config.privateInvoiceLinkReadBaseUrl || "",
+      artifactId: archivedArtifact?.artifactId || archivedArtifact?.id || payload?.invoiceArtifact?.bundleKey || "",
+      archivedArtifact,
+      invoiceArtifact: stripInvoiceArtifactFileContents(payload?.invoiceArtifact)
+    };
+    const requestSize = jsonByteLength(requestPayload);
+    if (requestSize > LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES) {
+      throw new Error(`Private-link request is ${sizeLabel(requestSize)}, above the Lambda Function URL safe payload size. Save the invoice package first and send only the artifact ID/manifest URLs to the signer.`);
+    }
     return postConfiguredJson(
       config.privateInvoiceLinkSignerUrl,
-      {
-        mode: "invoice_private_link",
-        action: "generate_private_invoice_link",
-        readBaseUrl: config.privateInvoiceLinkReadBaseUrl || "",
-        ...payload
-      },
+      requestPayload,
       "Could not generate the private invoice link."
     );
   }

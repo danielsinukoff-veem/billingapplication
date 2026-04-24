@@ -20,6 +20,8 @@ export const billingAppConfig = {
   privateInvoiceLinkSignerUrl: "",
   privateInvoiceLinkWriteBaseUrl: "",
   privateInvoiceLinkReadBaseUrl: "",
+  apiToken: "",
+  bearerToken: "",
   automationOutboxUrl: "",
   lookerImportWebhookUrl: "",
   contractParseWebhookUrl: "",

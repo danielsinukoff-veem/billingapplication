@@ -4550,7 +4550,6 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
     title: doc.title,
     fileName: `${bundleKey}-${doc.kind === "receivable" ? "ar-invoice" : "ap-invoice"}.html`,
     amountDue: doc.amountDue,
-    data: doc,
     pdfHtml: buildInvoicePdfDocument(doc)
   }));
   const receivableDoc = documents.find((doc) => doc.kind === "receivable") || null;
@@ -4582,13 +4581,16 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
       netDirection: Number(inv.net || 0) >= 0 ? getPartnerOwesLabel(inv.partner) : "Veem Owes",
       transactionRowCount: transactionRows.length
     },
-    invoice: inv,
+    invoiceSummary: {
+      noteCount: Array.isArray(inv.notes) ? inv.notes.length : 0,
+      lineCount: Array.isArray(inv.lines) ? inv.lines.length : 0,
+      groupCount: Array.isArray(inv.groups) ? inv.groups.length : 0
+    },
     documents,
     transactions: {
       fileName: `${bundleKey}-transactions.csv`,
       rowCount: transactionRows.length,
-      csvText: rowsToCsvText(transactionRows),
-      rows: transactionRows
+      csvText: rowsToCsvText(transactionRows)
     },
     warnings: [
       ...(Array.isArray(inv.notes) ? inv.notes : []),
@@ -4674,6 +4676,11 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
       });
     } catch (error) {
       console.error("Could not pre-save invoice artifact before private link generation", error);
+      state.privateInvoiceLinkStatus = "error";
+      state.privateInvoiceLinkError = `Could not archive invoice files before link generation: ${String(error?.message || error || "Unknown error")}`;
+      showToast("Private link failed", state.privateInvoiceLinkError, "error");
+      render();
+      return;
     }
 
     if (!isPrivateInvoiceLinkEnabled()) {
@@ -4694,7 +4701,7 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
       period: state.inv.period,
       periodStart: state.inv.periodStart || state.inv.period,
       periodEnd: state.inv.periodEnd || state.inv.period,
-      invoiceArtifact: archiveContext?.payload || await buildInvoiceArtifactPayload(state.inv, { trigger: "generate_private_link" }),
+      invoiceArtifact: archiveContext?.payload || null,
       archivedArtifact: archiveContext?.result || state.invoiceArtifactRecord || null
     };
     const result = await generatePrivateInvoiceLink(payload);
