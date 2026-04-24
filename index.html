@@ -32,7 +32,11 @@
             await loadScript("./app-config.local.js", { optional: true });
             await loadScript("./aws-credentials.local.js", { optional: true });
           }
-          await loadScript("./app-20260424-summaryhydrate.js", { type: "module" });
+          // Runtime-injected config (e.g. the bearer token rotated into SSM and
+          // written to S3 by the Veem Billing FE deploy workflow). Safe to
+          // request unconditionally -- 404s are swallowed because optional:true.
+          await loadScript("./app-config-runtime.js", { optional: true });
+          await loadScript("./app-20260424-linkdownloads.js", { type: "module" });
         } catch (error) {
           console.error("Billing app bootstrap failed", error);
         }
