@@ -31,7 +31,7 @@ import {
   parseContractText,
   saveInvoiceArtifact,
   saveSharedWorkbookSnapshot
-} from "./shared-backend.js";
+} from "./shared-backend-20260423-deliveryprep.js";
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
