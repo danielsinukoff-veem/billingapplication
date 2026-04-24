@@ -375,6 +375,9 @@ const state = {
   perStart: LOOKER_IMPORT_PERIOD,
   perEnd: LOOKER_IMPORT_PERIOD,
   useDateRange: false,
+  financeBatchPeriod: LOOKER_IMPORT_PERIOD,
+  financeBatchStatus: "idle",
+  financeBatchError: "",
   billingSummaryPartner: "",
   pv: "",
   np: "",
@@ -1020,6 +1023,10 @@ async function persistSnapshot(payload) {
 
 function downloadJson(filename, data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  downloadBlob(filename, blob);
+}
+
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -1050,14 +1057,93 @@ function rowsToCsvText(rows) {
 function downloadCsv(filename, rows) {
   if (!rows.length) return;
   const blob = new Blob([rowsToCsvText(rows)], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  downloadBlob(filename, blob);
+}
+
+const ZIP_CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n += 1) {
+    let c = n;
+    for (let k = 0; k < 8; k += 1) {
+      c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  bytes.forEach((byte) => {
+    crc = ZIP_CRC32_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  });
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function writeUint16(bytes, offset, value) {
+  bytes[offset] = value & 0xff;
+  bytes[offset + 1] = (value >>> 8) & 0xff;
+}
+
+function writeUint32(bytes, offset, value) {
+  bytes[offset] = value & 0xff;
+  bytes[offset + 1] = (value >>> 8) & 0xff;
+  bytes[offset + 2] = (value >>> 16) & 0xff;
+  bytes[offset + 3] = (value >>> 24) & 0xff;
+}
+
+function buildZipBlob(entries) {
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+  entries.forEach((entry) => {
+    const nameBytes = encoder.encode(String(entry.name || "file").replace(/^\/+/, ""));
+    const dataBytes = typeof entry.content === "string"
+      ? encoder.encode(entry.content)
+      : entry.content instanceof Uint8Array
+        ? entry.content
+        : encoder.encode(String(entry.content ?? ""));
+    const crc = crc32(dataBytes);
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    writeUint32(localHeader, 0, 0x04034b50);
+    writeUint16(localHeader, 4, 20);
+    writeUint16(localHeader, 6, 0x0800);
+    writeUint16(localHeader, 8, 0);
+    writeUint16(localHeader, 10, 0);
+    writeUint16(localHeader, 12, 33);
+    writeUint32(localHeader, 14, crc);
+    writeUint32(localHeader, 18, dataBytes.length);
+    writeUint32(localHeader, 22, dataBytes.length);
+    writeUint16(localHeader, 26, nameBytes.length);
+    localHeader.set(nameBytes, 30);
+    localParts.push(localHeader, dataBytes);
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    writeUint32(centralHeader, 0, 0x02014b50);
+    writeUint16(centralHeader, 4, 20);
+    writeUint16(centralHeader, 6, 20);
+    writeUint16(centralHeader, 8, 0x0800);
+    writeUint16(centralHeader, 10, 0);
+    writeUint16(centralHeader, 12, 0);
+    writeUint16(centralHeader, 14, 33);
+    writeUint32(centralHeader, 16, crc);
+    writeUint32(centralHeader, 20, dataBytes.length);
+    writeUint32(centralHeader, 24, dataBytes.length);
+    writeUint16(centralHeader, 28, nameBytes.length);
+    writeUint32(centralHeader, 42, offset);
+    centralHeader.set(nameBytes, 46);
+    centralParts.push(centralHeader);
+    offset += localHeader.length + dataBytes.length;
+  });
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const endRecord = new Uint8Array(22);
+  writeUint32(endRecord, 0, 0x06054b50);
+  writeUint16(endRecord, 8, entries.length);
+  writeUint16(endRecord, 10, entries.length);
+  writeUint32(endRecord, 12, centralSize);
+  writeUint32(endRecord, 16, offset);
+  return new Blob([...localParts, ...centralParts, endRecord], { type: "application/zip" });
 }
 
 function slugifyFilenamePart(value) {
@@ -2628,7 +2714,7 @@ function buildPdfGroupMemo(group) {
   return [...memoCounts.entries()].map(([text, count]) => html(count > 1 ? `${text} × ${count}` : text)).join("<br>");
 }
 
-function buildInvoicePdfDocument(doc) {
+function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
   const periodLabel = doc.periodLabel || formatPeriodRangeLabel(doc.periodStart || doc.period, doc.periodEnd || doc.period);
   const periodDateRange = doc.periodDateRange || formatPeriodDateRange(doc.periodStart || doc.period, doc.periodEnd || doc.period);
   const isReceivable = doc.kind !== "payable";
@@ -2923,7 +3009,7 @@ function buildInvoicePdfDocument(doc) {
           </div>
         </section>
       </div>
-      <script>
+      ${autoPrint ? `<script>
         window.addEventListener("load", function () {
           window.setTimeout(function () {
             window.print();
@@ -2932,7 +3018,7 @@ function buildInvoicePdfDocument(doc) {
         window.addEventListener("afterprint", function () {
           window.close();
         });
-      <\/script>
+      <\/script>` : ""}
     </body>
   </html>`;
 }
@@ -4467,16 +4553,16 @@ function buildInvoiceSummaryFallbackRows(group) {
   }));
 }
 
-function buildInvoiceExportRows(detailRows, scope, group) {
-  if (!state.inv) return [];
+function buildInvoiceExportRows(detailRows, scope, group, inv = state.inv) {
+  if (!inv) return [];
   const matchingDescriptions = scope === "all" ? "" : (group?.lines || []).map((line) => line.desc).join(" | ");
   return detailRows.map((row) => ({
     exportScope: scope === "all" ? "all_transactions_for_range" : "matching_transactions",
-    invoicePartner: state.inv.partner,
-    invoicePeriod: state.inv.period,
-    invoicePeriodStart: state.inv.periodStart || state.inv.period,
-    invoicePeriodEnd: state.inv.periodEnd || state.inv.period,
-    invoicePeriodLabel: state.inv.periodLabel || state.inv.period,
+    invoicePartner: inv.partner,
+    invoicePeriod: inv.period,
+    invoicePeriodStart: inv.periodStart || inv.period,
+    invoicePeriodEnd: inv.periodEnd || inv.period,
+    invoicePeriodLabel: inv.periodLabel || inv.period,
     invoiceCategory: group?.cat || "",
     invoiceGroup: group?.label || "",
     invoiceDescriptions: matchingDescriptions,
@@ -4533,6 +4619,206 @@ async function exportInvoiceTransactions(scope, groupId) {
   const filename = `${slugifyFilenamePart(state.inv.partner)}-${buildInvoicePeriodKey(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period)}-${groupLabel}-${scopeLabel}.csv`;
   downloadCsv(filename, rows);
   showToast("CSV exported", `${rows.length} row${rows.length === 1 ? "" : "s"} downloaded for ${scope === "all" ? "the full date range" : (group?.label || "that invoice line")}.`, "success");
+}
+
+function getFinanceBatchPeriod() {
+  const period = normalizeMonthKey(state.financeBatchPeriod || state.perStart || LOOKER_IMPORT_PERIOD);
+  if (!/^\d{4}-\d{2}$/.test(period)) return "";
+  return period;
+}
+
+function getFinanceBatchPartners(period) {
+  return [...new Set(state.ps || [])]
+    .filter((partner) => partner && isPartnerActiveForPeriod(state, partner, period))
+    .sort((a, b) => String(a).localeCompare(String(b)));
+}
+
+function buildInvoiceSummaryRowsForExport(partner, startPeriod, endPeriod, exportNote) {
+  return getInvoicePeriodActivityRows(partner, startPeriod, endPeriod).map((row) => ({
+    detailCategory: "summary",
+    detailSource: "invoice_activity_summary",
+    exportNote,
+    ...row
+  }));
+}
+
+async function refreshSharedWorkspaceForBatchExport() {
+  if (!isSharedWorkbookEnabled()) return;
+  try {
+    await refreshSharedWorkspace({ showSuccessToast: false, showErrorToast: false, retries: 2, retryDelayMs: 250 });
+  } catch (error) {
+    console.error("Could not refresh shared workbook before finance batch export", error);
+  }
+}
+
+async function buildFinanceBatchInvoiceEntries(period) {
+  const entries = [];
+  const errors = [];
+  for (const partner of getFinanceBatchPartners(period)) {
+    try {
+      await hydrateMissingInvoiceSummaryRowsForRange(partner, period, period);
+      const inv = getMonthlyInvoiceDraft(partner, period);
+      const documents = buildInvoiceDocuments(inv);
+      documents.forEach((doc) => {
+        const kindLabel = doc.kind === "receivable" ? "ar" : "ap";
+        const partnerSlug = slugifyFilenamePart(partner);
+        const fileName = `${period}/${partnerSlug}/${partnerSlug}-${period}-${kindLabel}-invoice.html`;
+        entries.push({
+          partner,
+          period,
+          doc,
+          fileName
+        });
+      });
+    } catch (error) {
+      errors.push({
+        partner,
+        period,
+        error: String(error?.message || error || "Unknown error")
+      });
+    }
+  }
+  return { entries, errors };
+}
+
+function buildFinanceBatchInvoiceSummaryRows(entries, errors) {
+  const invoiceRows = entries.map(({ partner, period, doc, fileName }) => ({
+    partner,
+    period,
+    invoiceType: doc.kind === "receivable" ? "AR Invoice" : "AP Invoice",
+    fileName,
+    amountDue: roundCurrency(doc.amountDue),
+    chargeTotal: roundCurrency(doc.chargeTotal),
+    creditTotal: roundCurrency(doc.creditTotal),
+    payTotal: roundCurrency(doc.payTotal),
+    noteCount: (doc.notes || []).length,
+    notes: (doc.notes || []).join(" | "),
+    status: "generated"
+  }));
+  const errorRows = errors.map((row) => ({
+    partner: row.partner,
+    period: row.period,
+    invoiceType: "error",
+    fileName: "",
+    amountDue: "",
+    chargeTotal: "",
+    creditTotal: "",
+    payTotal: "",
+    noteCount: "",
+    notes: row.error,
+    status: "error"
+  }));
+  return [...invoiceRows, ...errorRows];
+}
+
+async function exportFinanceBatchInvoices() {
+  const period = getFinanceBatchPeriod();
+  if (!period) {
+    showToast("Month required", "Choose a valid month before running the finance batch export.", "warning");
+    return;
+  }
+  state.financeBatchPeriod = period;
+  state.financeBatchStatus = "invoices";
+  state.financeBatchError = "";
+  render();
+  try {
+    await refreshSharedWorkspaceForBatchExport();
+    const { entries, errors } = await buildFinanceBatchInvoiceEntries(period);
+    if (!entries.length && !errors.length) {
+      showToast("No invoices found", `No active partner invoices were generated for ${formatPeriodLabel(period)}.`, "warning");
+      return;
+    }
+    const summaryRows = buildFinanceBatchInvoiceSummaryRows(entries, errors);
+    const zipEntries = [
+      {
+        name: `${period}/billing-invoices-${period}-summary.csv`,
+        content: rowsToCsvText(summaryRows)
+      },
+      ...entries.map(({ doc, fileName }) => ({
+        name: fileName,
+        content: buildInvoicePdfDocument(doc, { autoPrint: false })
+      }))
+    ];
+    const zip = buildZipBlob(zipEntries);
+    downloadBlob(`billing-invoices-${period}.zip`, zip);
+    const errorNote = errors.length ? ` ${errors.length} partner${errors.length === 1 ? "" : "s"} had errors; see the summary CSV.` : "";
+    showToast("Invoice batch exported", `${entries.length} invoice file${entries.length === 1 ? "" : "s"} downloaded for ${formatPeriodLabel(period)}.${errorNote}`, errors.length ? "warning" : "success");
+    recordAccessActivity("export_finance_invoice_batch", `Exported finance invoice batch for ${period}.`, { category: "activity" });
+  } catch (error) {
+    console.error("Could not export finance invoice batch", error);
+    state.financeBatchError = String(error?.message || error || "Unknown error");
+    showToast("Invoice batch failed", state.financeBatchError, "error");
+  } finally {
+    state.financeBatchStatus = "idle";
+    render();
+  }
+}
+
+async function buildFinanceBatchTransactionRows(period) {
+  const rows = [];
+  const errors = [];
+  for (const partner of getFinanceBatchPartners(period)) {
+    try {
+      await hydrateMissingInvoiceSummaryRowsForRange(partner, period, period);
+      const inv = getMonthlyInvoiceDraft(partner, period);
+      let detailRows = [];
+      try {
+        detailRows = (await loadInvoiceDetailRowsForRange(partner, period, period))
+          .filter((row) => !isUntrustedInvoiceDetailRow(row))
+          .filter((row) => !row.period || isPartnerActiveForPeriod(state, partner, row.period));
+      } catch (detailError) {
+        console.error(`Could not load detail rows for ${partner} ${period}`, detailError);
+      }
+      const sourceRows = detailRows.length
+        ? detailRows
+        : buildInvoiceSummaryRowsForExport(partner, period, period, "Payment-level detail file was unavailable; this is the invoice activity summary used by the calculator.");
+      if (!sourceRows.length) continue;
+      rows.push(...buildInvoiceExportRows(sourceRows, "all", null, inv).map((row) => ({
+        financeBatchPeriod: period,
+        ...row
+      })));
+    } catch (error) {
+      errors.push({
+        financeBatchPeriod: period,
+        invoicePartner: partner,
+        detailCategory: "error",
+        detailSource: "finance_batch_export",
+        exportNote: String(error?.message || error || "Unknown error")
+      });
+    }
+  }
+  return { rows: [...rows, ...errors], errorCount: errors.length };
+}
+
+async function exportFinanceBatchTransactions() {
+  const period = getFinanceBatchPeriod();
+  if (!period) {
+    showToast("Month required", "Choose a valid month before running the finance batch export.", "warning");
+    return;
+  }
+  state.financeBatchPeriod = period;
+  state.financeBatchStatus = "transactions";
+  state.financeBatchError = "";
+  render();
+  try {
+    await refreshSharedWorkspaceForBatchExport();
+    const { rows, errorCount } = await buildFinanceBatchTransactionRows(period);
+    if (!rows.length) {
+      showToast("No transaction data found", `No payment-level detail rows or invoice activity summary rows were available for ${formatPeriodLabel(period)}.`, "warning");
+      return;
+    }
+    downloadCsv(`billing-transactions-${period}.csv`, rows);
+    const errorNote = errorCount ? ` ${errorCount} partner${errorCount === 1 ? "" : "s"} had errors included in the CSV.` : "";
+    showToast("Transaction batch exported", `${rows.length} row${rows.length === 1 ? "" : "s"} downloaded for ${formatPeriodLabel(period)}.${errorNote}`, errorCount ? "warning" : "success");
+    recordAccessActivity("export_finance_transaction_batch", `Exported finance transaction batch for ${period}.`, { category: "activity" });
+  } catch (error) {
+    console.error("Could not export finance transaction batch", error);
+    state.financeBatchError = String(error?.message || error || "Unknown error");
+    showToast("Transaction batch failed", state.financeBatchError, "error");
+  } finally {
+    state.financeBatchStatus = "idle";
+    render();
+  }
 }
 
 function buildInvoiceArtifactTimestampKey(value = new Date().toISOString()) {
@@ -7431,6 +7717,35 @@ function renderInvoiceTab() {
       : `<div class="panel"><div class="empty-state">No invoice lines were generated for this selection.</div></div>`)
     : "";
   const invoiceSection = state.inv ? `${banner}${deliveryPanel}${notesBlock}${documentTables}` : "";
+  const batchBusy = state.financeBatchStatus !== "idle";
+  const financeBatchPanel = `
+    <div class="card">
+      <div class="section-header compact">
+        <div>
+          <h3 class="section-title">Finance Batch Downloads ${renderInfoTip("Download all generated invoice documents or all transaction export rows for one month across active partners.")}</h3>
+          <p class="section-note">Invoices download as a ZIP of printable invoice HTML files plus a summary CSV. Transaction data downloads as one CSV using the same detail-row and invoice-summary fallback logic as the single-partner export buttons.</p>
+        </div>
+      </div>
+      <div class="field-grid" style="margin-top:16px">
+        <label class="field">
+          ${renderLabelWithInfo("Batch Month", "The batch export runs across all partners active in this month.")}
+          <input class="input" type="month" data-bind="financeBatchPeriod" value="${html(state.financeBatchPeriod || state.perStart || LOOKER_IMPORT_PERIOD)}">
+        </label>
+        <div class="field">
+          <span class="label">Download</span>
+          <div class="button-row">
+            <button class="button secondary" data-action="export-finance-batch-invoices"${batchBusy ? " disabled" : ""}>
+              ${state.financeBatchStatus === "invoices" ? "Preparing Invoices..." : "Download Month Invoices"}
+            </button>
+            <button class="button secondary" data-action="export-finance-batch-transactions"${batchBusy ? " disabled" : ""}>
+              ${state.financeBatchStatus === "transactions" ? "Preparing Transactions..." : "Download Month Transaction Data"}
+            </button>
+          </div>
+        </div>
+      </div>
+      ${state.financeBatchError ? `<p class="section-note">${html(state.financeBatchError)}</p>` : ""}
+    </div>
+  `;
   return `
     <div class="stack">
       ${renderPageTableToggle("invoice")}
@@ -7472,6 +7787,7 @@ function renderInvoiceTab() {
           </div>
         </div>
       </div>
+      ${financeBatchPanel}
       ${invoiceSection}
       ${summaryPanel}
     </div>
@@ -8481,6 +8797,14 @@ root.addEventListener("click", (event) => {
       console.error("Unhandled invoice calculation error", error);
       showToast("Invoice calculation failed", String(error?.message || error || "Unknown error"), "error");
     });
+    return;
+  }
+  if (action === "export-finance-batch-invoices") {
+    void exportFinanceBatchInvoices();
+    return;
+  }
+  if (action === "export-finance-batch-transactions") {
+    void exportFinanceBatchTransactions();
     return;
   }
   if (action === "clear-invoice-selection") {
