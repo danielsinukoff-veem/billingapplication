@@ -1218,7 +1218,7 @@ button {
 
 .billing-summary-toolbar {
   display: grid;
-  grid-template-columns: minmax(300px, 0.9fr) minmax(540px, 1.3fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -1244,7 +1244,7 @@ button {
 }
 
 .billing-summary-kpis .kpi-card strong {
-  font-size: clamp(1.15rem, 1.45vw, 1.8rem);
+  font-size: clamp(0.95rem, 1.08vw, 1.35rem);
   letter-spacing: -0.045em;
   white-space: nowrap;
 }
