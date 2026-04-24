@@ -4410,6 +4410,22 @@ function matchesTxnSummary(detailRow, summaryRow) {
     && optionalMatch(summaryRow.payeeCountry, detailRow.payeeCountry);
 }
 
+function matchesInvoiceActivitySummary(detailRow, summaryRow) {
+  const detailKind = String(detailRow.detailCategory || detailRow.sourceSection || "").trim().toLowerCase();
+  return (detailKind === "summary" || detailKind === "ltxn")
+    && norm(detailRow.partner) === norm(summaryRow.partner)
+    && norm(detailRow.period) === norm(summaryRow.period)
+    && norm(detailRow.txnType) === norm(summaryRow.txnType)
+    && norm(detailRow.speedFlag) === norm(summaryRow.speedFlag)
+    && norm(detailRow.processingMethod) === norm(summaryRow.processingMethod)
+    && optionalMatch(summaryRow.payerFunding, detailRow.payerFunding)
+    && optionalMatch(summaryRow.payeeFunding, detailRow.payeeFunding)
+    && optionalMatch(summaryRow.payerCcy, detailRow.payerCcy)
+    && optionalMatch(summaryRow.payeeCcy, detailRow.payeeCcy)
+    && optionalMatch(summaryRow.payerCountry, detailRow.payerCountry)
+    && optionalMatch(summaryRow.payeeCountry, detailRow.payeeCountry);
+}
+
 function matchesReversalSummary(detailRow, summaryRow) {
   return detailRow.detailCategory === "reversal"
     && norm(detailRow.partner) === norm(summaryRow.partner)
@@ -4439,11 +4455,14 @@ function matchesStampliFxPartnerMarkupDetail(detailRow, summaryRow, group) {
 }
 
 function buildInvoiceSummaryFallbackRows(group) {
-  if (!getStampliFxPartnerMarkupDirection(group, (group?.activityRows || [])[0])) return [];
+  if (!(group?.activityRows || []).length) return [];
+  const isStampliFxSummary = !!getStampliFxPartnerMarkupDirection(group, (group?.activityRows || [])[0]);
   return (group?.activityRows || []).map((row) => ({
     detailCategory: "summary",
     detailSource: "invoice_activity_summary",
-    exportNote: "Payment-level Stampli FX detail rows were unavailable; this is the invoice activity summary used by the calculator.",
+    exportNote: isStampliFxSummary
+      ? "Payment-level Stampli FX detail rows were unavailable; this is the invoice activity summary used by the calculator."
+      : "Payment-level detail rows were unavailable or did not match this invoice line; this is the invoice activity summary used by the calculator.",
     ...row
   }));
 }
@@ -4472,13 +4491,31 @@ async function exportInvoiceTransactions(scope, groupId) {
     .filter((row) => !isUntrustedInvoiceDetailRow(row))
     .filter((row) => !row.period || isPartnerActiveForPeriod(state, state.inv.partner, row.period));
   if (!detailRows.length) {
-    showToast("Nothing to export", "No payment-level detail file was available for that partner and date range.", "warning");
+    const fallbackRows = scope === "all"
+      ? getInvoicePeriodActivityRows(state.inv.partner, state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period).map((row) => ({
+        detailCategory: "summary",
+        detailSource: "invoice_activity_summary",
+        exportNote: "Payment-level detail file was unavailable; this is the invoice activity summary used by the calculator.",
+        ...row
+      }))
+      : buildInvoiceSummaryFallbackRows(group);
+    const rows = buildInvoiceExportRows(fallbackRows, scope, group);
+    if (!rows.length) {
+      showToast("Nothing to export", "No payment-level detail file or invoice activity summary was available for that partner and date range.", "warning");
+      return;
+    }
+    const scopeLabel = scope === "all" ? "all-period-transactions" : "matching-transactions";
+    const groupLabel = scope === "all" ? "all" : slugifyFilenamePart(group?.label || "invoice-line");
+    const filename = `${slugifyFilenamePart(state.inv.partner)}-${buildInvoicePeriodKey(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period)}-${groupLabel}-${scopeLabel}.csv`;
+    downloadCsv(filename, rows);
+    showToast("CSV exported", `${rows.length} summary row${rows.length === 1 ? "" : "s"} downloaded for ${scope === "all" ? "the full date range" : (group?.label || "that invoice line")}.`, "success");
     return;
   }
   let filtered = scope === "all"
     ? detailRows
     : detailRows.filter((detailRow) => (group?.activityRows || []).some((summaryRow) => (
       matchesStampliFxPartnerMarkupDetail(detailRow, summaryRow, group)
+      || matchesInvoiceActivitySummary(detailRow, summaryRow)
       || (group.cat === "Reversal"
         ? matchesReversalSummary(detailRow, summaryRow)
         : matchesTxnSummary(detailRow, summaryRow))
