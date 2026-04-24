@@ -35,7 +35,7 @@ import {
 
 const STORAGE_KEY = "billing-workbook-data";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
-const STORAGE_VERSION = 35;
+const STORAGE_VERSION = 36;
 
 // Feed markers for dedicated Stampli USD Abroad / credit-complete Looker feeds that
 // were confirmed wrong on 2026-04-21 and must never generate invoice charge lines.
@@ -84,6 +84,35 @@ const SAVE_DELAY_MS = 1200;
 const ADMIN_USERNAME = "VeemAdmin";
 const ADMIN_PASSWORD = "VeemBilling123$";
 const DEFAULT_REVERSAL_FEE_PER_TXN = 2.5;
+const INVOICE_ENTITY_OPTIONS = ["Veem Inc", "Veem Payments Inc"];
+const INVOICE_ENTITIES = {
+  "Veem Inc": {
+    name: "Veem Inc",
+    address: ["1160 Battery Street, Suite 100", "San Francisco, CA 94111", "USA"],
+    bankTitle: "Bank ACH/Wire Transfer Details",
+    bankLines: [
+      "Bank name: SILICON VALLEY BANK",
+      "Account name: VEEM INC",
+      "Address: 1160 BATTERY ST. EAST SUITE 100, SAN FRANCISCO CA 94111",
+      "A/C#: 3301224375",
+      "ABA: 121140399",
+      "Swift Code: SVBKUS6"
+    ]
+  },
+  "Veem Payments Inc": {
+    name: "Veem Payments Inc",
+    address: ["1160 Battery Street, Suite 100", "San Francisco, CA 94111", "USA"],
+    bankTitle: "Bank ACH/Wire Transfer Info",
+    bankLines: [
+      "Bank name: CITIBANK, N.A.",
+      "Account name: VPI US OPERATING ACC USD",
+      "Address: 1160 BATTERY ST. EAST SUITE 100, SAN FRANCISCO CA 94111",
+      "Account number: 31254388",
+      "Routing Number: 021000089",
+      "Swift code: CITIUS33XXX"
+    ]
+  }
+};
 const DEFAULT_ADMIN_SETTINGS = Object.freeze({
   guestAllowedTabs: ["invoice", "partner", "rates", "looker", "costs", "import"],
   guestAccessCustomized: false
@@ -1618,6 +1647,24 @@ function getImplementationCreditLabel(mode) {
   return "future fees";
 }
 
+function normalizeInvoiceEntity(value) {
+  const normalized = norm(value);
+  if (!normalized) return "";
+  if (normalized.includes("payment")) return "Veem Payments Inc";
+  if (normalized.includes("veem")) return "Veem Inc";
+  return INVOICE_ENTITY_OPTIONS.includes(value) ? value : "";
+}
+
+function getPartnerInvoiceEntity(partner) {
+  const configured = normalizeInvoiceEntity(getPartnerBillingConfig(partner)?.invoiceEntity);
+  return configured || "Veem Inc";
+}
+
+function getInvoiceEntityDetails(partner) {
+  const entityName = getPartnerInvoiceEntity(partner);
+  return INVOICE_ENTITIES[entityName] || INVOICE_ENTITIES["Veem Inc"];
+}
+
 function buildDefaultPartnerBilling(partner, existing = null) {
   return {
     id: existing?.id || uid(),
@@ -1637,6 +1684,7 @@ function buildDefaultPartnerBilling(partner, existing = null) {
     lateFeeStartDays: Number(existing?.lateFeeStartDays || 0),
     serviceSuspensionDays: Number(existing?.serviceSuspensionDays || 0),
     lateFeeTerms: existing?.lateFeeTerms || "",
+    invoiceEntity: normalizeInvoiceEntity(existing?.invoiceEntity || ""),
     note: existing?.note || ""
   };
 }
@@ -1667,6 +1715,7 @@ function mergePartnerBillingDefaults(existingRows, defaultRows) {
       lateFeeStartDays: Number(defaultRow.lateFeeStartDays || existing.lateFeeStartDays || 0),
       serviceSuspensionDays: Number(defaultRow.serviceSuspensionDays || existing.serviceSuspensionDays || 0),
       lateFeeTerms: defaultRow.lateFeeTerms || existing.lateFeeTerms || "",
+      invoiceEntity: normalizeInvoiceEntity(existing.invoiceEntity || defaultRow.invoiceEntity || ""),
       note: defaultRow.note || existing.note || ""
     };
   });
@@ -1687,6 +1736,7 @@ function upsertPartnerBilling(partner, patch, { persist = true, log = true } = {
   next.lateFeePercentMonthly = Number(next.lateFeePercentMonthly || 0);
   next.lateFeeStartDays = Number(next.lateFeeStartDays || 0);
   next.serviceSuspensionDays = Number(next.serviceSuspensionDays || 0);
+  next.invoiceEntity = normalizeInvoiceEntity(next.invoiceEntity || "");
   if (existing) {
     state.pBilling = state.pBilling.map((row) => (String(row.id) === String(existing.id) ? next : row));
   } else {
@@ -2714,35 +2764,96 @@ function buildPdfGroupMemo(group) {
   return [...memoCounts.entries()].map(([text, count]) => html(count > 1 ? `${text} × ${count}` : text)).join("<br>");
 }
 
-function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
-  const periodLabel = doc.periodLabel || formatPeriodRangeLabel(doc.periodStart || doc.period, doc.periodEnd || doc.period);
-  const periodDateRange = doc.periodDateRange || formatPeriodDateRange(doc.periodStart || doc.period, doc.periodEnd || doc.period);
+function buildPdfGroupMemoText(group) {
+  const lines = group?.lines || [];
+  if (!lines.length) return "";
+  return lines.map((line) => {
+    const reason = line.active === false && line.inactiveReason ? ` [${line.inactiveReason}]` : "";
+    return `${line.desc || group.label || ""}${reason}`;
+  }).filter(Boolean).join("; ");
+}
+
+function formatUsdAmount(value) {
+  return `USD ${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function buildInvoiceNumber(doc) {
+  const periodKey = normalizeMonthKey(doc.periodEnd || doc.period || doc.periodStart).replace("-", "");
+  const partnerCode = slugifyFilenamePart(doc.partner || "partner").replaceAll("-", "").slice(0, 12).toUpperCase() || "PARTNER";
+  const kindCode = doc.kind === "payable" ? "AP" : "AR";
+  return `${periodKey}-${partnerCode}-${kindCode}`;
+}
+
+function buildInvoiceFileBaseName(doc) {
+  return `${slugifyFilenamePart(doc.partner)}-${buildInvoicePeriodKey(doc.periodStart || doc.period, doc.periodEnd || doc.period)}-${doc.kind === "payable" ? "ap" : "ar"}-invoice`;
+}
+
+function buildInvoiceMetadata(doc) {
+  const period = normalizeMonthKey(doc.periodEnd || doc.period || doc.periodStart);
+  const record = getInvoiceTrackingRecord(doc.partner, period, doc.kind) || null;
+  const invoiceDate = normalizeIsoDate(record?.invoiceDate) || inferInvoiceTrackingInvoiceDate(doc.partner, period, doc.kind) || todayIsoDate();
+  const dueDate = normalizeIsoDate(record?.dueDateOverride) || getInvoiceDueDate(doc.partner, period, invoiceDate) || invoiceDate;
+  const config = getPartnerBillingConfig(doc.partner);
+  const dueDays = getBillingDueDays(doc.partner);
+  const terms = String(config?.payBy || "").trim() || (dueDays > 0 ? `Net ${dueDays}` : "Due on receipt");
+  const entity = getInvoiceEntityDetails(doc.partner);
+  return {
+    invoiceNumber: buildInvoiceNumber(doc),
+    invoiceDate,
+    dueDate,
+    terms,
+    entity,
+    billToLines: [
+      doc.partner,
+      config?.contactEmails ? `Billing contact: ${config.contactEmails}` : ""
+    ].filter(Boolean)
+  };
+}
+
+function buildClassicInvoiceRows(doc) {
   const isReceivable = doc.kind !== "payable";
-  const summaryLabel = isReceivable ? "Balance Due" : "Amount Due To Partner";
-  const totalLabel = isReceivable ? "Total Due" : "Partner Payout Total";
-  const adjustmentsLabel = isReceivable ? "Payments/Credits" : "Adjustments";
-  const adjustmentsValue = isReceivable ? Number(doc.creditTotal || 0) : 0;
-  const totalValue = Number(doc.amountDue || 0);
-  const rows = (doc.groups || []).map((group) => {
+  return (doc.groups || []).map((group) => {
     const displayCharge = group.isInactive ? group.displayCharge : group.charge;
     const displayPay = group.isInactive ? group.displayPay : group.pay;
     const displayOffset = group.isInactive ? group.displayOffset : group.offset;
     const columns = buildPdfGroupColumns(group, isReceivable);
-    const amount = isReceivable
-      ? displayCharge
-        ? formatSignedInvoiceAmount(displayCharge)
-        : displayOffset
-          ? `(${fmt(displayOffset)})`
-          : fmt(0)
-      : displayPay
-        ? formatSignedInvoiceAmount(displayPay)
-        : fmt(0);
+    const computation = columns.count && columns.count !== "—" && columns.perUnit && columns.perUnit !== "—"
+      ? `${columns.count} x ${columns.perUnit}`
+      : columns.count && columns.count !== "—"
+        ? `${columns.count} item${columns.count === "1" ? "" : "s"}`
+        : "";
+    const amountValue = isReceivable
+      ? Number(displayCharge || 0) - Number(displayOffset || 0)
+      : Number(displayPay || 0);
+    return {
+      item: group.cat || (isReceivable ? "Partner Fee" : "Partner Payout"),
+      description: group.label || columns.product || "",
+      computation,
+      memo: buildPdfGroupMemoText(group),
+      amountValue,
+      amount: amountValue < 0 ? `(${fmt(Math.abs(amountValue))})` : fmt(amountValue)
+    };
+  });
+}
+
+function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
+  const periodLabel = doc.periodLabel || formatPeriodRangeLabel(doc.periodStart || doc.period, doc.periodEnd || doc.period);
+  const periodDateRange = doc.periodDateRange || formatPeriodDateRange(doc.periodStart || doc.period, doc.periodEnd || doc.period);
+  const isReceivable = doc.kind !== "payable";
+  const metadata = buildInvoiceMetadata(doc);
+  const summaryLabel = isReceivable ? "Balance Due" : "Amount Due To Partner";
+  const totalLabel = isReceivable ? "Total" : "Partner Payout Total";
+  const adjustmentsLabel = isReceivable ? "Payments/Credits" : "Adjustments";
+  const adjustmentsValue = isReceivable ? Number(doc.creditTotal || 0) : 0;
+  const totalValue = Number(doc.amountDue || 0);
+  const rows = buildClassicInvoiceRows(doc).map((row) => {
     return `
-      <tr class="${group.isInactive ? "is-inactive" : ""}">
-        <td>${html(columns.product)}</td>
-        <td class="align-right">${html(columns.perUnit)}</td>
-        <td class="align-right">${html(columns.count)}</td>
-        <td class="align-right">${amount}</td>
+      <tr>
+        <td>${html(row.item)}</td>
+        <td>${html(row.description)}</td>
+        <td>${html(row.computation)}</td>
+        <td>${html(row.memo)}</td>
+        <td class="align-right">${html(row.amount)}</td>
       </tr>
     `;
   }).join("");
@@ -2758,7 +2869,7 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
       <style>
         @page {
           size: letter;
-          margin: 0.52in;
+          margin: 0.45in;
         }
         * {
           box-sizing: border-box;
@@ -2767,16 +2878,16 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           margin: 0;
           color: #121212;
           background: #ffffff;
-          font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+          font-family: "Helvetica Neue", Arial, sans-serif;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
         .invoice-sheet {
           width: 100%;
-          min-height: 10.4in;
+          min-height: 10.5in;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 16px;
         }
         .pdf-header {
           display: flex;
@@ -2785,7 +2896,7 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           gap: 28px;
         }
         .pdf-logo {
-          font-size: 2rem;
+          font-size: 2.15rem;
           font-weight: 900;
           line-height: 1;
           letter-spacing: -0.04em;
@@ -2800,26 +2911,10 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           color: #1d73c9;
         }
         .pdf-company {
-          margin-top: 34px;
+          margin-top: 22px;
           font-size: 0.9rem;
           font-weight: 600;
-        }
-        .pdf-blank-block {
-          margin-top: 10px;
-          border: 1.5px solid #d9d9d9;
-          background: #ffffff;
-        }
-        .pdf-blank-block.small {
-          width: 170px;
-          height: 44px;
-        }
-        .pdf-blank-block.billto {
-          width: 190px;
-          height: 88px;
-        }
-        .pdf-blank-block.remit {
-          width: 395px;
-          height: 108px;
+          line-height: 1.45;
         }
         .pdf-label {
           font-size: 0.88rem;
@@ -2831,7 +2926,7 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
         }
         .pdf-title {
           text-align: right;
-          font-size: 1.25rem;
+          font-size: 1.45rem;
           font-weight: 800;
           margin: 0 0 22px;
         }
@@ -2849,11 +2944,17 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
         }
         .pdf-meta-grid dd {
           margin: 0;
-        }
-        .pdf-inline-blank {
-          height: 18px;
+          min-width: 145px;
+          font-size: 0.86rem;
           border-bottom: 1.5px solid #1f1f1f;
-          width: 100%;
+          min-height: 18px;
+          text-align: right;
+        }
+        .pdf-address,
+        .pdf-bank,
+        .pdf-billto-card {
+          white-space: pre-line;
+          line-height: 1.4;
         }
         .pdf-billto {
           margin-top: 18px;
@@ -2876,14 +2977,14 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           background: #e7e7e7;
           font-size: 0.78rem;
           font-weight: 800;
-          text-align: center;
+          text-align: left;
         }
         .pdf-line-table tbody td {
-          padding: 4px 8px;
+          padding: 5px 8px;
           border-bottom: 1px solid #ececec;
-          font-size: 0.78rem;
+          font-size: 0.76rem;
           vertical-align: top;
-          text-align: center;
+          text-align: left;
         }
         .pdf-line-table tbody tr:last-child td {
           border-bottom: none;
@@ -2894,7 +2995,7 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           background: #f7f4ef;
         }
         .pdf-line-table .align-right {
-          text-align: center;
+          text-align: right;
         }
         .align-right {
           text-align: right;
@@ -2910,10 +3011,13 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
         .pdf-notes {
           flex: 1;
         }
+        .pdf-bank-title,
         .pdf-notes-title {
-          margin-top: 16px;
+          margin-top: 10px;
           font-size: 0.82rem;
+          font-weight: 700;
         }
+        .pdf-bank { font-size: 0.75rem; margin-top: 6px; color: #222; }
         .pdf-notes-list {
           margin: 8px 0 0 16px;
           padding: 0;
@@ -2960,22 +3064,24 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
         <section class="pdf-header">
           <div>
             <div class="pdf-logo"><span class="pdf-logo-v">v</span><span class="pdf-logo-rest">eem</span></div>
-            <div class="pdf-company">Veem Payments Inc</div>
-            <div class="pdf-blank-block small"></div>
+            <div class="pdf-company">
+              ${html(metadata.entity.name)}<br>
+              <span class="pdf-address">${metadata.entity.address.map(html).join("<br>")}</span>
+            </div>
             <div class="pdf-billto">
               <div class="pdf-label">Bill To:</div>
-              <div class="pdf-blank-block billto"></div>
+              <div class="pdf-billto-card">${metadata.billToLines.map(html).join("<br>")}</div>
             </div>
             <div class="pdf-period-note">${html(doc.partner)} · ${html(doc.title)} · ${html(periodLabel)} · ${html(periodDateRange)}</div>
           </div>
           <div class="pdf-right">
             <h1 class="pdf-title">Invoice</h1>
             <dl class="pdf-meta-grid">
-              <dt>Invoice #</dt><dd><div class="pdf-inline-blank"></div></dd>
-              <dt>Invoice Date</dt><dd><div class="pdf-inline-blank"></div></dd>
-              <dt>Due Date</dt><dd><div class="pdf-inline-blank"></div></dd>
-              <dt>Terms</dt><dd><div class="pdf-inline-blank"></div></dd>
-              <dt>P.O. Number:</dt><dd><div class="pdf-inline-blank"></div></dd>
+              <dt>Invoice #</dt><dd>${html(metadata.invoiceNumber)}</dd>
+              <dt>Invoice Date</dt><dd>${html(formatIsoDate(metadata.invoiceDate))}</dd>
+              <dt>Due Date</dt><dd>${html(formatIsoDate(metadata.dueDate))}</dd>
+              <dt>Terms</dt><dd>${html(metadata.terms)}</dd>
+              <dt>P.O. Number:</dt><dd>N/A</dd>
             </dl>
           </div>
         </section>
@@ -2984,21 +3090,23 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           <table class="pdf-line-table">
             <thead>
               <tr>
-                <th style="width: 40%">Product</th>
-                <th style="width: 20%" class="align-right">Per Unit $</th>
-                <th style="width: 20%" class="align-right">Count</th>
-                <th style="width: 20%" class="align-right">Amount</th>
+                <th style="width: 15%">Item</th>
+                <th style="width: 23%">Description</th>
+                <th style="width: 20%">Computation</th>
+                <th style="width: 27%">Memo</th>
+                <th style="width: 15%" class="align-right">Amount</th>
               </tr>
             </thead>
             <tbody>
-              ${rows || `<tr><td colspan="4">No invoice lines were generated.</td></tr>`}
+              ${rows || `<tr><td colspan="5">No invoice lines were generated.</td></tr>`}
             </tbody>
           </table>
         </section>
 
         <section class="pdf-bottom">
           <div class="pdf-notes">
-            <div class="pdf-blank-block remit"></div>
+            <div class="pdf-bank-title">${html(metadata.entity.bankTitle)}</div>
+            <div class="pdf-bank">${metadata.entity.bankLines.map(html).join("<br>")}</div>
             <div class="pdf-notes-title">Notes</div>
             ${notesMarkup}
           </div>
@@ -3023,6 +3131,225 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
   </html>`;
 }
 
+function sanitizePdfText(value) {
+  return String(value ?? "")
+    .replaceAll("→", "->")
+    .replaceAll("×", "x")
+    .replaceAll("–", "-")
+    .replaceAll("—", "-")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "");
+}
+
+function escapePdfText(value) {
+  return sanitizePdfText(value).replace(/[\\()]/g, "\\$&");
+}
+
+function wrapPdfText(value, maxChars) {
+  const words = sanitizePdfText(value).split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  words.forEach((word) => {
+    if (!current) {
+      current = word;
+    } else if ((current.length + word.length + 1) <= maxChars) {
+      current = `${current} ${word}`;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  });
+  if (current) lines.push(current);
+  return lines.length ? lines : [""];
+}
+
+function pdfText(x, y, text, size = 10, { bold = false, color = "0 0 0" } = {}) {
+  return `${color} rg BT /${bold ? "F2" : "F1"} ${size} Tf ${x.toFixed(2)} ${y.toFixed(2)} Td (${escapePdfText(text)}) Tj ET\n`;
+}
+
+function pdfLine(x1, y1, x2, y2, width = 0.6) {
+  return `${width} w ${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S\n`;
+}
+
+function pdfRect(x, y, w, h, fill = "0.91 0.91 0.91") {
+  return `${fill} rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f\n0 0 0 rg`;
+}
+
+function buildInvoicePdfPageContent(doc) {
+  const width = 612;
+  const height = 792;
+  const margin = 40;
+  const metadata = buildInvoiceMetadata(doc);
+  const rows = buildClassicInvoiceRows(doc);
+  const pages = [];
+  let commands = "";
+  let y = height - margin;
+
+  const startPage = () => {
+    commands = "";
+    y = height - margin;
+    commands += pdfText(margin, y, "v", 26, { bold: true, color: "0.90 0.44 0.08" });
+    commands += pdfText(margin + 17, y, "eem", 26, { bold: true, color: "0.10 0.39 0.70" });
+    commands += pdfText(width - margin - 84, y, "Invoice", 18, { bold: true });
+    y -= 28;
+  };
+  const finishPage = () => {
+    pages.push(commands);
+  };
+  const addLine = (x, text, size = 9, options = {}) => {
+    commands += pdfText(x, y, text, size, options);
+  };
+  const addWrapped = (x, text, maxChars, size = 8, options = {}) => {
+    wrapPdfText(text, maxChars).forEach((line) => {
+      addLine(x, line, size, options);
+      y -= size + 2;
+    });
+  };
+  const addTableHeader = () => {
+    commands += pdfRect(margin, y - 15, width - (margin * 2), 20);
+    commands += pdfText(margin + 4, y - 9, "Item", 8, { bold: true });
+    commands += pdfText(margin + 82, y - 9, "Description", 8, { bold: true });
+    commands += pdfText(margin + 220, y - 9, "Computation", 8, { bold: true });
+    commands += pdfText(margin + 330, y - 9, "Memo", 8, { bold: true });
+    commands += pdfText(width - margin - 58, y - 9, "Amount", 8, { bold: true });
+    y -= 24;
+  };
+
+  startPage();
+  commands += pdfText(margin, y, metadata.entity.name, 9, { bold: true });
+  y -= 12;
+  metadata.entity.address.forEach((line) => {
+    commands += pdfText(margin, y, line, 8);
+    y -= 10;
+  });
+  y -= 12;
+  commands += pdfText(margin, y, "Bill To:", 9, { bold: true });
+  y -= 12;
+  metadata.billToLines.forEach((line) => {
+    addWrapped(margin, line, 42, 8);
+  });
+  const metaX = width - margin - 185;
+  let metaY = height - margin - 38;
+  [
+    ["Invoice #", metadata.invoiceNumber],
+    ["Invoice Date", formatIsoDate(metadata.invoiceDate)],
+    ["Due Date", formatIsoDate(metadata.dueDate)],
+    ["Terms", metadata.terms],
+    ["P.O. Number", "N/A"]
+  ].forEach(([label, value]) => {
+    commands += pdfText(metaX, metaY, label, 8, { bold: true });
+    commands += pdfText(metaX + 78, metaY, value, 8);
+    commands += pdfLine(metaX + 76, metaY - 2, width - margin, metaY - 2, 0.4);
+    metaY -= 16;
+  });
+  y = Math.min(y, metaY - 18);
+  commands += pdfText(margin, y, `${doc.partner} - ${doc.title} - ${doc.periodLabel || doc.period}`, 8, { bold: true });
+  y -= 12;
+  commands += pdfText(margin, y, doc.periodDateRange || formatPeriodDateRange(doc.periodStart || doc.period, doc.periodEnd || doc.period), 8);
+  y -= 22;
+  addTableHeader();
+
+  rows.forEach((row) => {
+    const memoLines = wrapPdfText(row.memo, 38).slice(0, 4);
+    const descLines = wrapPdfText(row.description, 24).slice(0, 3);
+    const compLines = wrapPdfText(row.computation, 18).slice(0, 3);
+    const rowHeight = Math.max(memoLines.length, descLines.length, compLines.length, 1) * 10 + 8;
+    if (y - rowHeight < 148) {
+      finishPage();
+      startPage();
+      addTableHeader();
+    }
+    const rowTop = y;
+    commands += pdfText(margin + 4, rowTop, row.item, 7.5);
+    descLines.forEach((line, index) => { commands += pdfText(margin + 82, rowTop - (index * 10), line, 7.5); });
+    compLines.forEach((line, index) => { commands += pdfText(margin + 220, rowTop - (index * 10), line, 7.5); });
+    memoLines.forEach((line, index) => { commands += pdfText(margin + 330, rowTop - (index * 10), line, 7.2); });
+    commands += pdfText(width - margin - 70, rowTop, row.amount, 7.5);
+    y -= rowHeight;
+    commands += pdfLine(margin, y + 4, width - margin, y + 4, 0.25);
+  });
+
+  if (y < 190) {
+    finishPage();
+    startPage();
+  }
+  y -= 8;
+  commands += pdfText(margin, y, metadata.entity.bankTitle, 8, { bold: true });
+  y -= 11;
+  metadata.entity.bankLines.forEach((line) => {
+    commands += pdfText(margin, y, line, 7.2);
+    y -= 9;
+  });
+  y -= 8;
+  commands += pdfText(margin, y, "Notes", 8, { bold: true });
+  y -= 11;
+  (doc.notes || []).slice(0, 6).forEach((note) => {
+    wrapPdfText(note, 74).slice(0, 2).forEach((line) => {
+      commands += pdfText(margin, y, line, 7);
+      y -= 8;
+    });
+  });
+  const totalsX = width - margin - 190;
+  let totalsY = 142;
+  const isReceivable = doc.kind !== "payable";
+  const adjustmentsValue = isReceivable ? Number(doc.creditTotal || 0) : 0;
+  [
+    [isReceivable ? "Payments/Credits" : "Adjustments", formatUsdAmount(adjustmentsValue)],
+    [isReceivable ? "Balance Due" : "Amount Due To Partner", formatUsdAmount(doc.amountDue)],
+    [isReceivable ? "Total" : "Partner Payout Total", formatUsdAmount(doc.amountDue)]
+  ].forEach(([label, value], index) => {
+    commands += pdfText(totalsX, totalsY, label, index === 2 ? 10 : 8, { bold: index === 2 });
+    commands += pdfText(width - margin - 88, totalsY, value, index === 2 ? 10 : 8, { bold: index === 2 });
+    if (index === 1) commands += pdfLine(totalsX, totalsY - 7, width - margin, totalsY - 7, 1);
+    totalsY -= 18;
+  });
+  finishPage();
+  return { pages, width, height };
+}
+
+function buildPdfBytesFromPages(pageContents, width = 612, height = 792) {
+  const encoder = new TextEncoder();
+  const objects = [];
+  const addObject = (body) => {
+    objects.push(body);
+    return objects.length;
+  };
+  const catalogId = addObject("<< /Type /Catalog /Pages 2 0 R >>");
+  const pagesId = addObject("");
+  const fontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const boldFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
+  const pageIds = [];
+  pageContents.forEach((content) => {
+    const stream = sanitizePdfText(content);
+    const contentId = addObject(`<< /Length ${encoder.encode(stream).length} >>\nstream\n${stream}\nendstream`);
+    const pageId = addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${width} ${height}] /Resources << /Font << /F1 ${fontId} 0 R /F2 ${boldFontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+    pageIds.push(pageId);
+  });
+  objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
+  objects[catalogId - 1] = "<< /Type /Catalog /Pages 2 0 R >>";
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((body, index) => {
+    offsets[index + 1] = encoder.encode(pdf).length;
+    pdf += `${index + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xrefOffset = encoder.encode(pdf).length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  return encoder.encode(pdf);
+}
+
+function buildInvoicePdfBytes(doc) {
+  const { pages, width, height } = buildInvoicePdfPageContent(doc);
+  return buildPdfBytesFromPages(pages, width, height);
+}
+
+function buildInvoicePdfBlob(doc) {
+  return new Blob([buildInvoicePdfBytes(doc)], { type: "application/pdf" });
+}
+
 function exportInvoicePdf(docKind = "") {
   if (!state.inv) return;
   const documents = buildInvoiceDocuments(state.inv);
@@ -3033,14 +3360,17 @@ function exportInvoicePdf(docKind = "") {
     showToast("No invoice available", "No document was generated for this side of the billing period.", "warning");
     return;
   }
+  const fileBase = buildInvoiceFileBaseName(targetDoc);
+  downloadBlob(`${fileBase}.pdf`, buildInvoicePdfBlob(targetDoc));
   const popup = window.open("", "_blank", "width=1024,height=1320");
   if (!popup) {
-    showToast("PDF export blocked", "Allow pop-ups for localhost to open the printable invoice.", "warning");
+    showToast("PDF downloaded", "The PDF file was downloaded. Allow pop-ups to also open the printable HTML copy.", "warning");
     return;
   }
   popup.document.open();
   popup.document.write(buildInvoicePdfDocument(targetDoc));
   popup.document.close();
+  showToast("Invoice exported", "Downloaded the PDF and opened the printable HTML copy.", "success");
 }
 
 function clearCurrentInvoiceSelection({ renderNow = true } = {}) {
@@ -3334,6 +3664,14 @@ function migrateSnapshot(saved) {
     snapshot.ltxn = Array.isArray(snapshot.ltxn)
       ? snapshot.ltxn.filter((row) => !(row && UNTRUSTED_DIRECT_INVOICE_SOURCES.has(row.directInvoiceSource)))
       : defaults.ltxn;
+  }
+
+  if (version < 36) {
+    const defaultsByPartner = new Map((defaults.pBilling || []).map((row) => [norm(row.partner), row]));
+    snapshot.pBilling = mergePartnerBillingDefaults(snapshot.pBilling, defaults.pBilling).map((row) => ({
+      ...row,
+      invoiceEntity: normalizeInvoiceEntity(row.invoiceEntity || defaultsByPartner.get(norm(row.partner))?.invoiceEntity || "")
+    }));
   }
 
   snapshot._version = STORAGE_VERSION;
@@ -4570,6 +4908,65 @@ function buildInvoiceExportRows(detailRows, scope, group, inv = state.inv) {
   }));
 }
 
+function formatTransactionExportAmount(value, { currency = true } = {}) {
+  if (value === "" || value == null || Number.isNaN(Number(String(value).replace(/[$,]/g, "")))) return "";
+  const numeric = Number(String(value).replace(/[$,]/g, ""));
+  return currency ? `$${numeric.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : numeric.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function firstPresentValue(row, keys) {
+  for (const key of keys) {
+    if (row?.[key] !== undefined && row?.[key] !== null && String(row[key]).trim() !== "") return row[key];
+  }
+  return "";
+}
+
+function formatCustomerTransactionExportRows(rows) {
+  return (rows || []).map((row, index) => {
+    const isSummary = norm(row.detailCategory) === "summary" || norm(row.sourceSection) === "ltxn";
+    const feeAmount = firstPresentValue(row, [
+      "directInvoiceAmount",
+      "directFeeAmount",
+      "fees",
+      "Fees",
+      "revenueOwed",
+      "customerRevenue",
+      "generatedRevenueSupport",
+      "partnerPayout",
+      "partnerRevenueShare"
+    ]);
+    const paymentUsdAmount = firstPresentValue(row, [
+      "paymentUsdEquivalentAmount",
+      "usdAmountDebited",
+      "usdAmount",
+      "totalUsdDebited",
+      "totalVolume"
+    ]);
+    return {
+      "": index + 1,
+      "Payment ID": firstPresentValue(row, ["paymentId", "Payment ID"]) || (isSummary ? "SUMMARY" : ""),
+      "Credit Initiate time": firstPresentValue(row, ["creditCompleteDate", "Credit Initiate time", "reversalDate"]),
+      "Payer Email": firstPresentValue(row, ["payerEmail", "Payer Email"]),
+      "Payer Business Name": firstPresentValue(row, ["payerBusinessName", "payerName", "Payer Business Name"]) || (isSummary ? `${Number(row.txnCount || 0).toLocaleString("en-US")} transactions` : ""),
+      "Payee Email": firstPresentValue(row, ["payeeEmail", "Payee Email"]),
+      "Payee Business Name": firstPresentValue(row, ["payeeBusinessName", "payeeName", "Payee Business Name"]) || (isSummary ? describeActivitySummaryRow(row) : ""),
+      "Account ID": firstPresentValue(row, ["accountId", "Account ID"]),
+      "Payee Country": firstPresentValue(row, ["payeeCountry", "Payee Country"]),
+      "Date of Payment Submission": firstPresentValue(row, ["submissionDate", "Date of Payment Submission"]),
+      "Currency (Payee Amount Currency)": firstPresentValue(row, ["payeeAmountCurrency", "Currency (Payee Amount Currency)", "payeeCcy"]),
+      "Foreign Currency Amount (Payee Amount Number)": formatTransactionExportAmount(firstPresentValue(row, ["payeeAmount", "Foreign Currency Amount (Payee Amount Number)", "totalVolume"]), { currency: false }),
+      "USD Amount Debited to the Customer": formatTransactionExportAmount(firstPresentValue(row, ["usdAmountDebited", "USD Amount Debited to the Customer", "totalUsdDebited"]), { currency: false }),
+      "Payment USD Equivalent Amount": formatTransactionExportAmount(paymentUsdAmount),
+      "Fees": formatTransactionExportAmount(feeAmount),
+      "Transaction Type": firstPresentValue(row, ["txnType", "txnTypeRaw", "paymentType"]),
+      "Processing Method": firstPresentValue(row, ["processingMethod", "transactionProcessingMethodRaw", "speedFlag"]),
+      "Partner": row.invoicePartner || row.partner || "",
+      "Period": row.period || row.invoicePeriod || row.financeBatchPeriod || "",
+      "Export Note": row.exportNote || ""
+    };
+  });
+}
+
 async function exportInvoiceTransactions(scope, groupId) {
   if (!state.inv) return;
   const group = findInvoiceGroup(groupId);
@@ -4593,7 +4990,7 @@ async function exportInvoiceTransactions(scope, groupId) {
     const scopeLabel = scope === "all" ? "all-period-transactions" : "matching-transactions";
     const groupLabel = scope === "all" ? "all" : slugifyFilenamePart(group?.label || "invoice-line");
     const filename = `${slugifyFilenamePart(state.inv.partner)}-${buildInvoicePeriodKey(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period)}-${groupLabel}-${scopeLabel}.csv`;
-    downloadCsv(filename, rows);
+    downloadCsv(filename, formatCustomerTransactionExportRows(rows));
     showToast("CSV exported", `${rows.length} summary row${rows.length === 1 ? "" : "s"} downloaded for ${scope === "all" ? "the full date range" : (group?.label || "that invoice line")}.`, "success");
     return;
   }
@@ -4617,7 +5014,7 @@ async function exportInvoiceTransactions(scope, groupId) {
   const scopeLabel = scope === "all" ? "all-period-transactions" : "matching-transactions";
   const groupLabel = scope === "all" ? "all" : slugifyFilenamePart(group?.label || "invoice-line");
   const filename = `${slugifyFilenamePart(state.inv.partner)}-${buildInvoicePeriodKey(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period)}-${groupLabel}-${scopeLabel}.csv`;
-  downloadCsv(filename, rows);
+  downloadCsv(filename, formatCustomerTransactionExportRows(rows));
   showToast("CSV exported", `${rows.length} row${rows.length === 1 ? "" : "s"} downloaded for ${scope === "all" ? "the full date range" : (group?.label || "that invoice line")}.`, "success");
 }
 
@@ -4685,6 +5082,7 @@ function buildFinanceBatchInvoiceSummaryRows(entries, errors) {
   const invoiceRows = entries.map(({ partner, period, doc, fileName }) => ({
     partner,
     period,
+    invoiceEntity: getPartnerInvoiceEntity(partner),
     invoiceType: doc.kind === "receivable" ? "AR Invoice" : "AP Invoice",
     fileName,
     amountDue: roundCurrency(doc.amountDue),
@@ -4698,6 +5096,7 @@ function buildFinanceBatchInvoiceSummaryRows(entries, errors) {
   const errorRows = errors.map((row) => ({
     partner: row.partner,
     period: row.period,
+    invoiceEntity: getPartnerInvoiceEntity(row.partner),
     invoiceType: "error",
     fileName: "",
     amountDue: "",
@@ -4734,10 +5133,16 @@ async function exportFinanceBatchInvoices() {
         name: `${period}/billing-invoices-${period}-summary.csv`,
         content: rowsToCsvText(summaryRows)
       },
-      ...entries.map(({ doc, fileName }) => ({
-        name: fileName,
-        content: buildInvoicePdfDocument(doc, { autoPrint: false })
-      }))
+      ...entries.flatMap(({ doc, fileName }) => [
+        {
+          name: fileName,
+          content: buildInvoicePdfDocument(doc, { autoPrint: false })
+        },
+        {
+          name: fileName.replace(/\.html$/i, ".pdf"),
+          content: buildInvoicePdfBytes(doc)
+        }
+      ])
     ];
     const zip = buildZipBlob(zipEntries);
     downloadBlob(`billing-invoices-${period}.zip`, zip);
@@ -4807,7 +5212,7 @@ async function exportFinanceBatchTransactions() {
       showToast("No transaction data found", `No payment-level detail rows or invoice activity summary rows were available for ${formatPeriodLabel(period)}.`, "warning");
       return;
     }
-    downloadCsv(`billing-transactions-${period}.csv`, rows);
+    downloadCsv(`billing-transactions-${period}.csv`, formatCustomerTransactionExportRows(rows));
     const errorNote = errorCount ? ` ${errorCount} partner${errorCount === 1 ? "" : "s"} had errors included in the CSV.` : "";
     showToast("Transaction batch exported", `${rows.length} row${rows.length === 1 ? "" : "s"} downloaded for ${formatPeriodLabel(period)}.${errorNote}`, errorCount ? "warning" : "success");
     recordAccessActivity("export_finance_transaction_batch", `Exported finance transaction batch for ${period}.`, { category: "activity" });
@@ -4873,7 +5278,7 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
     title: doc.title,
     fileName: `${bundleKey}-${doc.kind === "receivable" ? "ar-invoice" : "ap-invoice"}.html`,
     amountDue: doc.amountDue,
-    pdfHtml: buildInvoicePdfDocument(doc)
+    pdfHtml: buildInvoicePdfDocument(doc, { autoPrint: false })
   }));
   const receivableDoc = documents.find((doc) => doc.kind === "receivable") || null;
   const payableDoc = documents.find((doc) => doc.kind === "payable") || null;
@@ -7370,6 +7775,12 @@ function renderPartnerBillingSection(partner) {
           ${renderLabelWithInfo("Billing Frequency", "Imported from the contract when available. This is stored per partner and can be edited manually.")}
           <select class="select" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="billingFreq">
             ${renderOptions(["Monthly", "Quarterly", "Annual", "Custom"], config.billingFreq || "Monthly")}
+          </select>
+        </label>
+        <label class="field">
+          ${renderLabelWithInfo("Invoice Entity", "Which Veem entity should appear as the bill-from company on generated invoices. Defaults were inferred from prior invoices or contract headers when available.")}
+          <select class="select" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="invoiceEntity">
+            ${renderOptions([{ value: "", label: "Needs review" }, ...INVOICE_ENTITY_OPTIONS], config.invoiceEntity || "")}
           </select>
         </label>
         <label class="field">

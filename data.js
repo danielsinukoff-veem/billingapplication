@@ -48,7 +48,8 @@ const pb = (
   lateFeePercentMonthly = 0,
   lateFeeStartDays = 0,
   serviceSuspensionDays = 0,
-  lateFeeTerms = ""
+  lateFeeTerms = "",
+  invoiceEntity = ""
 ) => ({
   id,
   partner,
@@ -67,8 +68,41 @@ const pb = (
   lateFeePercentMonthly,
   lateFeeStartDays,
   serviceSuspensionDays,
-  lateFeeTerms
+  lateFeeTerms,
+  invoiceEntity
 });
+
+const DEFAULT_INVOICE_ENTITIES = {
+  Altpay: "Veem Inc",
+  Blindpay: "Veem Inc",
+  Cellpay: "Veem Payments Inc",
+  Everflow: "Veem Inc",
+  Factura: "Veem Inc",
+  Halorecruiting: "Veem Inc",
+  "Jazz Cash": "Veem Payments Inc",
+  LianLian: "Veem Payments Inc",
+  Lightnet: "Veem Payments Inc",
+  Maplewave: "Veem Inc",
+  Multigate: "Veem Inc",
+  "NIBSS ( TurboTech)": "Veem Inc",
+  Nium: "Veem Inc",
+  Nomad: "Veem Inc",
+  Nsave: "Veem Inc",
+  Nuvion: "Veem Inc",
+  OhentPay: "Veem Inc",
+  Oson: "Veem Payments Inc",
+  Q2: "Veem Inc",
+  Remittanceshub: "Veem Inc",
+  Repay: "Veem Inc",
+  Shepherd: "Veem Inc",
+  Skydo: "Veem Payments Inc",
+  Stampli: "Veem Inc",
+  TripleA: "Veem Payments Inc",
+  "VG Pay": "Veem Inc",
+  Whish: "Veem Payments Inc",
+  Yeepay: "Veem Inc",
+  Yousend: "Veem Inc"
+};
 
 const DEFAULT_CONTRACT_START_DATES = {
   Stampli: "2024-06-19",
@@ -148,6 +182,7 @@ function enrichPartnerBillingRows(rows) {
     goLiveDate: DEFAULT_GO_LIVE_DATES[row.partner] || "",
     notYetLive: DEFAULT_NOT_YET_LIVE[row.partner] ?? false,
     integrationStatus: DEFAULT_INTEGRATION_STATUS[row.partner] || "",
+    invoiceEntity: DEFAULT_INVOICE_ENTITIES[row.partner] || "",
     ...row
   }));
 }

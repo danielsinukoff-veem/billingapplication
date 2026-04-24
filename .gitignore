@@ -14,7 +14,7 @@ aws-credentials.local.js
 
 # Local partner and billing data
 /Historical Partner Data/
-/Partner Contracts/
+/Partner Details/
 /server/data/
 /reports/
 /looker-detail-files/

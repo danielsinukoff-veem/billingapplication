@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path("/Users/danielsinukoff/Documents/billing-workbook")
-CONTRACTS_ROOT = REPO_ROOT / "Partner Contracts"
+CONTRACTS_ROOT = REPO_ROOT / "Partner Details"
 
 TRANSACTION_EXPORT_PATTERN = re.compile(r"^(?P<partner>.+?) (?P<period>\d{4}-\d{2}) Transactions$")
 
