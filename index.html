@@ -32,7 +32,7 @@
             await loadScript("./app-config.local.js", { optional: true });
             await loadScript("./aws-credentials.local.js", { optional: true });
           }
-          await loadScript("./app-20260423-detailfix3.js", { type: "module" });
+          await loadScript("./app-20260423-nochecker.js", { type: "module" });
         } catch (error) {
           console.error("Billing app bootstrap failed", error);
         }
