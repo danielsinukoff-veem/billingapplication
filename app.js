@@ -12,6 +12,7 @@ import {
   getCorridor
 } from "./data.js";
 import {
+  fetchLatestQaCheckerReport,
   fetchSharedDraftInvoice,
   generatePrivateInvoiceLink,
   getSharedBackendConfig,
@@ -20,6 +21,7 @@ import {
   importLookerFileAndSave,
   isBillingAuthRedirectError,
   isContractExtractEnabled,
+  isHubSpotSyncEnabled,
   isInvoiceArtifactEnabled,
   isContractParseEnabled,
   isLookerImportEnabled,
@@ -30,12 +32,17 @@ import {
   loadSharedBootstrap,
   parseContractText,
   saveInvoiceArtifact,
-  saveSharedWorkbookSnapshot
+  saveSharedWorkbookSnapshot,
+  syncHubSpotPartnerProfiles
 } from "./shared-backend.js";
 
 const STORAGE_KEY = "billing-workbook-data";
+const LOCAL_EDIT_OVERLAY_KEY = "billing-workbook-local-edit-overlay";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
 const STORAGE_VERSION = 36;
+const PRIVATE_DOWNLOAD_URL_TTL_SECONDS = 60 * 60;
+const PRIVATE_LINK_RETENTION_DAYS = 180;
+const LOCAL_EDIT_OVERLAY_KEYS = ["pBilling", "pInvoices"];
 
 // Feed markers for dedicated Stampli USD Abroad / credit-complete Looker feeds that
 // were confirmed wrong on 2026-04-21 and must never generate invoice charge lines.
@@ -93,6 +100,28 @@ const INVOICE_METADATA_BILLING_KEYS = new Set([
   "payBy",
   "dueDays"
 ]);
+const FOLLOW_UP_STATUS_OPTIONS = [
+  "Current",
+  "Needs Follow-Up",
+  "Waiting on Partner",
+  "Payment Promised",
+  "Under Review",
+  "Disputed",
+  "Escalated",
+  "On Hold"
+];
+const FOLLOW_UP_REASON_OPTIONS = [
+  "No issue",
+  "Past due payment",
+  "Partner dispute",
+  "Partner requested support",
+  "Waiting on AP processing",
+  "Waiting on transaction backup",
+  "Contract / pricing review",
+  "Integration or launch delay",
+  "Other"
+];
+const FOLLOW_UP_CHANNEL_OPTIONS = ["Email", "Call", "Slack", "HubSpot", "Meeting", "Other"];
 const INVOICE_ENTITIES = {
   "Veem Inc": {
     name: "Veem Inc",
@@ -122,7 +151,7 @@ const INVOICE_ENTITIES = {
   }
 };
 const DEFAULT_ADMIN_SETTINGS = Object.freeze({
-  guestAllowedTabs: ["invoice", "partner", "rates", "looker", "costs", "import"],
+  guestAllowedTabs: ["invoice", "partner", "rates", "looker", "costs", "import", "health"],
   guestAccessCustomized: false
 });
 
@@ -338,7 +367,7 @@ const html = (value) => String(value ?? "")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;");
 
-const DATA_KEYS = ["ps", "pConfig", "pArchived", "pActive", "pBilling", "pInvoices", "off", "vol", "fxRates", "cap", "rs", "mins", "plat", "revf", "impl", "vaFees", "surch", "pCosts", "ltxn", "lrev", "lva", "lrs", "lfxp", "lookerImportAudit", "accessLogs", "adminSettings"];
+const DATA_KEYS = ["ps", "pConfig", "pArchived", "pActive", "pBilling", "pInvoices", "off", "vol", "fxRates", "cap", "rs", "mins", "plat", "revf", "impl", "vaFees", "surch", "pCosts", "ltxn", "lrev", "lva", "lrs", "lfxp", "lookerImportAudit", "qaCheckerLatest", "accessLogs", "adminSettings"];
 const WORKFLOW_LOOKER_FILE_OPTIONS = [
   { value: "all_registered_accounts_offline", label: "All Registered Accounts - Offline Billing" },
   { value: "all_registered_accounts_rev_share", label: "All Registered Accounts - Rev Share" },
@@ -417,6 +446,16 @@ const state = {
   financeBatchError: "",
   billingSummaryPartner: "",
   billingSummaryPeriod: "",
+  followUpDraft: {
+    date: "",
+    channel: "Email",
+    contact: "",
+    status: "",
+    reason: "",
+    note: "",
+    nextDate: "",
+    hubspotUrl: ""
+  },
   pv: "",
   np: "",
   inv: null,
@@ -448,6 +487,8 @@ const state = {
   cSelectedImportRows: {},
   lastSaved: null,
   lastSavedAt: null,
+  _saved: "",
+  _version: STORAGE_VERSION,
   toast: null,
   openSections: {},
   tableRowsExpanded: {},
@@ -472,6 +513,10 @@ const state = {
   lookerImportContext: {},
   lookerImportedDetailRows: [],
   lookerImportAudit: null,
+  qaCheckerLatest: null,
+  hubspotSyncStatus: "idle",
+  hubspotSyncError: "",
+  hubspotSyncResult: null,
   workspaceMode: isSharedWorkbookEnabled() ? "shared" : "local",
   workspaceLabel: getWorkspaceLabel(),
   workspaceRefreshing: false,
@@ -500,6 +545,7 @@ const allMainTabs = [
   { id: "looker", label: "Data Upload" },
   { id: "costs", label: "Our Costs" },
   { id: "import", label: "Import Contract" },
+  { id: "health", label: "Health" },
   { id: "admin", label: "Admin Portal" }
 ];
 
@@ -508,7 +554,24 @@ const ADMIN_ONLY_ACTIONS = new Set([
   "refresh-shared-workspace",
   "export-backup",
   "import-backup",
-  "set-admin-view"
+  "sync-hubspot-partner",
+  "sync-hubspot-all",
+  "set-admin-view",
+  "archive-partner",
+  "unarchive-partner",
+  "toggle-delete-partner",
+  "confirm-delete-partner",
+  "add-partner",
+  "add-row",
+  "delete-row",
+  "toggle-incremental",
+  "add-partner-follow-up-log",
+  "delete-partner-follow-up-log",
+  "select-all-contract-changes",
+  "deselect-all-contract-changes",
+  "run-looker-import",
+  "import-contract",
+  "verify-contract"
 ]);
 
 const rateTabs = [
@@ -829,8 +892,12 @@ function scheduleSave() {
     const payload = exportSnapshot();
     void persistSnapshot(payload)
       .then((savedAt) => {
-        state.lastSavedAt = savedAt || payload._saved;
-        state.lastSaved = new Date(savedAt || Date.now()).toLocaleTimeString();
+        const savedAtValue = savedAt || payload._saved;
+        state.lastSavedAt = savedAtValue;
+        state._saved = savedAtValue;
+        state._version = STORAGE_VERSION;
+        state.lastSaved = new Date(savedAtValue || Date.now()).toLocaleTimeString();
+        if (isSharedWorkbookWriteEnabled()) clearLocalEditOverlay();
         render();
       })
       .catch((error) => {
@@ -841,6 +908,7 @@ function scheduleSave() {
 }
 
 function persistAndRender() {
+  cacheLocalEditOverlay(exportSnapshot());
   scheduleSave();
   render();
 }
@@ -866,12 +934,120 @@ function cacheSnapshotLocally(snapshot) {
   }
 }
 
+function readLocalEditOverlay() {
+  try {
+    const raw = localStorage.getItem(LOCAL_EDIT_OVERLAY_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (error) {
+    console.warn("Could not read local workbook edit overlay", error);
+    return null;
+  }
+}
+
+function cacheLocalEditOverlay(snapshot) {
+  if (!isSharedWorkbookEnabled()) return;
+  try {
+    const overlay = {
+      _version: STORAGE_VERSION,
+      _saved: snapshot?._saved || new Date().toISOString()
+    };
+    LOCAL_EDIT_OVERLAY_KEYS.forEach((key) => {
+      if (snapshot?.[key] != null) overlay[key] = snapshot[key];
+    });
+    localStorage.setItem(LOCAL_EDIT_OVERLAY_KEY, JSON.stringify(overlay));
+  } catch (error) {
+    console.warn("Could not cache local workbook edit overlay", error);
+  }
+}
+
+function clearLocalEditOverlay() {
+  try {
+    localStorage.removeItem(LOCAL_EDIT_OVERLAY_KEY);
+  } catch (error) {
+    console.warn("Could not clear local workbook edit overlay", error);
+  }
+}
+
+function mergeRowsByKey(baseRows, overlayRows, keyFn) {
+  const merged = Array.isArray(baseRows) ? [...baseRows] : [];
+  const indexByKey = new Map();
+  merged.forEach((row, index) => {
+    const key = keyFn(row);
+    if (key) indexByKey.set(key, index);
+  });
+  (Array.isArray(overlayRows) ? overlayRows : []).forEach((row) => {
+    const key = keyFn(row);
+    if (!key) return;
+    if (indexByKey.has(key)) {
+      merged[indexByKey.get(key)] = row;
+    } else {
+      indexByKey.set(key, merged.length);
+      merged.push(row);
+    }
+  });
+  return merged;
+}
+
+function applyLocalEditOverlay(snapshot) {
+  if (!isSharedWorkbookEnabled()) return snapshot;
+  const overlay = readLocalEditOverlay();
+  if (!overlay) return snapshot;
+  const next = { ...snapshot };
+  if (Array.isArray(overlay.pBilling)) {
+    next.pBilling = mergeRowsByKey(next.pBilling, overlay.pBilling, (row) => norm(row?.partner));
+  }
+  if (Array.isArray(overlay.pInvoices)) {
+    next.pInvoices = mergeRowsByKey(next.pInvoices, overlay.pInvoices, (row) => [
+      norm(row?.partner),
+      normalizeMonthKey(row?.period || ""),
+      normalizeInvoiceKind(row?.kind || "receivable")
+    ].join("|"));
+  }
+  return next;
+}
+
 function clearCachedSnapshot() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    clearLocalEditOverlay();
   } catch (error) {
     console.warn("Could not clear cached workbook snapshot", error);
   }
+}
+
+function hydrateTransientSnapshotState(snapshot = {}) {
+  state.lookerImportedDetailRows = Array.isArray(snapshot.lookerImportedDetailRows)
+    ? snapshot.lookerImportedDetailRows
+    : [];
+  state._version = Number(snapshot._version || STORAGE_VERSION);
+  state._saved = snapshot._saved || state.lastSavedAt || "";
+}
+
+async function refreshQaCheckerStatus({ showToastOnUpdate = false, showErrorToast = false } = {}) {
+  let report = null;
+  try {
+    report = await fetchLatestQaCheckerReport();
+  } catch (error) {
+    console.warn("Could not load latest QA checker status", error);
+    if (showErrorToast) {
+      showToast("QA status unavailable", String(error?.message || error || "Could not load the latest checker result."), "warning");
+    }
+    return false;
+  }
+  if (!report || typeof report !== "object") return false;
+  const previousRunId = String(state.qaCheckerLatest?.runId || "");
+  state.qaCheckerLatest = report;
+  if (showToastOnUpdate) {
+    const currentRunId = String(report.runId || "");
+    showToast(
+      "QA status refreshed",
+      currentRunId && currentRunId !== previousRunId ? `Loaded checker run ${currentRunId}.` : "Loaded the latest checker result.",
+      "success"
+    );
+  }
+  return true;
 }
 
 async function loadState() {
@@ -880,10 +1056,13 @@ async function loadState() {
       const payload = await loadSharedBootstrap();
       let saved = payload?.snapshot;
       if (saved && saved._version) {
-        const { snapshot, changed } = migrateSnapshot(saved);
+        const migrated = migrateSnapshot(saved);
+        const snapshot = applyLocalEditOverlay(migrated.snapshot);
+        const changed = migrated.changed;
         DATA_KEYS.forEach((key) => {
           if (snapshot[key] != null) state[key] = snapshot[key];
         });
+        hydrateTransientSnapshotState(snapshot);
         state.accessLogs = Array.isArray(state.accessLogs) ? state.accessLogs : [];
         state.adminSettings = buildDefaultAdminSettings(state.adminSettings);
         state.lastSavedAt = snapshot._saved || null;
@@ -905,6 +1084,7 @@ async function loadState() {
       state.workspaceLabel = payload?.workspace?.label || getWorkspaceLabel();
       state.currentUserRole = payload?.user?.role || "";
       state.currentUserEmail = payload?.user?.email || "";
+      await refreshQaCheckerStatus();
       state.authSession = readAccessSession();
       return;
     } catch (error) {
@@ -923,6 +1103,7 @@ async function loadState() {
     DATA_KEYS.forEach((key) => {
       if (snapshot[key] != null) state[key] = snapshot[key];
     });
+    hydrateTransientSnapshotState(snapshot);
     state.accessLogs = Array.isArray(state.accessLogs) ? state.accessLogs : [];
     state.adminSettings = buildDefaultAdminSettings(state.adminSettings);
     state.lastSavedAt = snapshot._saved || null;
@@ -967,10 +1148,12 @@ async function refreshSharedWorkspace({ showSuccessToast = true, showErrorToast 
       if (!saved || !saved._version) {
         throw new Error("Shared workspace bootstrap did not include a valid snapshot.");
       }
-      const { snapshot } = migrateSnapshot(saved);
+      const { snapshot: migratedSnapshot } = migrateSnapshot(saved);
+      const snapshot = applyLocalEditOverlay(migratedSnapshot);
       DATA_KEYS.forEach((key) => {
         if (snapshot[key] != null) state[key] = snapshot[key];
       });
+      hydrateTransientSnapshotState(snapshot);
       state.accessLogs = Array.isArray(state.accessLogs) ? state.accessLogs : [];
       state.adminSettings = buildDefaultAdminSettings(state.adminSettings);
       state.lastSavedAt = snapshot._saved || null;
@@ -996,6 +1179,7 @@ async function refreshSharedWorkspace({ showSuccessToast = true, showErrorToast 
         state.inv = null;
       }
       cacheSnapshotLocally(snapshot);
+      await refreshQaCheckerStatus();
       if (showSuccessToast) {
         showToast("Shared data refreshed", "Loaded the latest workbook snapshot from the shared source.", "success");
       }
@@ -1045,6 +1229,7 @@ function exportSnapshot() {
 }
 
 async function persistSnapshot(payload) {
+  cacheLocalEditOverlay(payload);
   if (isSharedWorkbookEnabled() && isSharedWorkbookWriteEnabled()) {
     try {
       const result = await saveSharedWorkbookSnapshot(payload);
@@ -1540,6 +1725,25 @@ function getPartnerBillingConfig(partner) {
   return (state.pBilling || []).find((row) => norm(row.partner) === norm(partner)) || null;
 }
 
+function normalizePartnerContactLog(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((entry) => entry && typeof entry === "object")
+    .map((entry) => ({
+      id: String(entry.id || uid()),
+      date: normalizeIsoDate(entry.date) || normalizeIsoDate(entry.timestamp) || "",
+      channel: String(entry.channel || "").trim(),
+      contact: String(entry.contact || "").trim(),
+      status: String(entry.status || "").trim(),
+      reason: String(entry.reason || "").trim(),
+      note: String(entry.note || "").trim(),
+      nextDate: normalizeIsoDate(entry.nextDate) || "",
+      hubspotUrl: String(entry.hubspotUrl || "").trim(),
+      createdAt: entry.createdAt || entry.timestamp || ""
+    }))
+    .filter((entry) => entry.date || entry.channel || entry.contact || entry.status || entry.reason || entry.note || entry.nextDate || entry.hubspotUrl);
+}
+
 function getPartnerContractStartDate(partner, source = state) {
   const config = (source.pBilling || []).find((row) => norm(row.partner) === norm(partner));
   const explicit = normalizeIsoDate(config?.contractStartDate);
@@ -1686,6 +1890,11 @@ function buildDefaultPartnerBilling(partner, existing = null) {
     contractDueText: existing?.contractDueText || "",
     preferredBillingTiming: existing?.preferredBillingTiming || "",
     contactEmails: existing?.contactEmails || "",
+    hubspotContactEmails: existing?.hubspotContactEmails || "",
+    hubspotAddressCandidates: existing?.hubspotAddressCandidates || "",
+    hubspotCompanyId: existing?.hubspotCompanyId || "",
+    hubspotCompanyName: existing?.hubspotCompanyName || "",
+    hubspotDomain: existing?.hubspotDomain || "",
     contractStartDate: normalizeIsoDate(existing?.contractStartDate) || getPartnerContractStartDate(partner),
     goLiveDate: normalizeIsoDate(existing?.goLiveDate) || getPartnerGoLiveDate(partner),
     notYetLive: !!existing?.notYetLive,
@@ -1697,6 +1906,12 @@ function buildDefaultPartnerBilling(partner, existing = null) {
     invoiceEntity: normalizeInvoiceEntity(existing?.invoiceEntity || ""),
     partnerLegalName: existing?.partnerLegalName || partner,
     partnerBillingAddress: existing?.partnerBillingAddress || "",
+    followUpStatus: existing?.followUpStatus || "",
+    followUpReason: existing?.followUpReason || "",
+    followUpNextDate: normalizeIsoDate(existing?.followUpNextDate) || "",
+    followUpNotes: existing?.followUpNotes || "",
+    followUpHubspotUrl: existing?.followUpHubspotUrl || "",
+    contactLog: normalizePartnerContactLog(existing?.contactLog),
     note: existing?.note || ""
   };
 }
@@ -1719,6 +1934,11 @@ function mergePartnerBillingDefaults(existingRows, defaultRows) {
       contractDueText: defaultRow.contractDueText || existing.contractDueText || "",
       preferredBillingTiming: defaultRow.preferredBillingTiming || existing.preferredBillingTiming || "",
       contactEmails: defaultRow.contactEmails || existing.contactEmails || "",
+      hubspotContactEmails: existing.hubspotContactEmails || defaultRow.hubspotContactEmails || "",
+      hubspotAddressCandidates: existing.hubspotAddressCandidates || defaultRow.hubspotAddressCandidates || "",
+      hubspotCompanyId: existing.hubspotCompanyId || defaultRow.hubspotCompanyId || "",
+      hubspotCompanyName: existing.hubspotCompanyName || defaultRow.hubspotCompanyName || "",
+      hubspotDomain: existing.hubspotDomain || defaultRow.hubspotDomain || "",
       contractStartDate: normalizeIsoDate(defaultRow.contractStartDate) || normalizeIsoDate(existing.contractStartDate) || getPartnerContractStartDate(defaultRow.partner, { ...state, ...{ pBilling: existingRows } }),
       goLiveDate: normalizeIsoDate(defaultRow.goLiveDate) || normalizeIsoDate(existing.goLiveDate) || getPartnerGoLiveDate(defaultRow.partner, { ...state, ...{ pBilling: existingRows } }),
       notYetLive: existing.notYetLive != null ? !!existing.notYetLive : !!defaultRow.notYetLive,
@@ -1730,6 +1950,12 @@ function mergePartnerBillingDefaults(existingRows, defaultRows) {
       invoiceEntity: normalizeInvoiceEntity(existing.invoiceEntity || defaultRow.invoiceEntity || ""),
       partnerLegalName: existing.partnerLegalName || defaultRow.partnerLegalName || defaultRow.partner,
       partnerBillingAddress: existing.partnerBillingAddress || defaultRow.partnerBillingAddress || "",
+      followUpStatus: existing.followUpStatus || defaultRow.followUpStatus || "",
+      followUpReason: existing.followUpReason || defaultRow.followUpReason || "",
+      followUpNextDate: normalizeIsoDate(existing.followUpNextDate) || normalizeIsoDate(defaultRow.followUpNextDate) || "",
+      followUpNotes: existing.followUpNotes || defaultRow.followUpNotes || "",
+      followUpHubspotUrl: existing.followUpHubspotUrl || defaultRow.followUpHubspotUrl || "",
+      contactLog: normalizePartnerContactLog(existing.contactLog || defaultRow.contactLog),
       note: defaultRow.note || existing.note || ""
     };
   });
@@ -1750,9 +1976,20 @@ function upsertPartnerBilling(partner, patch, { persist = true, log = true } = {
   next.lateFeePercentMonthly = Number(next.lateFeePercentMonthly || 0);
   next.lateFeeStartDays = Number(next.lateFeeStartDays || 0);
   next.serviceSuspensionDays = Number(next.serviceSuspensionDays || 0);
+  next.hubspotContactEmails = String(next.hubspotContactEmails || "").trim();
+  next.hubspotAddressCandidates = String(next.hubspotAddressCandidates || "").trim();
+  next.hubspotCompanyId = String(next.hubspotCompanyId || "").trim();
+  next.hubspotCompanyName = String(next.hubspotCompanyName || "").trim();
+  next.hubspotDomain = String(next.hubspotDomain || "").trim();
   next.invoiceEntity = normalizeInvoiceEntity(next.invoiceEntity || "");
   next.partnerLegalName = String(next.partnerLegalName || partner).trim() || partner;
   next.partnerBillingAddress = String(next.partnerBillingAddress || "").trim();
+  next.followUpStatus = String(next.followUpStatus || "").trim();
+  next.followUpReason = String(next.followUpReason || "").trim();
+  next.followUpNextDate = normalizeIsoDate(next.followUpNextDate) || "";
+  next.followUpNotes = String(next.followUpNotes || "").trim();
+  next.followUpHubspotUrl = String(next.followUpHubspotUrl || "").trim();
+  next.contactLog = normalizePartnerContactLog(next.contactLog);
   if (existing) {
     state.pBilling = state.pBilling.map((row) => (String(row.id) === String(existing.id) ? next : row));
   } else {
@@ -1769,6 +2006,204 @@ function upsertPartnerBilling(partner, patch, { persist = true, log = true } = {
     );
   }
   if (persist) persistAndRender();
+}
+
+const HUBSPOT_SYNC_PATCH_KEYS = new Set([
+  "partnerLegalName",
+  "partnerBillingAddress",
+  "contactEmails",
+  "hubspotContactEmails",
+  "hubspotAddressCandidates",
+  "hubspotCompanyId",
+  "hubspotCompanyName",
+  "hubspotDomain",
+  "followUpHubspotUrl",
+  "integrationStatus",
+  "goLiveDate",
+  "notYetLive",
+  "followUpStatus",
+  "followUpReason",
+  "followUpNextDate",
+  "followUpNotes"
+]);
+
+const HUBSPOT_SYNC_ALIAS_KEYS = {
+  address: "partnerBillingAddress",
+  addressCandidates: "hubspotAddressCandidates",
+  addressData: "hubspotAddressCandidates",
+  billingAddress: "partnerBillingAddress",
+  companyId: "hubspotCompanyId",
+  companyName: "hubspotCompanyName",
+  contactEmailDirectory: "hubspotContactEmails",
+  domain: "hubspotDomain",
+  emails: "hubspotContactEmails",
+  goLive: "goLiveDate",
+  hubspotUrl: "followUpHubspotUrl",
+  integrationStage: "integrationStatus",
+  legalName: "partnerLegalName",
+  liveDate: "goLiveDate",
+  notes: "followUpNotes",
+  nextFollowUpDate: "followUpNextDate",
+  status: "integrationStatus",
+  url: "followUpHubspotUrl"
+};
+
+function normalizeHubSpotSyncValue(key, value) {
+  if (value == null) return undefined;
+  if (Array.isArray(value)) {
+    const values = value.map((item) => String(item || "").trim()).filter(Boolean);
+    if (!values.length) return undefined;
+    return key === "hubspotAddressCandidates" ? values.join("\n\n") : values.join(", ");
+  }
+  if (key === "notYetLive") {
+    if (typeof value === "boolean") return value;
+    const text = norm(value);
+    if (!text) return undefined;
+    return ["true", "yes", "y", "1", "not live", "notyetlive"].includes(text);
+  }
+  if (key === "goLiveDate" || key === "followUpNextDate") {
+    return normalizeIsoDate(value) || undefined;
+  }
+  const text = String(value || "").trim();
+  return text || undefined;
+}
+
+function extractHubSpotSyncUpdates(result) {
+  if (Array.isArray(result)) return result;
+  if (!result || typeof result !== "object") return [];
+  const candidates = [
+    result.partners,
+    result.updates,
+    result.partnerProfiles,
+    result.profiles,
+    result.pBilling,
+    result.data?.partners,
+    result.data?.updates,
+    result.data?.partnerProfiles
+  ];
+  const rows = candidates.find((candidate) => Array.isArray(candidate));
+  return Array.isArray(rows) ? rows : [];
+}
+
+function buildHubSpotSyncPartnerContext(partner) {
+  const config = buildDefaultPartnerBilling(partner, getPartnerBillingConfig(partner));
+  return {
+    partner,
+    hubspotCompanyId: config.hubspotCompanyId || "",
+    hubspotCompanyName: config.hubspotCompanyName || "",
+    hubspotDomain: config.hubspotDomain || "",
+    followUpHubspotUrl: config.followUpHubspotUrl || "",
+    partnerLegalName: config.partnerLegalName || "",
+    partnerBillingAddress: config.partnerBillingAddress || "",
+    contactEmails: config.contactEmails || "",
+    hubspotContactEmails: config.hubspotContactEmails || ""
+  };
+}
+
+function normalizeHubSpotSyncPatch(update = {}) {
+  const rawPatch = update.patch && typeof update.patch === "object" ? update.patch : update;
+  const patch = {};
+  for (const key of HUBSPOT_SYNC_PATCH_KEYS) {
+    const normalized = normalizeHubSpotSyncValue(key, rawPatch[key]);
+    if (normalized !== undefined) patch[key] = normalized;
+  }
+  Object.entries(HUBSPOT_SYNC_ALIAS_KEYS).forEach(([sourceKey, targetKey]) => {
+    if (patch[targetKey] !== undefined) return;
+    const normalized = normalizeHubSpotSyncValue(targetKey, rawPatch[sourceKey]);
+    if (normalized !== undefined) patch[targetKey] = normalized;
+  });
+  return patch;
+}
+
+function applyHubSpotSyncUpdates(result) {
+  const updates = extractHubSpotSyncUpdates(result);
+  const canonicalByNorm = new Map(state.ps.map((partner) => [norm(partner), partner]));
+  const touched = [];
+  let updated = 0;
+  let skipped = 0;
+  updates.forEach((update) => {
+    if (!update || typeof update !== "object") {
+      skipped += 1;
+      return;
+    }
+    const partnerName = String(update.partner || update.partnerName || update.name || update.companyName || "").trim();
+    const canonical = canonicalByNorm.get(norm(partnerName));
+    if (!canonical) {
+      skipped += 1;
+      return;
+    }
+    const patch = normalizeHubSpotSyncPatch(update);
+    if (!Object.keys(patch).length) {
+      skipped += 1;
+      return;
+    }
+    upsertPartnerBilling(canonical, patch, { persist: false, log: false });
+    updated += 1;
+    touched.push(canonical);
+  });
+  return {
+    updated,
+    skipped,
+    touched,
+    received: updates.length,
+    summary: result && typeof result === "object" ? result.summary || null : null
+  };
+}
+
+async function syncHubSpotProfiles(scope = "all", partner = "") {
+  if (!isHubSpotSyncEnabled()) {
+    showToast(
+      "HubSpot sync not configured",
+      "Set BILLING_APP_CONFIG.hubspotSyncWebhookUrl to the n8n production webhook that owns the HubSpot credential.",
+      "warning"
+    );
+    return;
+  }
+  const requestedPartners = scope === "partner" && partner
+    ? [partner]
+    : getPartnerOptions({ includeArchived: true, includeArchivedTag: false }).map((option) => option.value || option);
+  if (!requestedPartners.length) {
+    showToast("No partners to sync", "Add partners before running a HubSpot sync.", "warning");
+    return;
+  }
+  state.hubspotSyncStatus = "syncing";
+  state.hubspotSyncError = "";
+  state.hubspotSyncResult = null;
+  render();
+  try {
+    const result = await syncHubSpotPartnerProfiles({
+      action: scope === "partner" ? "sync_partner" : "sync_all_partners",
+      requestedAt: new Date().toISOString(),
+      source: "partner-billing-workbook",
+      workspace: {
+        version: STORAGE_VERSION,
+        label: getWorkspaceLabel(),
+        savedAt: state.lastSavedAt || state.lastSaved || ""
+      },
+      partners: requestedPartners.map(buildHubSpotSyncPartnerContext)
+    });
+    const applied = applyHubSpotSyncUpdates(result);
+    state.hubspotSyncStatus = "success";
+    state.hubspotSyncError = "";
+    state.hubspotSyncResult = { ...applied, syncedAt: new Date().toISOString() };
+    logWorkbookChange(
+      "sync_hubspot_profiles",
+      `Synced ${applied.updated} HubSpot partner profile${applied.updated === 1 ? "" : "s"} via n8n.`,
+      { section: "pBilling", updated: applied.updated, skipped: applied.skipped, received: applied.received }
+    );
+    persistAndRender();
+    showToast(
+      "HubSpot sync complete",
+      `Updated ${applied.updated} partner profile${applied.updated === 1 ? "" : "s"}.`,
+      applied.updated ? "success" : "warning"
+    );
+  } catch (error) {
+    state.hubspotSyncStatus = "error";
+    state.hubspotSyncError = String(error?.message || error || "Unknown error");
+    state.hubspotSyncResult = null;
+    showToast("HubSpot sync failed", state.hubspotSyncError, "error");
+    render();
+  }
 }
 
 function getBillingDueDays(partner) {
@@ -2619,6 +3054,399 @@ function summarizePartnerOutstanding(partner, { period = "" } = {}) {
   };
 }
 
+function getPartnerLifetimeBillingSummary(partner) {
+  const joinDate = normalizeIsoDate(getPartnerContractStartDate(partner)) || normalizeIsoDate(getPartnerGoLiveDate(partner)) || "";
+  const joinPeriod = normalizeMonthKey(joinDate);
+  const entries = getPartnerInvoiceTrackingEntries(partner)
+    .filter((entry) => !joinPeriod || comparePeriods(entry.period, joinPeriod) >= 0)
+    .filter((entry) => entry.amountDue > 0 || entry.amountPaid > 0 || entry.record);
+  const summary = entries.reduce((acc, entry) => {
+    if (entry.kind === "receivable") {
+      acc.receivableBilled = roundCurrency(acc.receivableBilled + Number(entry.amountDue || 0));
+      acc.receivablePaid = roundCurrency(acc.receivablePaid + Number(entry.amountPaid || 0));
+    } else {
+      acc.payableIssued = roundCurrency(acc.payableIssued + Number(entry.amountDue || 0));
+      acc.payablePaid = roundCurrency(acc.payablePaid + Number(entry.amountPaid || 0));
+    }
+    acc.firstPeriod = !acc.firstPeriod || comparePeriods(entry.period, acc.firstPeriod) < 0 ? entry.period : acc.firstPeriod;
+    acc.lastPeriod = !acc.lastPeriod || comparePeriods(entry.period, acc.lastPeriod) > 0 ? entry.period : acc.lastPeriod;
+    return acc;
+  }, {
+    partner,
+    joinDate,
+    joinPeriod,
+    firstPeriod: "",
+    lastPeriod: "",
+    receivableBilled: 0,
+    receivablePaid: 0,
+    payableIssued: 0,
+    payablePaid: 0
+  });
+  summary.netBilled = roundCurrency(summary.receivableBilled - summary.payableIssued);
+  summary.netPaid = roundCurrency(summary.receivablePaid - summary.payablePaid);
+  summary.entryCount = entries.length;
+  return summary;
+}
+
+function renderPartnerLifetimeBillingSummary(partner, { variant = "card" } = {}) {
+  if (!partner) return "";
+  const summary = getPartnerLifetimeBillingSummary(partner);
+  const sinceLabel = summary.joinDate
+    ? `Since ${formatIsoDate(summary.joinDate)}`
+    : summary.firstPeriod
+      ? `Since ${formatPeriodLabel(summary.firstPeriod)}`
+      : "Since partner joined";
+  const netLabel = summary.netBilled >= 0 ? "Net Receivables Billed" : "Net Payables Issued";
+  const netPaidLabel = summary.netPaid >= 0 ? "Net Paid by Partner" : "Net Paid to Partner";
+  const modifier = variant === "banner" ? " is-banner" : variant === "detail" ? " is-detail" : "";
+  return `
+    <div class="partner-lifetime-summary${modifier}">
+      <div class="partner-lifetime-heading">
+        <div>
+          <strong>Lifetime Billing</strong>
+          <span>${html(sinceLabel)}</span>
+        </div>
+        <span class="helper-pill">${summary.entryCount} invoice row${summary.entryCount === 1 ? "" : "s"}</span>
+      </div>
+      <div class="partner-lifetime-grid">
+        <div class="partner-lifetime-card">
+          <span>Receivables Billed</span>
+          <strong>${fmt(summary.receivableBilled)}</strong>
+        </div>
+        <div class="partner-lifetime-card">
+          <span>Receivables Paid</span>
+          <strong>${fmt(summary.receivablePaid)}</strong>
+        </div>
+        <div class="partner-lifetime-card">
+          <span>Payables Issued</span>
+          <strong>${fmt(summary.payableIssued)}</strong>
+        </div>
+        <div class="partner-lifetime-card">
+          <span>Payables Paid</span>
+          <strong>${fmt(summary.payablePaid)}</strong>
+        </div>
+        <div class="partner-lifetime-card is-net">
+          <span>${html(netLabel)}</span>
+          <strong>${fmt(Math.abs(summary.netBilled))}</strong>
+        </div>
+        <div class="partner-lifetime-card is-net">
+          <span>${html(netPaidLabel)}</span>
+          <strong>${fmt(Math.abs(summary.netPaid))}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getPartnerFollowUpConfig(partner) {
+  return buildDefaultPartnerBilling(partner, getPartnerBillingConfig(partner));
+}
+
+function getPartnerFollowUpLog(partner) {
+  return normalizePartnerContactLog(getPartnerFollowUpConfig(partner).contactLog)
+    .sort((a, b) => String(b.date || b.createdAt || "").localeCompare(String(a.date || a.createdAt || "")));
+}
+
+function getPartnerFollowUpBadge(partner) {
+  const config = getPartnerFollowUpConfig(partner);
+  const status = config.followUpStatus || "No Follow-Up Status";
+  const reason = config.followUpReason || "";
+  return reason && norm(reason) !== "no-issue" ? `${status} - ${reason}` : status;
+}
+
+function getFollowUpStatusTone(status) {
+  const key = norm(status);
+  if (!key || key === "current") return "success";
+  if (key.includes("promised") || key.includes("review")) return "info";
+  if (key.includes("disputed") || key.includes("escalated")) return "danger";
+  if (key.includes("hold") || key.includes("waiting")) return "warning";
+  return "credit";
+}
+
+function resetFollowUpDraft() {
+  state.followUpDraft = {
+    date: "",
+    channel: "Email",
+    contact: "",
+    status: "",
+    reason: "",
+    note: "",
+    nextDate: "",
+    hubspotUrl: ""
+  };
+  state.followUpDraftDate = "";
+  state.followUpDraftChannel = "Email";
+  state.followUpDraftContact = "";
+  state.followUpDraftStatus = "";
+  state.followUpDraftReason = "";
+  state.followUpDraftNote = "";
+  state.followUpDraftNextDate = "";
+  state.followUpDraftHubspotUrl = "";
+}
+
+function readFollowUpDraftFromDom() {
+  return {
+    date: readBoundValue("followUpDraftDate") || "",
+    channel: readBoundValue("followUpDraftChannel") || "Email",
+    contact: readBoundValue("followUpDraftContact") || "",
+    status: readBoundValue("followUpDraftStatus") || "",
+    reason: readBoundValue("followUpDraftReason") || "",
+    note: readBoundValue("followUpDraftNote") || "",
+    nextDate: readBoundValue("followUpDraftNextDate") || "",
+    hubspotUrl: readBoundValue("followUpDraftHubspotUrl") || ""
+  };
+}
+
+function addPartnerFollowUpLog(partner) {
+  if (!partner) return;
+  const existing = getPartnerFollowUpConfig(partner);
+  const draft = readFollowUpDraftFromDom();
+  const entry = {
+    id: uid(),
+    date: normalizeIsoDate(draft.date) || todayIsoDate(),
+    channel: String(draft.channel || "Email").trim(),
+    contact: String(draft.contact || "").trim(),
+    status: String(draft.status || existing.followUpStatus || "").trim(),
+    reason: String(draft.reason || existing.followUpReason || "").trim(),
+    note: String(draft.note || "").trim(),
+    nextDate: normalizeIsoDate(draft.nextDate) || "",
+    hubspotUrl: String(draft.hubspotUrl || existing.followUpHubspotUrl || "").trim(),
+    createdAt: new Date().toISOString()
+  };
+  if (!entry.contact && !entry.status && !entry.reason && !entry.note && !entry.nextDate && !entry.hubspotUrl) {
+    showToast("Nothing to save", "Add a contact, status, reason, note, next date, or HubSpot URL before saving a follow-up log.", "warning");
+    return;
+  }
+  upsertPartnerBilling(partner, {
+    followUpStatus: entry.status || existing.followUpStatus || "",
+    followUpReason: entry.reason || existing.followUpReason || "",
+    followUpNextDate: entry.nextDate || existing.followUpNextDate || "",
+    followUpNotes: entry.note || existing.followUpNotes || "",
+    followUpHubspotUrl: entry.hubspotUrl || existing.followUpHubspotUrl || "",
+    contactLog: [entry, ...getPartnerFollowUpLog(partner)]
+  }, { persist: false, log: false });
+  resetFollowUpDraft();
+  logWorkbookChange("add_partner_follow_up", `Added follow-up log for ${partner}.`, { partner, section: "pBilling" });
+  persistAndRender();
+}
+
+function deletePartnerFollowUpLog(partner, entryId) {
+  if (!partner || !entryId) return;
+  const nextLog = getPartnerFollowUpLog(partner).filter((entry) => String(entry.id) !== String(entryId));
+  upsertPartnerBilling(partner, { contactLog: nextLog }, { persist: false, log: false });
+  logWorkbookChange("delete_partner_follow_up", `Deleted follow-up log for ${partner}.`, { partner, section: "pBilling" });
+  persistAndRender();
+}
+
+function renderPartnerFollowUpEditor(partner, config = getPartnerFollowUpConfig(partner)) {
+  const logs = getPartnerFollowUpLog(partner);
+  const draft = state.followUpDraft || {};
+  return `
+    <div class="follow-up-editor" data-follow-up-field="contactLog">
+      <div class="section-header compact">
+        <div>
+          <h3 class="section-title">Partner Follow-Up / Contact Log ${renderInfoTip("Use this for payment follow-ups, disputes, delayed AP processing, and partner communication notes. HubSpot can be linked here until a direct sync exists.")}</h3>
+        </div>
+      </div>
+      <div class="field-grid billing-field-grid" style="margin-top:16px">
+        <label class="field" data-follow-up-field="followUpStatus">
+          ${renderLabelWithInfo("Current Follow-Up Status", "Current operating status for partner communications and payment follow-up.")}
+          <select class="select" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="followUpStatus">
+            ${renderOptions([{ value: "", label: "No follow-up status" }, ...FOLLOW_UP_STATUS_OPTIONS], config.followUpStatus || "")}
+          </select>
+        </label>
+        <label class="field" data-follow-up-field="followUpReason">
+          ${renderLabelWithInfo("Delay / Issue Reason", "Why payment, partner payout, or billing follow-up is delayed.")}
+          <select class="select" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="followUpReason">
+            ${renderOptions([{ value: "", label: "No reason recorded" }, ...FOLLOW_UP_REASON_OPTIONS], config.followUpReason || "")}
+          </select>
+        </label>
+        <label class="field" data-follow-up-field="followUpNextDate">
+          ${renderLabelWithInfo("Next Follow-Up Date", "The next planned check-in or reminder date.")}
+          <input class="input" type="date" value="${html(config.followUpNextDate || "")}" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="followUpNextDate">
+        </label>
+        <label class="field billing-span-2" data-follow-up-field="followUpHubspotUrl">
+          ${renderLabelWithInfo("HubSpot Partner Record", "Paste the HubSpot company, deal, ticket, or activity URL for this partner.")}
+          <input class="input" type="url" value="${html(config.followUpHubspotUrl || "")}" placeholder="https://app.hubspot.com/..." data-action="update-partner-billing" data-partner="${html(partner)}" data-key="followUpHubspotUrl">
+        </label>
+        <label class="field field-wide billing-span-4" data-follow-up-field="followUpNotes">
+          ${renderLabelWithInfo("Current Follow-Up Notes", "Short current-state explanation that should be visible from Invoice Generator.")}
+          <textarea class="textarea textarea-compact" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="followUpNotes" placeholder="Example: Partner AP confirmed payment will be processed Friday.">${html(config.followUpNotes || "")}</textarea>
+        </label>
+      </div>
+      <div class="follow-up-compose">
+        <div class="section-header compact">
+          <div>
+            <h3 class="section-title">Add Communication Entry</h3>
+            <p class="section-note">Saving an entry also updates the current status, reason, next follow-up, notes, and HubSpot URL when those fields are filled in here.</p>
+          </div>
+        </div>
+        <div class="field-grid billing-field-grid" style="margin-top:16px">
+          <label class="field">
+            <span class="label">Contact Date</span>
+            <input class="input" type="date" data-bind="followUpDraftDate" value="${html(draft.date || todayIsoDate())}">
+          </label>
+          <label class="field">
+            <span class="label">Channel</span>
+            <select class="select" data-bind="followUpDraftChannel">
+              ${renderOptions(FOLLOW_UP_CHANNEL_OPTIONS, draft.channel || "Email")}
+            </select>
+          </label>
+          <label class="field">
+            <span class="label">Contact / Recipient</span>
+            <input class="input" type="text" data-bind="followUpDraftContact" value="${html(draft.contact || "")}" placeholder="AP contact, finance owner, HubSpot contact">
+          </label>
+          <label class="field">
+            <span class="label">Status After Contact</span>
+            <select class="select" data-bind="followUpDraftStatus">
+              ${renderOptions([{ value: "", label: "Leave unchanged" }, ...FOLLOW_UP_STATUS_OPTIONS], draft.status || "")}
+            </select>
+          </label>
+          <label class="field">
+            <span class="label">Reason After Contact</span>
+            <select class="select" data-bind="followUpDraftReason">
+              ${renderOptions([{ value: "", label: "Leave unchanged" }, ...FOLLOW_UP_REASON_OPTIONS], draft.reason || "")}
+            </select>
+          </label>
+          <label class="field">
+            <span class="label">Next Follow-Up</span>
+            <input class="input" type="date" data-bind="followUpDraftNextDate" value="${html(draft.nextDate || "")}">
+          </label>
+          <label class="field billing-span-2">
+            <span class="label">HubSpot URL</span>
+            <input class="input" type="url" data-bind="followUpDraftHubspotUrl" value="${html(draft.hubspotUrl || "")}" placeholder="https://app.hubspot.com/...">
+          </label>
+          <label class="field field-wide billing-span-4">
+            <span class="label">Communication Notes</span>
+            <textarea class="textarea textarea-compact" data-bind="followUpDraftNote" placeholder="What happened, what was promised, and what should happen next.">${html(draft.note || "")}</textarea>
+          </label>
+        </div>
+        <div class="button-row">
+          <button class="button secondary" data-action="add-partner-follow-up-log" data-partner="${html(partner)}">Add Contact Log Entry</button>
+        </div>
+      </div>
+      <div class="follow-up-log-list">
+        <div class="follow-up-log-heading">
+          <strong>Saved Communication History</strong>
+          <span>${logs.length} entr${logs.length === 1 ? "y" : "ies"}</span>
+        </div>
+        ${!logs.length ? `<p class="empty-state compact">No communication history has been saved for this partner yet.</p>` : logs.map((entry) => `
+          <div class="follow-up-log-entry">
+            <div>
+              <strong>${html(entry.date ? formatIsoDate(entry.date) : "No date")}</strong>
+              <span>${html([entry.channel, entry.contact].filter(Boolean).join(" with ") || "Communication")}</span>
+            </div>
+            <p>${html(entry.note || entry.reason || entry.status || "No notes recorded.")}</p>
+            <div class="follow-up-log-meta">
+              ${entry.status ? `<span class="helper-pill">${html(entry.status)}</span>` : ""}
+              ${entry.reason ? `<span class="helper-pill">${html(entry.reason)}</span>` : ""}
+              ${entry.nextDate ? `<span class="helper-pill">Next: ${html(formatIsoDate(entry.nextDate))}</span>` : ""}
+              ${entry.hubspotUrl ? `<a class="helper-pill" href="${html(entry.hubspotUrl)}" target="_blank" rel="noopener">HubSpot</a>` : ""}
+              <button class="button ghost small" data-action="delete-partner-follow-up-log" data-partner="${html(partner)}" data-entry-id="${html(entry.id)}">Delete</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderFollowUpEditButton(partner, field, label = "Edit") {
+  return `
+    <button class="button ghost small follow-up-edit-button" data-action="edit-partner-follow-up" data-partner="${html(partner)}" data-field="${html(field)}">
+      ${html(label)}
+    </button>
+  `;
+}
+
+function renderFollowUpDetail(partner, label, value, field, { allowLink = false } = {}) {
+  const displayValue = String(value || "").trim();
+  const content = displayValue
+    ? allowLink
+      ? `<a href="${html(displayValue)}" target="_blank" rel="noopener">${html(displayValue)}</a>`
+      : html(displayValue)
+    : `<span class="muted">Not set</span>`;
+  return `
+    <div class="follow-up-detail">
+      <span>${html(label)}</span>
+      <strong>${content}</strong>
+      ${renderFollowUpEditButton(partner, field)}
+    </div>
+  `;
+}
+
+function renderPartnerFollowUpPanel(partner, { variant = "invoice" } = {}) {
+  if (!partner) return "";
+  const config = getPartnerFollowUpConfig(partner);
+  const logs = getPartnerFollowUpLog(partner);
+  const outstanding = summarizePartnerOutstanding(partner);
+  const latest = logs[0] || null;
+  const status = config.followUpStatus || "No Follow-Up Status";
+  const reason = config.followUpReason || "No reason recorded";
+  const defaultOpen = variant === "invoice";
+  const content = `
+    <div class="follow-up-panel${variant === "summary" ? " is-summary" : ""}">
+      <div class="follow-up-status-grid">
+        <div class="follow-up-status-card">
+          <span>Status</span>
+          <strong>${renderInvoiceStatusTag({ label: status, tone: getFollowUpStatusTone(status) })}</strong>
+          ${renderFollowUpEditButton(partner, "followUpStatus")}
+        </div>
+        <div class="follow-up-status-card">
+          <span>Reason</span>
+          <strong>${html(reason)}</strong>
+          ${renderFollowUpEditButton(partner, "followUpReason")}
+        </div>
+        <div class="follow-up-status-card">
+          <span>Next Follow-Up</span>
+          <strong>${config.followUpNextDate ? html(formatIsoDate(config.followUpNextDate)) : "Not set"}</strong>
+          ${renderFollowUpEditButton(partner, "followUpNextDate")}
+        </div>
+        <div class="follow-up-status-card">
+          <span>Open Balance</span>
+          <strong>${fmt(Math.abs(outstanding.netPosition || 0))}</strong>
+          <small>${html(outstanding.netPosition >= 0 ? "Net receivables" : "Net payables")}</small>
+        </div>
+      </div>
+      <div class="follow-up-detail-grid">
+        ${renderFollowUpDetail(partner, "Partner Contacts", config.contactEmails, "contactEmails")}
+        ${renderFollowUpDetail(partner, "HubSpot Record", config.followUpHubspotUrl, "followUpHubspotUrl", { allowLink: true })}
+        ${renderFollowUpDetail(partner, "Current Notes", config.followUpNotes, "followUpNotes")}
+        ${latest ? renderFollowUpDetail(partner, "Last Touch", `${latest.date ? formatIsoDate(latest.date) : "No date"}${latest.channel ? ` via ${latest.channel}` : ""}${latest.contact ? ` with ${latest.contact}` : ""}`, "contactLog") : renderFollowUpDetail(partner, "Last Touch", "", "contactLog")}
+      </div>
+      <div class="follow-up-log-list">
+        <div class="follow-up-log-heading">
+          <strong>Communication History</strong>
+          <span>${logs.length} entr${logs.length === 1 ? "y" : "ies"}</span>
+        </div>
+        ${!logs.length ? `<p class="empty-state compact">No follow-up communications recorded yet.</p>` : logs.map((entry) => `
+          <div class="follow-up-log-entry">
+            <div>
+              <strong>${html(entry.date ? formatIsoDate(entry.date) : "No date")}</strong>
+              <span>${html([entry.channel, entry.contact].filter(Boolean).join(" with ") || "Communication")}</span>
+            </div>
+            <p>${html(entry.note || entry.reason || entry.status || "No notes recorded.")}</p>
+            <div class="follow-up-log-meta">
+              ${entry.status ? `<span class="helper-pill">${html(entry.status)}</span>` : ""}
+              ${entry.reason ? `<span class="helper-pill">${html(entry.reason)}</span>` : ""}
+              ${entry.nextDate ? `<span class="helper-pill">Next: ${html(formatIsoDate(entry.nextDate))}</span>` : ""}
+              ${entry.hubspotUrl ? `<a class="helper-pill" href="${html(entry.hubspotUrl)}" target="_blank" rel="noopener">HubSpot</a>` : ""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  return renderSection({
+    key: `${variant}-follow-up-${partner}`,
+    title: "Partner Follow-Up / Contact Log",
+    badge: getPartnerFollowUpBadge(partner),
+    note: "Track partner payment issues, disputes, AP delays, HubSpot links, and follow-up history.",
+    defaultOpen,
+    content
+  });
+}
+
 function renderInvoiceStatusTag(status) {
   if (!status) return "";
   return `<span class="invoice-status-pill is-${html(status.tone || "muted")}">${html(status.label)}</span>`;
@@ -2638,6 +3466,126 @@ function renderSettlementTag(summary) {
   return renderInvoiceStatusTag({ label, tone });
 }
 
+function getQaCheckerReport() {
+  return state.qaCheckerLatest && typeof state.qaCheckerLatest === "object" ? state.qaCheckerLatest : null;
+}
+
+function getQaCheckerTone(report) {
+  const status = String(report?.status || "").toLowerCase();
+  if (status === "pass") return "success";
+  if (status === "fail") return "danger";
+  if (status === "review") return "warning";
+  return "muted";
+}
+
+function buildQaCheckerExceptionRows(report = getQaCheckerReport()) {
+  return (Array.isArray(report?.issues) ? report.issues : []).map((issue) => ({
+    Severity: issue.severity || "",
+    Category: issue.category || "",
+    Code: issue.code || "",
+    Partner: issue.partner || "",
+    Period: issue.period || report.period || "",
+    Message: issue.message || "",
+    "Suggested Action": issue.suggestedAction || "",
+    Details: issue.details && typeof issue.details === "object" ? JSON.stringify(issue.details) : (issue.details || "")
+  }));
+}
+
+function downloadQaCheckerExceptions() {
+  const report = getQaCheckerReport();
+  if (!report) {
+    showToast("No QA checker result", "Run the checker after the Looker sync, then refresh shared data.", "warning");
+    return;
+  }
+  const rows = buildQaCheckerExceptionRows(report);
+  if (!rows.length) {
+    showToast("No QA exceptions", "The latest checker result has no exception rows to export.", "success");
+    return;
+  }
+  downloadCsv(`qa-checker-exceptions-${slugifyFilenamePart(report.period || "latest")}.csv`, rows);
+  showToast("QA exceptions exported", `${rows.length} exception row${rows.length === 1 ? "" : "s"} downloaded.`, "success");
+}
+
+function renderQaCheckerPanel() {
+  const report = getQaCheckerReport();
+  if (!report) {
+    return renderSection({
+      key: "qa-checker-status",
+      title: "QA Checker",
+      badge: "Not run",
+      note: "Runs after the Looker sync and flags source-data, missing-fee, and calculation-review issues before Finance releases invoices.",
+      defaultOpen: true,
+      content: `
+        <div class="summary-banner warning">
+          <h4>No checker result loaded</h4>
+          <p>Run the Looker Cloud Sync and QA Checker, then click Refresh Shared Data. The app will read the latest checker summary from the n8n QA status endpoint when the hosted workbook mirror is blocked by S3 permissions.</p>
+          <div class="button-row" style="margin-top:14px">
+            <button class="button secondary small" data-action="refresh-qa-checker-status">Refresh QA Status</button>
+          </div>
+        </div>
+      `
+    });
+  }
+  const summary = report.summary || {};
+  const tone = getQaCheckerTone(report);
+  const statusLabel = report.status === "pass" ? "SOURCE DATA PASS" : String(report.status || "unknown").toUpperCase();
+  const issues = Array.isArray(report.issues) ? report.issues : [];
+  const previewIssues = issues.slice(0, 8);
+  return renderSection({
+    key: "qa-checker-status",
+    title: "QA Checker",
+    badge: `${statusLabel}${summary.issueCount != null ? ` · ${summary.issueCount} issue${Number(summary.issueCount) === 1 ? "" : "s"}` : ""}`,
+    note: "Latest deterministic source-data checker result loaded from the shared workbook or n8n QA status endpoint. This is not an invoice-dollar or PDF release certification.",
+    defaultOpen: true,
+    content: `
+      <div class="summary-banner ${tone === "success" ? "success" : tone === "warning" || tone === "danger" ? "warning" : "info"}">
+        <h4>Latest checker status: ${renderInvoiceStatusTag({ label: statusLabel, tone })}</h4>
+        <p>${report.generatedAt ? `Generated ${html(formatDateTime(report.generatedAt))}` : "Generated time unavailable"}${report.period ? ` · ${html(formatPeriodLabel(report.period))}` : ""}${report.runId ? ` · Run ${html(report.runId)}` : ""}</p>
+        ${report.workbookSavedAt ? `<p>Workbook source saved ${html(formatDateTime(report.workbookSavedAt))}</p>` : ""}
+        <p>Scope: source-data coverage only. Final release still needs invoice total, PDF/export, private-link, and partner-alias review.</p>
+      </div>
+      <div class="billing-summary-kpis qa-checker-kpis">
+        <div class="kpi-card ${Number(summary.criticalCount || 0) ? "danger" : "success"}"><strong>${Number(summary.criticalCount || 0).toLocaleString("en-US")}</strong><span>Critical</span></div>
+        <div class="kpi-card ${Number(summary.warningCount || 0) ? "warning" : ""}"><strong>${Number(summary.warningCount || 0).toLocaleString("en-US")}</strong><span>Warnings</span></div>
+        <div class="kpi-card info"><strong>${Number(summary.infoCount || 0).toLocaleString("en-US")}</strong><span>Info</span></div>
+        <div class="kpi-card"><strong>${Number(summary.partnersWithIssues || 0).toLocaleString("en-US")}</strong><span>Partners With Issues</span></div>
+      </div>
+      <div class="button-row" style="margin-top:14px">
+        <button class="button secondary small" data-action="refresh-qa-checker-status">Refresh QA Status</button>
+        <button class="button secondary small" data-action="download-qa-checker-exceptions"${issues.length ? "" : " disabled"}>Download Exceptions CSV</button>
+        <button class="button ghost small" data-action="download-qa-checker-summary">Download Summary JSON</button>
+      </div>
+      ${previewIssues.length ? `
+        <div class="table-wrap" style="margin-top:16px">
+          <table class="data-table qa-checker-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Partner</th>
+                <th>Code</th>
+                <th>Message</th>
+                <th>Suggested Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${previewIssues.map((issue) => `
+                <tr>
+                  <td>${renderInvoiceStatusTag({ label: issue.severity || "info", tone: issue.severity === "critical" ? "danger" : issue.severity === "warning" ? "warning" : "info" })}</td>
+                  <td>${html(issue.partner || "—")}</td>
+                  <td>${html(issue.code || "—")}</td>
+                  <td>${html(issue.message || "")}</td>
+                  <td>${html(issue.suggestedAction || "")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+        ${issues.length > previewIssues.length ? `<p class="section-note">Showing first ${previewIssues.length} of ${issues.length} issues. Download the CSV for the full list.</p>` : ""}
+      ` : `<div class="empty-state compact" style="margin-top:16px">No checker exceptions in the latest run.</div>`}
+    `
+  });
+}
+
 function renderSummaryAmountCell(amount) {
   if (amount > 0) return `<span class="summary-amount">${fmt(amount)}</span>`;
   return `<span class="summary-placeholder">—</span>`;
@@ -2650,6 +3598,8 @@ function renderBillingSummaryInvoiceDetails(summary) {
   }
   return `
     <div class="billing-summary-detail-card">
+      ${renderPartnerLifetimeBillingSummary(summary.partner, { variant: "detail" })}
+      ${renderPartnerFollowUpPanel(summary.partner, { variant: "summary" })}
       <table class="billing-summary-detail-table">
         <thead>
           <tr>
@@ -3454,6 +4404,7 @@ function restoreSnapshot(data) {
   DATA_KEYS.forEach((key) => {
     if (snapshot[key] != null) state[key] = snapshot[key];
   });
+  hydrateTransientSnapshotState(snapshot);
   persistAndRender();
   logWorkbookChange("restore_snapshot", "Restored workbook data from a backup file.", { section: "workbook" });
 }
@@ -3472,6 +4423,8 @@ function migrateSnapshot(saved) {
     return { snapshot: saved, changed: false };
   }
   const version = Number(saved._version || 0);
+  const changed = version < STORAGE_VERSION;
+  const existingSavedAt = saved._saved || "";
 
   const defaults = createInitialWorkbookData();
   const snapshot = { ...saved };
@@ -3737,9 +4690,13 @@ function migrateSnapshot(saved) {
     }));
   }
 
+  snapshot.qaCheckerLatest = snapshot.qaCheckerLatest && typeof snapshot.qaCheckerLatest === "object"
+    ? snapshot.qaCheckerLatest
+    : defaults.qaCheckerLatest;
+
   snapshot._version = STORAGE_VERSION;
-  snapshot._saved = new Date().toISOString();
-  return { snapshot, changed: version < STORAGE_VERSION };
+  snapshot._saved = changed || !existingSavedAt ? new Date().toISOString() : existingSavedAt;
+  return { snapshot, changed };
 }
 
 function resetToDefaults() {
@@ -3810,7 +4767,23 @@ function readBoundValue(key) {
   return el.value;
 }
 
+function followUpDraftFieldFromBindKey(key) {
+  const prefix = "followUpDraft";
+  if (!String(key || "").startsWith(prefix)) return "";
+  const suffix = String(key).slice(prefix.length);
+  if (!suffix) return "";
+  return `${suffix.charAt(0).toLowerCase()}${suffix.slice(1)}`;
+}
+
 function setBoundValue(key, value) {
+  const followUpField = followUpDraftFieldFromBindKey(key);
+  if (followUpField) {
+    state.followUpDraft = {
+      ...(state.followUpDraft || {}),
+      [followUpField]: value
+    };
+    return;
+  }
   state[key] = value;
 }
 
@@ -4058,15 +5031,16 @@ function getCurrentPageSectionStateKeys(pageId = state.tab) {
 function renderDataTable({ section, cols, rows, readOnly = false, filterFn = null, emptyLabel = "No rows", rowsKey = "", pageId = state.tab }) {
   const list = filterFn ? rows.filter(filterFn) : rows;
   const rowsExpanded = rowsKey ? areTableRowsExpanded(rowsKey, pageId) : true;
-  const colSpan = cols.length + (readOnly ? 0 : 1);
+  const effectiveReadOnly = readOnly || !canAdminEdit();
+  const colSpan = cols.length + (effectiveReadOnly ? 0 : 1);
   const bodyMarkup = list.length === 0
     ? `<tr><td colspan="${colSpan}" class="empty-state">${html(emptyLabel)}</td></tr>`
       : !rowsExpanded
       ? ""
       : list.map((row) => `
             <tr class="${row.partner && isPartnerArchived(row.partner) ? "is-archived" : ""}">
-              ${cols.map((col) => `<td>${renderInputCell(section, row, col, readOnly)}</td>`).join("")}
-              ${readOnly ? "" : `<td><button class="button ghost small" data-action="delete-row" data-section="${section}" data-id="${row.id}">Delete</button></td>`}
+              ${cols.map((col) => `<td>${renderInputCell(section, row, col, effectiveReadOnly)}</td>`).join("")}
+              ${effectiveReadOnly ? "" : `<td><button class="button ghost small" data-action="delete-row" data-section="${section}" data-id="${row.id}">Delete</button></td>`}
             </tr>
           `).join("");
   return `
@@ -4075,7 +5049,7 @@ function renderDataTable({ section, cols, rows, readOnly = false, filterFn = nul
         <thead>
           <tr>
             ${cols.map((col) => `<th style="min-width:${col.w || 80}px">${html(col.label)}</th>`).join("")}
-            ${readOnly ? "" : "<th style=\"min-width:72px\">Actions</th>"}
+            ${effectiveReadOnly ? "" : "<th style=\"min-width:72px\">Actions</th>"}
           </tr>
         </thead>
         <tbody>
@@ -4083,7 +5057,7 @@ function renderDataTable({ section, cols, rows, readOnly = false, filterFn = nul
         </tbody>
       </table>
     </div>
-    ${readOnly ? "" : `<div class="button-row" style="margin-top:12px"><button class="button secondary small" data-action="add-row" data-section="${section}">Add Row</button></div>`}
+    ${effectiveReadOnly ? "" : `<div class="button-row" style="margin-top:12px"><button class="button secondary small" data-action="add-row" data-section="${section}">Add Row</button></div>`}
   `;
 }
 
@@ -4931,6 +5905,42 @@ function getStampliFxPartnerMarkupDirection(group, summaryRow = {}) {
   return textValue.includes("reversal") ? "reversal" : "share";
 }
 
+function parseDetailMoney(value) {
+  if (value === null || value === undefined || value === "") return 0;
+  const parsed = Number(String(value).replace(/[$,]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getDetailPaymentId(row) {
+  return firstPresentValue(row, [
+    "paymentId",
+    "Payment ID",
+    "Payment Payment ID",
+    "** Payment For Sales DV ** Payment Id"
+  ]);
+}
+
+function isPaymentLevelDetailRow(row) {
+  const detailKind = norm(row?.detailCategory || row?.sourceSection);
+  if (["summary", "ltxn", "lva", "lrs", "lfxp"].includes(detailKind)) return false;
+  return !!getDetailPaymentId(row);
+}
+
+function getDetailUsdEquivalentAmount(row) {
+  return parseDetailMoney(firstPresentValue(row, [
+    "paymentUsdEquivalentAmount",
+    "Payment USD Equivalent Amount",
+    "usdAmountDebited",
+    "USD Amount Debited to the Customer",
+    "totalUsdDebited",
+    "totalVolume"
+  ]));
+}
+
+function moneyAmountsClose(left, right, tolerance = 1) {
+  return Math.abs(parseDetailMoney(left) - parseDetailMoney(right)) <= tolerance;
+}
+
 function matchesStampliFxPartnerMarkupDetail(detailRow, summaryRow, group) {
   const direction = getStampliFxPartnerMarkupDirection(group, summaryRow);
   if (!direction) return false;
@@ -4938,8 +5948,60 @@ function matchesStampliFxPartnerMarkupDetail(detailRow, summaryRow, group) {
     || (detailRow.detailSource === "stampli_fx_revenue_share" ? "share" : "")
     || (detailRow.detailSource === "stampli_fx_reversal" ? "reversal" : "");
   return detailDirection === direction
+    && isPaymentLevelDetailRow(detailRow)
     && norm(detailRow.partner) === norm(summaryRow.partner)
     && norm(detailRow.period) === norm(summaryRow.period);
+}
+
+function findStampliFxPartnerMarkupFallbackRows(detailRows, group) {
+  const summaryRows = group?.activityRows || [];
+  const direction = getStampliFxPartnerMarkupDirection(group, summaryRows[0]);
+  if (!direction || !summaryRows.length) return [];
+  const targetCount = summaryRows.reduce((sum, row) => sum + Number(row.txnCount || 0), 0);
+  const targetVolume = summaryRows.reduce((sum, row) => sum + Number(row.totalVolume || 0), 0);
+  if (targetCount <= 0) return [];
+  const summaryKeys = new Set(summaryRows.map((row) => `${norm(row.partner)}|${norm(row.period)}`));
+  const candidates = (detailRows || []).filter((row) => {
+    if (!isPaymentLevelDetailRow(row)) return false;
+    if (!summaryKeys.has(`${norm(row.partner)}|${norm(row.period)}`)) return false;
+    const category = norm(row.detailCategory);
+    if (direction === "share" && category !== "transaction") return false;
+    if (direction === "reversal" && category !== "reversal") return false;
+    return norm(row.txnType) === "fx" || norm(row.txnType) === "usd abroad" || norm(row.processingMethod) === "wire";
+  });
+  const bySource = new Map();
+  candidates.forEach((row) => {
+    const key = row.detailSource || row.sourceSection || "payment_detail";
+    if (!bySource.has(key)) bySource.set(key, []);
+    bySource.get(key).push(row);
+  });
+  const sourceGroups = [...bySource.entries()].sort(([left], [right]) => {
+    const leftIsStampliFx = left.startsWith("stampli_fx") ? 0 : 1;
+    const rightIsStampliFx = right.startsWith("stampli_fx") ? 0 : 1;
+    return leftIsStampliFx - rightIsStampliFx || left.localeCompare(right);
+  });
+  const exactMatch = sourceGroups.find(([, rows]) => {
+    const total = rows.reduce((sum, row) => sum + getDetailUsdEquivalentAmount(row), 0);
+    return rows.length === targetCount && (!targetVolume || moneyAmountsClose(total, targetVolume));
+  });
+  return exactMatch ? exactMatch[1] : [];
+}
+
+function getInvoiceGroupActivityTxnCount(group) {
+  return (group?.activityRows || []).reduce((sum, row) => sum + Number(row.txnCount || 0), 0);
+}
+
+function shouldAllowSummaryTransactionExportFallback(group) {
+  return getInvoiceGroupActivityTxnCount(group) <= 1;
+}
+
+function showMissingPaymentLevelRowsToast(group) {
+  const txnCount = getInvoiceGroupActivityTxnCount(group);
+  showToast(
+    "Payment-level rows missing",
+    `That invoice line represents ${txnCount.toLocaleString("en-US")} transaction${txnCount === 1 ? "" : "s"}, but no imported payment-level rows matched it. Rerun the n8n Looker sync with detail rows saved, then export again.`,
+    "warning"
+  );
 }
 
 function buildInvoiceSummaryFallbackRows(group) {
@@ -4997,11 +6059,15 @@ function formatCustomerTransactionExportRows(rows) {
       "customerRevenue",
       "generatedRevenueSupport",
       "partnerPayout",
-      "partnerRevenueShare"
+      "partnerRevenueShare",
+      "stampliMarkupAmount",
+      "Stampli Markup Amount"
     ]);
     const paymentUsdAmount = firstPresentValue(row, [
       "paymentUsdEquivalentAmount",
+      "Payment USD Equivalent Amount",
       "usdAmountDebited",
+      "USD Amount Debited to the Customer",
       "usdAmount",
       "totalUsdDebited",
       "totalVolume"
@@ -5009,14 +6075,14 @@ function formatCustomerTransactionExportRows(rows) {
     return {
       "": index + 1,
       "Payment ID": firstPresentValue(row, ["paymentId", "Payment ID"]) || (isSummary ? "SUMMARY" : ""),
-      "Credit Initiate time": firstPresentValue(row, ["creditCompleteDate", "Credit Initiate time", "reversalDate"]),
+      "Credit Initiate time": firstPresentValue(row, ["creditCompleteDate", "Credit Initiate time", "Credit Initiate Time", "Credit Complete Date", "reversalDate", "Refund Complete Date", "Refund Completed Date"]),
       "Payer Email": firstPresentValue(row, ["payerEmail", "Payer Email"]),
       "Payer Business Name": firstPresentValue(row, ["payerBusinessName", "payerName", "Payer Business Name"]) || (isSummary ? `${Number(row.txnCount || 0).toLocaleString("en-US")} transactions` : ""),
       "Payee Email": firstPresentValue(row, ["payeeEmail", "Payee Email"]),
       "Payee Business Name": firstPresentValue(row, ["payeeBusinessName", "payeeName", "Payee Business Name"]) || (isSummary ? describeActivitySummaryRow(row) : ""),
       "Account ID": firstPresentValue(row, ["accountId", "Account ID"]),
       "Payee Country": firstPresentValue(row, ["payeeCountry", "Payee Country"]),
-      "Date of Payment Submission": firstPresentValue(row, ["submissionDate", "Date of Payment Submission"]),
+      "Date of Payment Submission": firstPresentValue(row, ["submissionDate", "Date of Payment Submission", "Payment Submission Date"]),
       "Currency (Payee Amount Currency)": firstPresentValue(row, ["payeeAmountCurrency", "Currency (Payee Amount Currency)", "payeeCcy"]),
       "Foreign Currency Amount (Payee Amount Number)": formatTransactionExportAmount(firstPresentValue(row, ["payeeAmount", "Foreign Currency Amount (Payee Amount Number)", "totalVolume"]), { currency: false }),
       "USD Amount Debited to the Customer": formatTransactionExportAmount(firstPresentValue(row, ["usdAmountDebited", "USD Amount Debited to the Customer", "totalUsdDebited"]), { currency: false }),
@@ -5038,6 +6104,10 @@ async function exportInvoiceTransactions(scope, groupId) {
     .filter((row) => !isUntrustedInvoiceDetailRow(row))
     .filter((row) => !row.period || isPartnerActiveForPeriod(state, state.inv.partner, row.period));
   if (!detailRows.length) {
+    if (scope !== "all" && !shouldAllowSummaryTransactionExportFallback(group)) {
+      showMissingPaymentLevelRowsToast(group);
+      return;
+    }
     const fallbackRows = scope === "all"
       ? getInvoicePeriodActivityRows(state.inv.partner, state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period).map((row) => ({
         detailCategory: "summary",
@@ -5067,7 +6137,17 @@ async function exportInvoiceTransactions(scope, groupId) {
         ? matchesReversalSummary(detailRow, summaryRow)
         : matchesTxnSummary(detailRow, summaryRow))
     )));
+  if (scope !== "all" && !shouldAllowSummaryTransactionExportFallback(group)) {
+    filtered = filtered.filter((row) => isPaymentLevelDetailRow(row));
+  }
   if (scope !== "all" && !filtered.length) {
+    filtered = findStampliFxPartnerMarkupFallbackRows(detailRows, group);
+  }
+  if (scope !== "all" && !filtered.length) {
+    if (!shouldAllowSummaryTransactionExportFallback(group)) {
+      showMissingPaymentLevelRowsToast(group);
+      return;
+    }
     filtered = buildInvoiceSummaryFallbackRows(group);
   }
   const rows = buildInvoiceExportRows(filtered, scope, group);
@@ -5090,7 +6170,7 @@ function getFinanceBatchPeriod() {
 
 function getFinanceBatchPartners(period) {
   return [...new Set(state.ps || [])]
-    .filter((partner) => partner && isPartnerActiveForPeriod(state, partner, period))
+    .filter((partner) => partner && !isPartnerArchived(partner) && isPartnerActiveForPeriod(state, partner, period))
     .sort((a, b) => String(a).localeCompare(String(b)));
 }
 
@@ -5180,6 +6260,13 @@ async function exportFinanceBatchInvoices() {
     showToast("Month required", "Choose a valid month before running the finance batch export.", "warning");
     return;
   }
+  const releaseReadiness = getReleaseReadiness();
+  if (releaseReadiness.label === "Blocked") {
+    state.financeBatchError = releaseReadiness.message;
+    showToast("Health blockers present", releaseReadiness.message, "warning");
+    render();
+    return;
+  }
   state.financeBatchPeriod = period;
   state.financeBatchStatus = "invoices";
   state.financeBatchError = "";
@@ -5265,6 +6352,13 @@ async function exportFinanceBatchTransactions() {
     showToast("Month required", "Choose a valid month before running the finance batch export.", "warning");
     return;
   }
+  const releaseReadiness = getReleaseReadiness();
+  if (releaseReadiness.label === "Blocked") {
+    state.financeBatchError = releaseReadiness.message;
+    showToast("Health blockers present", releaseReadiness.message, "warning");
+    render();
+    return;
+  }
   state.financeBatchPeriod = period;
   state.financeBatchStatus = "transactions";
   state.financeBatchError = "";
@@ -5308,15 +6402,42 @@ function buildInvoiceArtifactBundleKey(inv, generatedAt) {
 
 function getPrivateInvoiceLinkUrl(result) {
   return String(
-    result?.privateUrl
-    || result?.downloadUrl
+    result?.signedPrivateUrl
     || result?.signedUrl
+    || result?.downloadUrl
     || result?.privateDownloadUrl
     || result?.url
     || result?.link
     || result?.download_url
+    || result?.signed_url
+    || result?.privateUrl
     || ""
   ).trim();
+}
+
+function normalizePositiveInteger(value, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return fallback;
+  return Math.round(number);
+}
+
+function getPrivateDownloadUrlTtlSeconds(config = getSharedBackendConfig()) {
+  return normalizePositiveInteger(
+    config.privateInvoiceDownloadUrlTtlSeconds || config.privateInvoiceLinkDefaultTtl,
+    PRIVATE_DOWNLOAD_URL_TTL_SECONDS
+  );
+}
+
+function getPrivateLinkRetentionDays(config = getSharedBackendConfig()) {
+  return normalizePositiveInteger(
+    config.privateInvoiceLinkExpiresInDays || config.privateInvoiceDownloadRetentionDays,
+    PRIVATE_LINK_RETENTION_DAYS
+  );
+}
+
+function formatPrivateDownloadTtl(seconds) {
+  const minutes = Math.max(1, Math.round(normalizePositiveInteger(seconds, PRIVATE_DOWNLOAD_URL_TTL_SECONDS) / 60));
+  return minutes === 1 ? "1 minute" : `${minutes.toLocaleString("en-US")} minutes`;
 }
 
 async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generate_invoice" } = {}) {
@@ -5329,14 +6450,26 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
   const bundleKey = buildInvoiceArtifactBundleKey(inv, generatedAt);
   let detailRows = [];
   let detailWarning = "";
+  let usedSummaryTransactionFallback = false;
   try {
     detailRows = (await loadInvoiceDetailRowsForRange(inv.partner, periodStart, periodEnd))
+      .filter((row) => !isUntrustedInvoiceDetailRow(row))
       .filter((row) => !row.period || isPartnerActiveForPeriod(state, inv.partner, row.period));
   } catch (error) {
     console.error("Could not load invoice detail rows for artifact packaging", error);
     detailWarning = String(error?.message || error || "Could not load detail rows.");
   }
-  const transactionRows = buildInvoiceExportRows(detailRows, "all", null);
+  let transactionSourceRows = detailRows;
+  if (!transactionSourceRows.length) {
+    transactionSourceRows = buildInvoiceSummaryRowsForExport(
+      inv.partner,
+      periodStart,
+      periodEnd,
+      "Payment-level detail file was unavailable; this is the invoice activity summary used by the calculator."
+    );
+    usedSummaryTransactionFallback = transactionSourceRows.length > 0;
+  }
+  const transactionRows = buildInvoiceExportRows(transactionSourceRows, "all", null, inv);
   const documents = buildInvoiceDocuments(inv).map((doc) => ({
     kind: doc.kind,
     title: doc.title,
@@ -5373,7 +6506,8 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
       apAmount: Number(payableDoc?.amountDue || 0),
       netAmount: Math.abs(Number(inv.net || 0)),
       netDirection: Number(inv.net || 0) >= 0 ? getPartnerOwesLabel(inv.partner) : "Payables",
-      transactionRowCount: transactionRows.length
+      transactionRowCount: transactionRows.length,
+      transactionSource: usedSummaryTransactionFallback ? "invoice_activity_summary" : "payment_detail"
     },
     invoiceSummary: {
       noteCount: Array.isArray(inv.notes) ? inv.notes.length : 0,
@@ -5388,7 +6522,8 @@ async function buildInvoiceArtifactPayload(inv = state.inv, { trigger = "generat
     },
     warnings: [
       ...(Array.isArray(inv.notes) ? inv.notes : []),
-      ...(detailWarning ? [`Transaction detail export warning: ${detailWarning}`] : [])
+      ...(detailWarning ? [`Transaction detail export warning: ${detailWarning}`] : []),
+      ...(usedSummaryTransactionFallback ? ["Transaction detail export warning: payment-level detail rows were unavailable; the transaction CSV uses invoice activity summary rows."] : [])
     ]
   };
 }
@@ -5460,6 +6595,7 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
   render();
 
   try {
+    const config = getSharedBackendConfig();
     let archiveContext = null;
     try {
       archiveContext = await archiveInvoiceArtifactCopy(state.inv, {
@@ -5478,7 +6614,6 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
     }
 
     if (!isPrivateInvoiceLinkEnabled()) {
-      const config = getSharedBackendConfig();
       state.privateInvoiceLinkStatus = "error";
       state.privateInvoiceLinkError = (config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl)
         ? "Private-link delivery is configured but not enabled."
@@ -5495,6 +6630,8 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
       period: state.inv.period,
       periodStart: state.inv.periodStart || state.inv.period,
       periodEnd: state.inv.periodEnd || state.inv.period,
+      downloadUrlTtlSeconds: getPrivateDownloadUrlTtlSeconds(config),
+      partnerLinkExpiresInDays: getPrivateLinkRetentionDays(config),
       invoiceArtifact: archiveContext?.payload || null,
       archivedArtifact: archiveContext?.result || state.invoiceArtifactRecord || null
     };
@@ -5506,7 +6643,10 @@ async function generateInvoicePrivateLinkForCurrentSelection() {
     state.privateInvoiceLinkResult = {
       ...result,
       privateUrl,
-      generatedAt: payload.requestedAt
+      generatedAt: payload.requestedAt,
+      signedUrlTtlSeconds: result?.signedUrlTtlSeconds || payload.downloadUrlTtlSeconds,
+      retentionDays: result?.retentionDays || payload.partnerLinkExpiresInDays,
+      linkExpiresAt: result?.linkExpiresAt || ""
     };
     state.privateInvoiceLinkStatus = "success";
     state.privateInvoiceLinkError = "";
@@ -5591,6 +6731,12 @@ function expandCcy(group) {
 
 async function parseContract() {
   state.cText = readBoundValue("cText");
+  if (!String(state.cText || "").trim()) {
+    state.cStatus = "error";
+    state.cError = "Paste contract text, structured JSON, or load a contract file before parsing.";
+    render();
+    return;
+  }
   state.cDetectedIncremental = state.cDetectedIncremental || detectPerTierMarginalPricing(state.cText);
   state.cStatus = "parsing";
   state.cError = "";
@@ -6644,6 +7790,25 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
   const { skipImplementationCredits = false, suppressNotes = false } = options;
   const activePartner = partner;
   const activePeriod = period;
+  if (isPartnerArchived(activePartner)) {
+    return {
+      partner: activePartner,
+      period: activePeriod,
+      periodStart: activePeriod,
+      periodEnd: activePeriod,
+      periodLabel: formatPeriodRangeLabel(activePeriod, activePeriod),
+      periodDateRange: formatPeriodDateRange(activePeriod, activePeriod),
+      lines: [],
+      groups: [],
+      notes: [`Partner is archived, so billing was skipped for ${formatPeriodLabel(activePeriod)}.`],
+      inactivePeriod: true,
+      archivedPartner: true,
+      chg: 0,
+      pay: 0,
+      net: 0,
+      dir: "Receivables"
+    };
+  }
   if (!isPartnerActiveForPeriod(state, activePartner, activePeriod)) {
     return {
       partner: activePartner,
@@ -7286,7 +8451,13 @@ function calculateLocalInvoiceForPeriod(partner, period, options = {}) {
           amount,
           dir: "charge",
           groupLabel: `${row.payerFunding || "All"} reversals`,
-          minimumEligible: true,
+          // Reversal fees are additive to the monthly minimum (not "generated revenue").
+          // Decoded from Blindpay 1019/1034, Whish 1044, Yeepay 1027/1032 PDFs:
+          //   Min top-up = max(0, min - other_eligible_revenue)
+          //   Total bill = min top-up + other eligible + reversal fees (always added)
+          // Setting minimumEligible:false so reversals don't get replaced by the
+          // minimum and don't count toward generated revenue when gating the minimum.
+          minimumEligible: false,
           activityRows: [row]
         });
       });
@@ -7593,6 +8764,9 @@ function renderInvoiceDeliveryPanel() {
   const linkConfigured = !!(config.privateInvoiceLinkSignerUrl || config.privateInvoiceLinkWriteBaseUrl);
   const archiveEnabled = isInvoiceArtifactEnabled();
   const linkEnabled = isPrivateInvoiceLinkEnabled();
+  const signedUrlTtlSeconds = state.privateInvoiceLinkResult?.signedUrlTtlSeconds || getPrivateDownloadUrlTtlSeconds(config);
+  const signedUrlTtlLabel = formatPrivateDownloadTtl(signedUrlTtlSeconds);
+  const privateLinkExpiresAt = state.privateInvoiceLinkResult?.linkExpiresAt || "";
   const archiveSummary = state.invoiceArtifactStatus === "saving"
     ? "Saving a timestamped invoice copy..."
     : state.invoiceArtifactStatus === "success" && state.invoiceArtifactRecord?.savedAt
@@ -7605,7 +8779,7 @@ function renderInvoiceDeliveryPanel() {
   const linkSummary = state.privateInvoiceLinkStatus === "creating"
     ? "Generating a private partner download link..."
     : state.privateInvoiceLinkStatus === "success" && privateUrl
-      ? "Private partner download link is ready."
+      ? `Private partner download link is ready. File download URLs expire after ${signedUrlTtlLabel}.`
       : linkEnabled
         ? "Private link generation is ready."
         : linkConfigured
@@ -7620,6 +8794,8 @@ function renderInvoiceDeliveryPanel() {
       ${state.invoiceArtifactError ? `<p class="footer-note" style="color:#a33b29">${html(state.invoiceArtifactError)}</p>` : ""}
       ${state.privateInvoiceLinkError ? `<p class="footer-note" style="color:#a33b29">${html(state.privateInvoiceLinkError)}</p>` : ""}
       ${privateUrl ? `
+        <p>Download buttons on the partner page create fresh file URLs that expire after ${html(signedUrlTtlLabel)}.</p>
+        ${privateLinkExpiresAt ? `<p>Partner package retention expires ${html(formatDateTime(privateLinkExpiresAt))}.</p>` : ""}
         <div class="button-row" style="margin-top:12px">
           <a class="button secondary" href="${html(privateUrl)}" target="_blank" rel="noopener">Open Private Link</a>
           <button class="button ghost" data-action="copy-private-invoice-link">Copy Private Link</button>
@@ -7817,6 +8993,7 @@ function renderBillingSummary() {
             </div>
           </div>
         </div>
+        ${state.billingSummaryPartner ? renderPartnerLifetimeBillingSummary(state.billingSummaryPartner) : ""}
         <div class="table-wrap">
           <table class="data-table billing-summary-table">
             <thead>
@@ -7861,6 +9038,38 @@ function renderBillingSummary() {
   });
 }
 
+function renderHubSpotSyncPanel(partner, config = buildDefaultPartnerBilling(partner, getPartnerBillingConfig(partner))) {
+  const enabled = isHubSpotSyncEnabled();
+  const adminCanSync = canAdminEdit();
+  const syncing = state.hubspotSyncStatus === "syncing";
+  const result = state.hubspotSyncResult;
+  const lastSyncText = result
+    ? `Last sync applied ${Number(result.updated || 0).toLocaleString()} update${Number(result.updated || 0) === 1 ? "" : "s"}${result.skipped ? ` and skipped ${Number(result.skipped).toLocaleString()} row${Number(result.skipped) === 1 ? "" : "s"}` : ""}.`
+    : "";
+  const matchText = config.hubspotCompanyName || config.hubspotCompanyId
+    ? `Current HubSpot match: ${config.hubspotCompanyName || "Company"}${config.hubspotCompanyId ? ` (${config.hubspotCompanyId})` : ""}.`
+    : "No HubSpot company match is stored yet.";
+  return `
+    <div class="summary-banner ${state.hubspotSyncStatus === "error" ? "warning" : enabled ? "success" : "warning"}" style="margin-bottom:16px">
+      <h4>HubSpot Live Sync</h4>
+      <p>${enabled
+        ? adminCanSync
+          ? "Connected through n8n. n8n owns the HubSpot credential; this app only sends partner names/current IDs and accepts billing-profile updates."
+          : "Connected through n8n. Sync actions are locked to admin users because they can update workbook partner profiles."
+        : "Not connected yet. Set BILLING_APP_CONFIG.hubspotSyncWebhookUrl to the n8n production webhook that runs the HubSpot pull."}</p>
+      <p>${html(matchText)}</p>
+      ${lastSyncText ? `<p>${html(lastSyncText)}</p>` : ""}
+      ${state.hubspotSyncError ? `<p class="footer-note" style="color:#a33b29">${html(state.hubspotSyncError)}</p>` : ""}
+      ${adminCanSync ? `
+        <div class="button-row" style="margin-top:12px">
+          <button class="button secondary small" data-action="sync-hubspot-partner" data-partner="${html(partner)}"${!enabled || syncing ? " disabled" : ""}>${syncing ? "Syncing..." : "Sync This Partner"}</button>
+          <button class="button ghost small" data-action="sync-hubspot-all"${!enabled || syncing ? " disabled" : ""}>Sync All Partners</button>
+        </div>
+      ` : `<p class="footer-note">HubSpot match details are visible to guests. Live sync actions are admin-only.</p>`}
+    </div>
+  `;
+}
+
 function renderPartnerBillingSection(partner) {
   const config = buildDefaultPartnerBilling(partner, getPartnerBillingConfig(partner));
   const dueDays = Number(config.dueDays || getBillingDueDays(partner) || 0);
@@ -7868,6 +9077,7 @@ function renderPartnerBillingSection(partner) {
   const rowsExpanded = areTableRowsExpanded(`partner-billing-${partner}`, "partner");
   return `
     <div class="stack">
+      ${renderHubSpotSyncPanel(partner, config)}
       <div class="field-grid billing-field-grid">
         <label class="field">
           ${renderLabelWithInfo("Billing Frequency", "Imported from the contract when available. This is stored per partner and can be edited manually.")}
@@ -7943,11 +9153,20 @@ function renderPartnerBillingSection(partner) {
           ${renderLabelWithInfo("Late Fee Terms", "Store the exact contract wording or summary for late fees / suspension here so it is preserved in billing records and available to downstream systems.")}
           <input class="input" type="text" value="${html(config.lateFeeTerms || "")}" placeholder="1.5% monthly interest begins after 30 days overdue" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="lateFeeTerms">
         </label>
-        <label class="field field-wide billing-span-4">
+        <label class="field field-wide billing-span-4" data-follow-up-field="contactEmails">
           ${renderLabelWithInfo("Partner Contact Emails", "Billing / AP contact emails from the AP Summary workbook. You can edit this list manually if the contacts change.")}
           <textarea class="textarea textarea-compact" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="contactEmails" placeholder="billing@example.com, finance@example.com">${html(config.contactEmails || "")}</textarea>
         </label>
+        <label class="field field-wide billing-span-4">
+          ${renderLabelWithInfo("HubSpot Email Directory", "Email addresses imported from associated HubSpot contacts. Use Partner Contact Emails above for the invoice/AP-facing list.")}
+          <textarea class="textarea textarea-compact" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="hubspotContactEmails" placeholder="Imported HubSpot contact emails">${html(config.hubspotContactEmails || "")}</textarea>
+        </label>
+        <label class="field field-wide billing-span-4">
+          ${renderLabelWithInfo("HubSpot Address Data", "Address data imported from HubSpot. Only copy this into Invoice Bill-To Address when it is invoice-safe and complete.")}
+          <textarea class="textarea textarea-compact" data-action="update-partner-billing" data-partner="${html(partner)}" data-key="hubspotAddressCandidates" placeholder="Imported HubSpot address candidates">${html(config.hubspotAddressCandidates || "")}</textarea>
+        </label>
       </div>
+      ${renderPartnerFollowUpEditor(partner, config)}
       <div class="table-wrap">
         <table class="data-table invoice-tracker-table">
           <thead>
@@ -8173,11 +9392,24 @@ function renderInvoiceDocumentTable(doc) {
 
 function renderInvoiceTab() {
   const noteSectionKey = state.inv ? `invoice-notes:${state.inv.partner}:${state.inv.period}` : "invoice-notes";
+  const qaCheckerPanel = renderQaCheckerPanel();
   const summaryPanel = renderBillingSummary();
   const invoiceDocuments = state.inv ? buildInvoiceDocuments(state.inv) : [];
   const receivableDoc = invoiceDocuments.find((doc) => doc.kind === "receivable") || null;
   const payableDoc = invoiceDocuments.find((doc) => doc.kind === "payable") || null;
   const privateLinkReady = !!getPrivateInvoiceLinkUrl(state.privateInvoiceLinkResult);
+  const privateLinkEnabled = isPrivateInvoiceLinkEnabled();
+  const releaseReadiness = getReleaseReadiness();
+  const financeBatchBlocked = releaseReadiness.label === "Blocked";
+  const invoiceHasPartner = !!state.sp;
+  const invoiceHasStartMonth = !!normalizeMonthKey(state.perStart);
+  const invoiceHasEndMonth = !state.useDateRange || !!normalizeMonthKey(state.perEnd);
+  const invoiceSelectionReady = invoiceHasPartner && invoiceHasStartMonth && invoiceHasEndMonth;
+  const calculateButtonLabel = invoiceSelectionReady
+    ? "Calculate"
+    : !invoiceHasPartner
+      ? "Choose Partner First"
+      : "Choose Month First";
   const netAmount = state.inv ? Math.abs(Number(state.inv.net || 0)) : 0;
   const netLabel = state.inv ? (Number(state.inv.net || 0) >= 0 ? getPartnerOwesLabel(state.inv.partner) : "Payables") : "";
   const partnerLifecycle = state.inv ? getPartnerLifecycleStatus(state.inv.partner, state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period) : null;
@@ -8190,6 +9422,7 @@ function renderInvoiceTab() {
         </div>
         <p>Range: ${html(state.inv.periodDateRange || formatPeriodDateRange(state.inv.periodStart || state.inv.period, state.inv.periodEnd || state.inv.period))}</p>
       </div>
+      ${renderPartnerLifetimeBillingSummary(state.inv.partner, { variant: "banner" })}
       <div class="invoice-banner-aside">
         <div class="invoice-meta-actions">
           ${receivableDoc ? `<button class="invoice-icon-button" data-action="export-invoice-pdf" data-doc-kind="receivable" title="Download AR invoice PDF" aria-label="Download AR invoice PDF">
@@ -8201,7 +9434,7 @@ function renderInvoiceTab() {
           <button class="invoice-icon-button" data-action="export-invoice-period-transactions" title="Export all transactions for this partner and date range" aria-label="Export all transactions for this partner and date range">
             <span aria-hidden="true">Download All Transactions</span>
           </button>
-          <button class="invoice-icon-button" data-action="generate-private-invoice-link"${state.privateInvoiceLinkStatus === "creating" ? " disabled" : ""} title="Generate a private partner download link" aria-label="Generate a private partner download link">
+          <button class="invoice-icon-button" data-action="generate-private-invoice-link"${state.privateInvoiceLinkStatus === "creating" || !privateLinkEnabled ? " disabled" : ""} title="${privateLinkEnabled ? "Generate a private partner download link" : "Private link generation is not configured or not enabled"}" aria-label="Generate a private partner download link">
             <span aria-hidden="true">${state.privateInvoiceLinkStatus === "creating" ? "Generating Private Link..." : "Generate Private Link"}</span>
           </button>
           ${privateLinkReady ? `<button class="invoice-icon-button" data-action="copy-private-invoice-link" title="Copy the private partner download link" aria-label="Copy the private partner download link">
@@ -8220,6 +9453,9 @@ function renderInvoiceTab() {
     state.privateInvoiceLinkStatus !== "idle"
     || !!state.privateInvoiceLinkResult
     || !!state.privateInvoiceLinkError
+    || state.invoiceArtifactStatus !== "idle"
+    || !!state.invoiceArtifactRecord
+    || !!state.invoiceArtifactError
   );
   const deliveryPanel = showDeliveryPanel ? renderInvoiceDeliveryPanel() : "";
   const notesBlock = state.inv?.notes?.length ? renderSection({
@@ -8245,6 +9481,12 @@ function renderInvoiceTab() {
     note: "Download all generated invoice documents or all transaction export rows for one month across active partners.",
     defaultOpen: false,
     content: `
+      ${releaseReadiness.label === "Source QA Passed" ? "" : `
+        <div class="summary-banner ${releaseReadiness.tone}" style="margin-bottom:14px">
+          <h4>Release review required before using batch outputs</h4>
+          <p>${html(releaseReadiness.message)}</p>
+        </div>
+      `}
       <p class="section-note">Invoices download as a ZIP of invoice PDFs, printable invoice HTML files, and a summary CSV. Transaction data downloads as one CSV using the same detail-row and invoice-summary fallback logic as the single-partner export buttons.</p>
       <div class="field-grid" style="margin-top:16px">
         <label class="field">
@@ -8254,11 +9496,11 @@ function renderInvoiceTab() {
         <div class="field">
           <span class="label">Download</span>
           <div class="button-row">
-            <button class="button secondary" data-action="export-finance-batch-invoices"${batchBusy ? " disabled" : ""}>
-              ${state.financeBatchStatus === "invoices" ? "Preparing Invoices..." : "Download Month Invoices"}
+            <button class="button secondary" data-action="export-finance-batch-invoices"${batchBusy || financeBatchBlocked ? " disabled" : ""}>
+              ${state.financeBatchStatus === "invoices" ? "Preparing Invoices..." : financeBatchBlocked ? "Resolve Health Blockers First" : "Download Month Invoices"}
             </button>
-            <button class="button secondary" data-action="export-finance-batch-transactions"${batchBusy ? " disabled" : ""}>
-              ${state.financeBatchStatus === "transactions" ? "Preparing Transactions..." : "Download Month Transaction Data"}
+            <button class="button secondary" data-action="export-finance-batch-transactions"${batchBusy || financeBatchBlocked ? " disabled" : ""}>
+              ${state.financeBatchStatus === "transactions" ? "Preparing Transactions..." : financeBatchBlocked ? "Resolve Health Blockers First" : "Download Month Transaction Data"}
             </button>
           </div>
         </div>
@@ -8270,6 +9512,7 @@ function renderInvoiceTab() {
   return `
     <div class="stack">
       ${renderPageTableToggle("invoice")}
+      ${qaCheckerPanel}
       <div class="card">
         <div class="section-header compact">
           <div>
@@ -8301,12 +9544,14 @@ function renderInvoiceTab() {
           <div class="field">
             <span class="label">Run</span>
             <div class="button-row">
-              <button class="button primary" data-action="calculate-invoice">Calculate</button>
+              <button class="button primary" data-action="calculate-invoice"${invoiceSelectionReady ? "" : " disabled"}>${html(calculateButtonLabel)}</button>
               <button class="button secondary" data-action="clear-invoice-selection">Clear</button>
             </div>
           </div>
         </div>
+        ${state.sp ? renderPartnerLifetimeBillingSummary(state.sp) : ""}
       </div>
+      ${state.sp ? renderPartnerFollowUpPanel(state.sp, { variant: "invoice" }) : ""}
       ${invoiceSection}
       ${financeBatchPanel}
       ${summaryPanel}
@@ -8357,7 +9602,7 @@ function renderPartnerTab() {
     pageId: "partner",
     title: "Billing & Invoice Tracking",
     badge: getPartnerInvoiceTrackingEntries(partner).length,
-    note: "Contract payment terms feed due dates and invoice timing. Contact emails and late-fee settings are stored here for downstream systems and recordkeeping. Payment state is tracked manually per invoice month.",
+    note: "Contract payment terms feed due dates and invoice timing. Contact emails, follow-up status, HubSpot links, late-fee settings, and payment state are stored here for downstream systems and recordkeeping.",
     defaultOpen: false,
     content: renderPartnerBillingSection(partner)
   }));
@@ -8379,7 +9624,8 @@ function renderPartnerTab() {
     sections.push(renderSection({ key: `partner-va-${partner}`, tableRowsKey: `partner-va-${partner}`, pageId: "partner", title: "Virtual Account Fees", badge: state.vaFees.filter((row) => row.partner === partner).length, content: renderDataTable({ section: "vaFees", cols: getTableConfigs().vaFees, rows: state.vaFees, rowsKey: `partner-va-${partner}`, pageId: "partner", filterFn: (row) => row.partner === partner }) }));
   }
 
-  const deleteBox = state.confirmDel ? `
+  const adminCanManagePartner = canAdminEdit();
+  const deleteBox = state.confirmDel && adminCanManagePartner ? `
     <div class="destructive-box" style="margin-top:16px">
       <p><strong>Delete "${html(partner)}" from the workbook?</strong></p>
       <p class="footer-note">This will permanently delete all customer data, pricing rows, imported activity, and invoice support for this partner. Provider cost tables are not affected.</p>
@@ -8409,13 +9655,20 @@ function renderPartnerTab() {
             </label>
             ${archived ? `<div class="archived-banner">${renderArchivedTag(partner)}${renderInfoTip("Archived partners remain visible in configuration tables but are hidden from invoice selection.")}</div>` : ""}
           </div>
-          <div class="field">
-            ${renderLabelWithInfo("Danger Zone", archived ? "Unarchive to make this partner billable again." : "Archive removes the partner from invoice generation without deleting history.")}
-            <div class="button-row">
-              <button class="button secondary" data-action="${archived ? "unarchive-partner" : "archive-partner"}">${archived ? "Unarchive Partner" : "Archive Partner"}</button>
-              <button class="button danger" data-action="toggle-delete-partner">Delete Partner</button>
+          ${adminCanManagePartner ? `
+            <div class="field">
+              ${renderLabelWithInfo("Danger Zone", archived ? "Unarchive to make this partner billable again." : "Archive removes the partner from invoice generation without deleting history.")}
+              <div class="button-row">
+                <button class="button secondary" data-action="${archived ? "unarchive-partner" : "archive-partner"}">${archived ? "Unarchive Partner" : "Archive Partner"}</button>
+                <button class="button danger" data-action="toggle-delete-partner">Delete Partner</button>
+              </div>
             </div>
-          </div>
+          ` : `
+            <div class="field">
+              ${renderLabelWithInfo("Admin Controls", "Archive/delete actions are admin-only and hidden in guest mode.")}
+              <p class="footer-note">Archive/delete actions are admin-only and hidden in guest mode.</p>
+            </div>
+          `}
         </div>
         ${deleteBox}
       </div>
@@ -8469,6 +9722,7 @@ function renderRatesTab() {
 function renderLookerTab() {
   const configs = getTableConfigs();
   const lookerImportEnabled = isLookerImportEnabled();
+  const lookerImportHasInput = !!state.lookerImportPendingFile || !!String(state.lookerImportText || "").trim();
   const fileOptions = getLookerFileOptionsWithStatus();
   const audit = getResolvedLookerImportAudit();
   const latestWorkflowRun = audit?.latestRunByChannel?.workflow || null;
@@ -8542,7 +9796,7 @@ function renderLookerTab() {
           <div>
             <h3 class="section-title">Manual Data Upload ${renderInfoTip("Select the upload source type, choose the billing month, then paste tabular data or upload the CSV/XLSX. The selected month will be replaced for that source only to avoid duplicating history.")}</h3>
           </div>
-          <span class="helper-pill">${html(state.lookerImportStatus === "idle" ? "Ready" : state.lookerImportStatus === "parsing" ? "Parsing..." : state.lookerImportStatus === "success" ? "Imported" : "Error")}</span>
+          <span class="helper-pill">${html(state.lookerImportStatus === "idle" ? (lookerImportHasInput ? "Ready to import" : "Waiting for file or pasted data") : state.lookerImportStatus === "parsing" ? "Parsing..." : state.lookerImportStatus === "success" ? "Imported" : "Error")}</span>
         </div>
         ${lookerImportEnabled ? "" : `
           <div class="summary-banner warning" style="margin-top:16px">
@@ -8573,7 +9827,7 @@ function renderLookerTab() {
           <textarea class="textarea" data-bind="lookerImportText" data-bind-live="true" placeholder="Paste the exported upload table directly here if you copied it from Sheets / CSV / Looker...">${html(state.lookerImportText)}</textarea>
         </div>
         <div class="button-row" style="margin-top:14px">
-          <button class="button primary" data-action="run-looker-import"${state.lookerImportStatus === "parsing" || !lookerImportEnabled ? " disabled" : ""}>Import & Replace Month</button>
+          <button class="button primary" data-action="run-looker-import"${state.lookerImportStatus === "parsing" || !lookerImportEnabled || !lookerImportHasInput ? " disabled" : ""}>Import & Replace Month</button>
           <button class="button ghost" data-action="clear-looker-import">Clear Contents</button>
           ${state.lookerImportError ? `<span class="footer-note" style="color:#a33b29">${html(state.lookerImportError)}</span>` : ""}
         </div>
@@ -8633,8 +9887,31 @@ function renderPreviewTable(rows, headers, rowRenderer, emptyMessage, rowsKey = 
 }
 
 function renderImportTab() {
+  const contractConfig = getSharedBackendConfig();
   const contractParseEnabled = isContractParseEnabled();
   const contractExtractEnabled = isContractExtractEnabled();
+  const contractAutomationConfigured = !!(
+    contractConfig.enableContractAutomation
+    || contractConfig.contractExtractWebhookUrl
+    || contractConfig.contractParseWebhookUrl
+  );
+  const contractAutomationPartial = contractAutomationConfigured && !(contractExtractEnabled && contractParseEnabled);
+  const contractTextReady = !!String(state.cText || "").trim();
+  const importTitle = state.cMode === "verify"
+    ? "Update Existing Customer Against Workbook"
+    : contractExtractEnabled
+      ? "Upload Contract PDF or Paste Contract Text / JSON"
+      : "Paste Contract JSON or Load Contract Text";
+  const importHelp = state.cMode === "verify"
+    ? "Upload the whole contract PDF or paste contract text / JSON, then select the existing workbook customer to compare and update against."
+    : contractExtractEnabled
+      ? "Upload the whole contract PDF to extract text into the parser, or paste contract text or structured JSON directly if you already have it."
+      : "Paste structured JSON directly, or load a plain text file. PDF extraction requires contract automation to be connected.";
+  const chooseFileLabel = contractExtractEnabled ? "Choose PDF" : "Choose Text File";
+  const loadFileLabel = state.cExtractStatus === "parsing"
+    ? contractExtractEnabled ? "Loading PDF..." : "Loading Text..."
+    : contractExtractEnabled ? "Load PDF Text" : "Load Text File";
+  const contractFileAccept = contractExtractEnabled ? ".pdf,.txt,text/plain,application/pdf" : ".txt,text/plain";
   const parsed = state.cParsed;
   const counts = parsed ? [
     { label: "offline rates", count: (parsed.offlineRates || []).length },
@@ -8839,14 +10116,19 @@ function renderImportTab() {
       <div class="card">
         <div class="section-header">
           <div>
-            <h3 class="section-title">${state.cMode === "verify" ? "Update Existing Customer Against Workbook" : "Upload Contract PDF or Paste Contract Text / JSON"} ${renderInfoTip(state.cMode === "verify" ? "Upload the whole contract PDF or paste contract text / JSON, then select the existing workbook customer to compare and update against." : "Upload the whole contract PDF to extract text into the parser, or paste contract text or structured JSON directly if you already have it.")}</h3>
+            <h3 class="section-title">${html(importTitle)} ${renderInfoTip(importHelp)}</h3>
           </div>
           <div class="tag-list">
-            <span class="helper-pill">${html(state.cStatus === "idle" ? "Ready" : state.cStatus === "parsing" ? "Parsing..." : state.cStatus === "success" ? "Parsed" : "Error")}</span>
+            <span class="helper-pill">${html(state.cStatus === "idle" ? (contractTextReady ? "Ready to parse" : "Waiting for contract text") : state.cStatus === "parsing" ? "Parsing..." : state.cStatus === "success" ? "Parsed" : "Error")}</span>
             ${state.cExtractStatus !== "idle" ? `<span class="helper-pill">${html(state.cExtractStatus === "parsing" ? "Extracting PDF..." : state.cExtractStatus === "success" ? "PDF Loaded" : "PDF Error")}</span>` : ""}
           </div>
         </div>
-        ${contractExtractEnabled && contractParseEnabled ? "" : `
+        ${!contractAutomationConfigured ? `
+          <div class="summary-banner info" style="margin-bottom:16px">
+            <h4>Manual contract import mode</h4>
+            <p>Contract automation is not connected. Paste structured JSON directly, or load a plain text contract file. PDF extraction and raw-text parsing require contract automation URLs.</p>
+          </div>
+        ` : contractAutomationPartial ? `
           <div class="summary-banner warning" style="margin-bottom:16px">
             <h4>Contract automation is only partially configured</h4>
             <p>${html([
@@ -8855,17 +10137,23 @@ function renderImportTab() {
               "Structured JSON paste still works in the browser."
             ].filter(Boolean).join(" "))}</p>
           </div>
-        `}
+        ` : ""}
         <div class="button-row" style="margin-bottom:14px">
-          <button class="button secondary" data-action="choose-contract-file">Choose PDF</button>
-          <button class="button primary" data-action="extract-contract-file"${state.cPendingFile && (contractExtractEnabled || (state.cPendingFile?.type || "").startsWith("text/") || /\.txt$/i.test(state.cPendingFile?.name || "")) ? "" : " disabled"}>${state.cExtractStatus === "parsing" ? "Loading PDF..." : "Load PDF Text"}</button>
-          ${(state.cPendingFile || state.cFileName) ? `<span class="helper-pill">${html(state.cPendingFile?.name || state.cFileName)}</span>` : `${renderInfoTip("PDF or text file upload supported.")}`}
+          <button class="button secondary" data-action="choose-contract-file">${html(chooseFileLabel)}</button>
+          <button class="button primary" data-action="extract-contract-file"${state.cPendingFile && (contractExtractEnabled || (state.cPendingFile?.type || "").startsWith("text/") || /\.txt$/i.test(state.cPendingFile?.name || "")) ? "" : " disabled"}>${html(loadFileLabel)}</button>
+          ${(state.cPendingFile || state.cFileName) ? `<span class="helper-pill">${html(state.cPendingFile?.name || state.cFileName)}</span>` : `${renderInfoTip(contractExtractEnabled ? "PDF or text file upload supported." : "Text file upload supported. Paste structured JSON for full contract import.")}`}
           ${state.cDetectedIncremental ? `<span class="helper-pill" style="background:#dff4e7;color:#1c5d3c">Per-tier marginal pricing detected</span>` : ""}
-          <input id="contract-file-upload" type="file" accept=".pdf,.txt,text/plain,application/pdf" hidden>
+          <input id="contract-file-upload" type="file" accept="${html(contractFileAccept)}" hidden>
         </div>
+        ${state.cExtractStatus === "error" && state.cError ? `
+          <div class="summary-banner danger" style="margin-bottom:14px">
+            <h4>PDF extraction failed</h4>
+            <p>${html(state.cError)}</p>
+          </div>
+        ` : ""}
         <textarea class="textarea" data-bind="cText" data-bind-live="true" placeholder="Uploaded contract text, pasted contract text, or extracted pricing JSON will appear here...">${html(state.cText)}</textarea>
         <div class="button-row" style="margin-top:14px">
-          <button class="button primary" data-action="parse-contract">Parse Contract</button>
+          <button class="button primary" data-action="parse-contract"${contractTextReady ? "" : " disabled"}>Parse Contract</button>
           <button class="button secondary" data-action="copy-extraction-prompt">Copy Extraction Prompt</button>
           <button class="button ghost" data-action="clear-contract-import">Clear Contents</button>
           <span class="footer-note">${html(String((state.cText || "").length))} chars</span>
@@ -8920,6 +10208,332 @@ function renderImportTab() {
       ${diffSection}
       ${importPlanSection}
       ${previewSection}
+    </div>
+  `;
+}
+
+// ============================================================================
+// HEALTH DASHBOARD
+// ----------------------------------------------------------------------------
+// Surfaces 10 data-quality checks against the loaded snapshot. Each check is a
+// pure function of `state` returning { status, value, threshold, narrative,
+// detail }. Status drives a red/yellow/green dot. The dashboard exists so the
+// next time the n8n pipeline silently writes a partial snapshot (Stampli rows
+// missing, estRevenue zero, reversals not joining), it shows up red here on
+// open instead of being discovered through PDF reconciliation weeks later.
+// ============================================================================
+const HEALTH_STATUS_COLORS = { green: "#1f8a3b", yellow: "#c98a18", red: "#bf2c1d" };
+
+function healthCheckSnapshotFreshness() {
+  const savedAt = state._saved || state.lastSavedAt || "";
+  const saved = savedAt ? Date.parse(savedAt) : null;
+  if (!saved || Number.isNaN(saved)) {
+    return { status: "red", value: "—", narrative: "Snapshot has no `_saved` timestamp.", detail: "" };
+  }
+  const ageH = (Date.now() - saved) / 3600000;
+  const status = ageH < 36 ? "green" : ageH < 72 ? "yellow" : "red";
+  return {
+    status,
+    value: `${ageH.toFixed(1)}h ago`,
+    narrative: status === "green"
+      ? "Snapshot saved within the last 36 hours."
+      : status === "yellow"
+        ? "Snapshot 36–72h old. Check that n8n is running on schedule."
+        : "Snapshot >72h stale. n8n schedule likely broken.",
+    detail: `Last saved: ${new Date(saved).toISOString()}`,
+  };
+}
+
+function healthCheckSnapshotVersion() {
+  const v = Number(state._version || 0);
+  const status = v === STORAGE_VERSION ? "green" : "red";
+  return {
+    status,
+    value: `v${v}`,
+    narrative: status === "green"
+      ? `Snapshot version matches STORAGE_VERSION (${STORAGE_VERSION}).`
+      : `Snapshot is on v${v}; current is v${STORAGE_VERSION}. Migration ran in memory but didn't persist — next write may regress.`,
+    detail: `Expected v${STORAGE_VERSION}.`,
+  };
+}
+
+function healthCheckUntrustedStampli() {
+  const untrusted = new Set([
+    "stampli_credit_complete_billing",
+    "stampli_direct_billing",
+    "stampli_usd_abroad_revenue",
+    "stampli_usd_abroad_reversal",
+  ]);
+  const bad = (state.ltxn || []).filter((r) => untrusted.has(r.directInvoiceSource));
+  return {
+    status: bad.length === 0 ? "green" : "red",
+    value: `${bad.length}`,
+    narrative: bad.length === 0
+      ? "No untrusted Stampli directInvoiceSource rows in ltxn."
+      : `Found ${bad.length} ltxn rows with untrusted Stampli source. Pipeline regression — check Looker.`,
+    detail: bad.length ? bad.slice(0, 5).map((r) => `${r.period} ${r.directInvoiceSource}`).join(", ") : "",
+  };
+}
+
+function getHealthEvaluationPeriod() {
+  return normalizeMonthKey(state.qaCheckerLatest?.period)
+    || normalizeMonthKey(getResolvedLookerImportAudit()?.latestRun?.period)
+    || normalizeMonthKey(state.lookerImportPeriod)
+    || normalizeMonthKey(state.perStart)
+    || LOOKER_IMPORT_PERIOD;
+}
+
+function healthCheckPreCollectedRevenue() {
+  const period = getHealthEvaluationPeriod();
+  const minPartners = new Set((state.mins || []).filter((m) => Number(m.minAmount || 0) > 0).map((m) => m.partner));
+  const eligibleRows = (state.ltxn || []).filter((r) => r.period === period && minPartners.has(r.partner));
+  const withEstRev = eligibleRows.filter((r) => Number(r.estRevenue || 0) > 0);
+  const pct = eligibleRows.length ? (withEstRev.length / eligibleRows.length) * 100 : 100;
+  const status = eligibleRows.length === 0 ? "yellow" : pct >= 80 ? "green" : pct >= 50 ? "yellow" : "red";
+  return {
+    status,
+    value: `${pct.toFixed(0)}%`,
+    narrative: eligibleRows.length === 0
+      ? "No ltxn rows for minimum-eligible partners in the active period."
+      : status === "green"
+        ? "Pre-collected revenue (estRevenue) populated on most minimum-eligible rows — credits will offset minimums correctly."
+        : "Most ltxn rows have estRevenue=0 — partners with minimums will trigger them incorrectly. Looker / n8n estRevenue field missing.",
+    detail: `${withEstRev.length}/${eligibleRows.length} rows with estRevenue > 0 in ${period}.`,
+  };
+}
+
+function healthCheckReversalCoverage() {
+  const period = getHealthEvaluationPeriod();
+  const partnersWithRevf = Array.from(new Set((state.revf || []).map((r) => r.partner)));
+  const missing = [];
+  for (const p of partnersWithRevf) {
+    const lrevRow = (state.lrev || []).find((r) => r.partner === p && r.period === period && Number(r.reversalCount || 0) > 0);
+    const negTxnRow = (state.ltxn || []).find((r) => r.partner === p && r.period === period && Number(r.directInvoiceAmount || 0) < 0);
+    if (!lrevRow && !negTxnRow) missing.push(p);
+  }
+  const status = !partnersWithRevf.length ? "yellow" : missing.length === 0 ? "green" : missing.length <= 2 ? "yellow" : "red";
+  return {
+    status,
+    value: `${missing.length}/${partnersWithRevf.length}`,
+    narrative: !partnersWithRevf.length
+      ? "No revf rows configured."
+      : status === "green"
+        ? "Every revf-configured partner has reversal data for the active period."
+        : `${missing.length} partners with reversal config but no reversal data in ${period}: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}`,
+    detail: missing.length ? missing.join(", ") : "",
+  };
+}
+
+function healthCheckNotYetLiveDrift() {
+  const period = getHealthEvaluationPeriod();
+  const drift = [];
+  for (const r of state.pBilling || []) {
+    if (!r.notYetLive) continue;
+    const liveTxns = (state.ltxn || []).filter((t) => t.partner === r.partner && t.period === period);
+    const liveCustRev = liveTxns.reduce((s, t) => s + Number(t.customerRevenue || 0), 0);
+    const liveCount = liveTxns.reduce((s, t) => s + Number(t.txnCount || 0), 0);
+    if (liveCount > 0 || liveCustRev > 0) {
+      drift.push({ partner: r.partner, count: liveCount, rev: liveCustRev });
+    }
+  }
+  const status = drift.length === 0 ? "green" : "red";
+  return {
+    status,
+    value: `${drift.length}`,
+    narrative: status === "green"
+      ? "No notYetLive partners are transacting in the active period."
+      : `${drift.length} notYetLive partners have imported activity — HubSpot status drift, partner is actually live.`,
+    detail: drift.map((d) => `${d.partner} (${d.count} txns)`).join(", "),
+  };
+}
+
+function healthCheckImplCoverage() {
+  const nyl = (state.pBilling || []).filter((r) => r.notYetLive);
+  const implPartners = new Set((state.impl || []).filter((r) => Number(r.feeAmount || 0) > 0).map((r) => r.partner));
+  const missing = nyl.filter((r) => !implPartners.has(r.partner)).map((r) => r.partner);
+  const status = !nyl.length ? "green" : missing.length === 0 ? "green" : missing.length <= 1 ? "yellow" : "red";
+  return {
+    status,
+    value: `${nyl.length - missing.length}/${nyl.length}`,
+    narrative: !nyl.length
+      ? "No not-yet-live partners — nothing to bill at signing."
+      : status === "green"
+        ? "Every not-yet-live partner has an impl row with a fee amount."
+        : `${missing.length} not-yet-live partners missing impl rows: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""} — won't bill at signing.`,
+    detail: missing.length ? missing.join(", ") : "",
+  };
+}
+
+function healthCheckContractCompleteness() {
+  const partners = state.ps || [];
+  const sources = ["off", "vol", "mins", "plat", "rs", "revf", "vaFees", "impl", "surch"];
+  const missing = [];
+  for (const p of partners) {
+    const hasAny = sources.some((src) => (state[src] || []).some((r) => r.partner === p));
+    if (!hasAny) missing.push(p);
+  }
+  const status = missing.length === 0 ? "green" : "red";
+  return {
+    status,
+    value: `${partners.length - missing.length}/${partners.length}`,
+    narrative: status === "green"
+      ? "Every partner has at least one fee config row."
+      : `${missing.length} partners with no fee config at all: ${missing.join(", ")} — invoices for these will have nothing to back them.`,
+    detail: missing.length ? missing.join(", ") : "",
+  };
+}
+
+function healthCheckQaResults() {
+  // The n8n QA checker (docs/n8n-qa-checker.workflow.json) writes its report
+  // to `snapshot.qaCheckerLatest` and uploads the workbook with the report
+  // embedded — so it's already in `state.qaCheckerLatest` once the SPA loads.
+  const r = state.qaCheckerLatest;
+  if (!r) {
+    return {
+      status: "yellow",
+      value: "—",
+      narrative: "No qaCheckerLatest in the hosted workbook. Refresh from the QA Status API or trigger the n8n QA checker workflow.",
+      detail: "",
+    };
+  }
+  const summary = r.summary || {};
+  const status = r.status === "pass" ? "green" : r.status === "review" ? "yellow" : "red";
+  const issueCount = Number(summary.issueCount || 0);
+  const partnersWithIssues = Number(summary.partnersWithIssues || 0);
+  const partnersChecked = Number(summary.partnersChecked || 0);
+  const ageH = r.generatedAt ? (Date.now() - Date.parse(r.generatedAt)) / 3600000 : null;
+  const ageStr = ageH != null && Number.isFinite(ageH) ? `${ageH.toFixed(1)}h ago` : "?";
+  return {
+    status,
+    value: r.status === "pass" ? "SOURCE DATA PASS" : r.status ? r.status.toUpperCase() : "?",
+    narrative: status === "green"
+      ? `Source-data QA passed across ${partnersChecked} partners (${ageStr}). This does not certify invoice totals, PDFs, private links, or partner alias mapping.`
+      : status === "yellow"
+        ? `${summary.warningCount || 0} warnings across ${partnersWithIssues}/${partnersChecked} partners (${ageStr}).`
+        : `${summary.criticalCount || 0} CRITICAL + ${summary.warningCount || 0} warnings across ${partnersWithIssues}/${partnersChecked} partners (${ageStr}).`,
+    detail: issueCount ? `Period ${r.period || "?"} · ${issueCount} total issues. Drill in via /admin/logs or the qaCheckerLatest snapshot field.` : "",
+  };
+}
+
+function healthCheckFeedRowCounts() {
+  const feeds = ["ltxn", "lrev", "lrs", "lva", "lfxp"];
+  const zeros = feeds.filter((k) => !(state[k] || []).length);
+  const status = zeros.length === 0 ? "green" : zeros.length === 1 ? "yellow" : "red";
+  return {
+    status,
+    value: feeds.map((k) => `${k}=${(state[k] || []).length}`).join(" · "),
+    narrative: status === "green"
+      ? "All Looker feeds have rows in the snapshot."
+      : status === "yellow"
+        ? `${zeros.join(", ")} is empty — partial Looker import.`
+        : `${zeros.join(", ")} all empty — Looker import broken.`,
+    detail: zeros.length ? `Empty: ${zeros.join(", ")}` : "",
+  };
+}
+
+function runHealthChecks() {
+  return [
+    { id: "snapshot-fresh", title: "Snapshot freshness", ...healthCheckSnapshotFreshness() },
+    { id: "snapshot-version", title: "Snapshot version", ...healthCheckSnapshotVersion() },
+    { id: "feed-counts", title: "Looker feed row counts", ...healthCheckFeedRowCounts() },
+    { id: "untrusted-stampli", title: "Untrusted Stampli rows", ...healthCheckUntrustedStampli() },
+    { id: "estrev-coverage", title: "Pre-collected revenue (estRevenue)", ...healthCheckPreCollectedRevenue() },
+    { id: "reversal-coverage", title: "Reversal data presence", ...healthCheckReversalCoverage() },
+    { id: "notyetlive-drift", title: "notYetLive vs imported activity", ...healthCheckNotYetLiveDrift() },
+    { id: "impl-coverage", title: "Implementation-fee coverage", ...healthCheckImplCoverage() },
+    { id: "contract-completeness", title: "Contract config completeness", ...healthCheckContractCompleteness() },
+    { id: "qa-results", title: "PDF / calc reconciliation", ...healthCheckQaResults() },
+  ];
+}
+
+function getReleaseReadiness(checks = runHealthChecks()) {
+  const redCount = checks.filter((check) => check.status === "red").length;
+  const yellowCount = checks.filter((check) => check.status === "yellow").length;
+  const qaReport = getQaCheckerReport();
+  if (redCount) {
+    return {
+      tone: "danger",
+      label: "Blocked",
+      message: `${redCount} red health check${redCount === 1 ? "" : "s"} must be resolved before treating invoices as release-ready.`
+    };
+  }
+  if (!qaReport) {
+    return {
+      tone: "warning",
+      label: "Needs QA",
+      message: "No QA checker result is loaded for the evaluated workbook."
+    };
+  }
+  if (qaReport.status !== "pass") {
+    return {
+      tone: "warning",
+      label: "Needs Review",
+      message: "The QA checker did not pass cleanly. Review exceptions before invoice release."
+    };
+  }
+  if (yellowCount) {
+    return {
+      tone: "warning",
+      label: "Source QA Passed With Warnings",
+      message: `${yellowCount} warning health check${yellowCount === 1 ? "" : "s"} remain. Source-data QA passed, but invoices still need release review.`
+    };
+  }
+  return {
+    tone: "success",
+    label: "Source QA Passed",
+    message: "Source-data QA passed. Final release still requires invoice-dollar/PDF/private-link verification."
+  };
+}
+
+function renderHealthTab() {
+  const checks = runHealthChecks();
+  const counts = checks.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, { green: 0, yellow: 0, red: 0 });
+  const readiness = getReleaseReadiness(checks);
+  const period = getHealthEvaluationPeriod();
+  const qaReport = getQaCheckerReport();
+  const statusBadge = (s) => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${HEALTH_STATUS_COLORS[s]};margin-right:8px;vertical-align:middle"></span>`;
+  return `
+    <div class="stack">
+      <div class="summary-banner ${readiness.tone}">
+        <h4>Invoice Release Status: ${html(readiness.label)}</h4>
+        <p>${html(readiness.message)}</p>
+        <p>Evaluated period: ${html(period ? formatPeriodLabel(period) : "unknown")}${qaReport?.generatedAt ? ` · QA generated ${html(formatDateTime(qaReport.generatedAt))}` : ""}${qaReport?.source ? ` · QA source ${html(qaReport.source)}` : ""}</p>
+      </div>
+      <div class="grid-4" style="margin-bottom:8px">
+        <div class="kpi-card"><strong>${counts.green}</strong><span>Green</span></div>
+        <div class="kpi-card"><strong>${counts.yellow}</strong><span>Yellow</span></div>
+        <div class="kpi-card"><strong>${counts.red}</strong><span>Red</span></div>
+        <div class="kpi-card"><strong>${state._saved || state.lastSavedAt ? new Date(state._saved || state.lastSavedAt).toISOString().slice(0, 16).replace("T", " ") : "—"}</strong><span>Snapshot saved (UTC)</span></div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 4px 0">Snapshot Health</h3>
+        <p style="margin:0 0 12px 0;color:var(--brand-ink);opacity:0.7;font-size:13px">
+          Each check is a pure function of <code>state</code>. Red = ship blocker. Yellow = needs attention. Green = healthy.
+        </p>
+        <table class="data-table" style="width:100%">
+          <thead>
+            <tr>
+              <th style="width:40px"></th>
+              <th>Check</th>
+              <th style="width:130px">Value</th>
+              <th>Narrative</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${checks.map((c) => `
+              <tr>
+                <td>${statusBadge(c.status)}</td>
+                <td><strong>${html(c.title)}</strong></td>
+                <td>${html(String(c.value))}</td>
+                <td style="font-size:13px;color:var(--brand-ink);opacity:0.85">
+                  ${html(c.narrative)}
+                  ${c.detail ? `<div style="margin-top:4px;font-size:12px;opacity:0.7">${html(c.detail)}</div>` : ""}
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 }
@@ -9086,6 +10700,7 @@ function renderTabContent() {
   if (state.tab === "rates") return renderRatesTab();
   if (state.tab === "looker") return renderLookerTab();
   if (state.tab === "costs") return renderCostsTab();
+  if (state.tab === "health") return renderHealthTab();
   if (state.tab === "admin") return renderAdminTab();
   return renderImportTab();
 }
@@ -9305,11 +10920,55 @@ root.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "download-qa-checker-exceptions") {
+    downloadQaCheckerExceptions();
+    return;
+  }
+  if (action === "refresh-qa-checker-status") {
+    void refreshQaCheckerStatus({ showToastOnUpdate: true, showErrorToast: true }).finally(render);
+    return;
+  }
+  if (action === "download-qa-checker-summary") {
+    const report = getQaCheckerReport();
+    if (!report) {
+      showToast("No QA checker result", "Run the checker after the Looker sync, then refresh shared data.", "warning");
+      return;
+    }
+    downloadJson(`qa-checker-summary-${slugifyFilenamePart(report.period || "latest")}.json`, report);
+    showToast("QA summary exported", "The latest checker summary JSON was downloaded.", "success");
+    return;
+  }
   if (action === "toggle-billing-summary-partner") {
     const key = target.dataset.key;
     if (!key) return;
     state.openSections[key] = !isSectionOpen(key, false);
     render();
+    return;
+  }
+  if (action === "edit-partner-follow-up") {
+    const partner = target.dataset.partner || state.sp || state.inv?.partner || "";
+    const field = target.dataset.field || "contactLog";
+    if (!partner) return;
+    state.tab = "partner";
+    state.pv = partner;
+    state.confirmDel = false;
+    state.tableRowsExpanded[`partner-billing-${partner}`] = true;
+    state.openSections[sectionKey(`partner-billing-${partner}`)] = true;
+    render();
+    window.setTimeout(() => {
+      const focusTarget = root.querySelector(`[data-follow-up-field="${field}"]`) || root.querySelector(`[data-follow-up-field="contactLog"]`);
+      focusTarget?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = focusTarget?.querySelector("input, select, textarea, button");
+      input?.focus?.({ preventScroll: true });
+    }, 0);
+    return;
+  }
+  if (action === "add-partner-follow-up-log") {
+    addPartnerFollowUpLog(target.dataset.partner || state.pv);
+    return;
+  }
+  if (action === "delete-partner-follow-up-log") {
+    deletePartnerFollowUpLog(target.dataset.partner || state.pv, target.dataset.entryId || "");
     return;
   }
   if (action === "reset-defaults") {
@@ -9320,7 +10979,19 @@ root.addEventListener("click", (event) => {
     void refreshSharedWorkspace({ showSuccessToast: true, showErrorToast: true, retries: 5, retryDelayMs: 800 });
     return;
   }
+  if (action === "sync-hubspot-partner") {
+    void syncHubSpotProfiles("partner", target.dataset.partner || state.pv || state.sp || "");
+    return;
+  }
+  if (action === "sync-hubspot-all") {
+    void syncHubSpotProfiles("all");
+    return;
+  }
   if (action === "calculate-invoice") {
+    if (!state.sp || !normalizeMonthKey(state.perStart) || (state.useDateRange && !normalizeMonthKey(state.perEnd))) {
+      showToast("Select partner and month", "Choose a partner and billing month before calculating an invoice.", "warning");
+      return;
+    }
     recordAccessActivity(
       "calculate_invoice",
       `Ran invoice for ${state.sp || "all partners"} ${state.useDateRange ? `from ${state.perStart || ""} to ${state.perEnd || ""}` : `for ${state.perStart || ""}`}.`,
@@ -9537,16 +11208,16 @@ root.addEventListener("change", (event) => {
     !canAdminEdit() &&
     (
       target.matches("#backup-file")
+      || target.matches("[data-action='update-partner-billing']")
+      || target.matches("[data-action='update-invoice-date']")
+      || target.matches("[data-action='toggle-invoice-paid']")
+      || target.matches("[data-action='update-invoice-amount-paid']")
+      || target.matches("[data-action='toggle-contract-change']")
+      || target.matches("[data-section][data-id][data-key]")
       || (
         !isTabAccessible(state.tab) && (
           target.matches("#looker-import-file")
           || target.matches("#contract-file-upload")
-          || target.matches("[data-action='update-partner-billing']")
-          || target.matches("[data-action='update-invoice-date']")
-          || target.matches("[data-action='toggle-invoice-paid']")
-          || target.matches("[data-action='update-invoice-amount-paid']")
-          || target.matches("[data-action='toggle-contract-change']")
-          || target.matches("[data-section][data-id][data-key]")
         )
       )
     )
@@ -9606,6 +11277,7 @@ root.addEventListener("change", (event) => {
     if (key === "billingDay") value = value === "" ? "" : Math.min(31, Math.max(1, Math.floor(Number(value))));
     if (key === "lateFeePercentMonthly") value = value === "" ? 0 : Math.max(0, Number(value));
     if (key === "lateFeeStartDays" || key === "serviceSuspensionDays") value = value === "" ? 0 : Math.max(0, Math.floor(Number(value)));
+    if (key === "followUpNextDate") value = normalizeIsoDate(value) || "";
     const patch = { [key]: value };
     if (key === "payBy" && !(Number(existing?.dueDays || 0) > 0)) {
       patch.dueDays = parseDueDaysFromPayBy(value);
@@ -9673,7 +11345,10 @@ root.addEventListener("change", (event) => {
 
   if (target.matches("[data-bind]")) {
     setBoundValue(target.dataset.bind, target.type === "checkbox" ? !!target.checked : target.value);
-    if (target.dataset.bind === "pv") state.confirmDel = false;
+    if (target.dataset.bind === "pv") {
+      state.confirmDel = false;
+      resetFollowUpDraft();
+    }
     if (target.dataset.bind === "cName" || target.dataset.bind === "cVerifyPartner") {
       const selectedName = target.dataset.bind === "cVerifyPartner" ? state.cVerifyPartner : state.cName;
       if (selectedName && state.ps.includes(selectedName)) state.cImportBehavior = "override";
@@ -9737,4 +11412,4 @@ void initApp().catch((error) => {
 // inert there — the browser still evaluates the top-level code including
 // initApp(). Node harnesses stub document/window before importing and drive
 // the calc via calculateLocalInvoiceForPeriod.
-export { state, calculateLocalInvoiceForPeriod };
+export { state, calculateLocalInvoiceForPeriod, runHealthChecks, renderHealthTab };

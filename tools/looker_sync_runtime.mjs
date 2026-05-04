@@ -1621,7 +1621,14 @@ function buildOfflineReversals(rows, period, accountPartnerLookup = {}, { includ
       "Transaction Lookup Dates Refund Complete Timestamp Time",
       { patterns: ["refundcompletedate", "refundcompleteddate", "refundcompletetimestampdate", "refundcompletetimestamptime"] }
     );
-    const month = monthKey(reversalValue);
+    const billingMonthValue = rowValueFirst(
+      row,
+      "Partner Offline Billing Billing Month Month",
+      "Billing Month Month",
+      "Billing Month",
+      { patterns: ["partnerofflinebillingbillingmonthmonth", "billingmonthmonth", "billingmonth", "billingmo"] }
+    );
+    const month = monthKey(billingMonthValue || reversalValue);
     if (!month || !matchesPeriod(month, period)) continue;
     periodsSeen.add(month);
     const paymentId = text(row["Payment ID"] || rowValueByPatterns(row, "paymentid"));
@@ -1660,6 +1667,7 @@ function buildOfflineReversals(rows, period, accountPartnerLookup = {}, { includ
         accountId: text(rowValueFirst(row, "** Payment For Sales DV ** Payer Account ID", "Account ID", { patterns: ["payeraccountid", "accountid"] })),
         paymentType: text(row["Payment Type"] || rowValueByPatterns(row, "paymenttype", "txntype")),
         submissionDate: isoValue(rowValueFirst(row, "Date of Payment Submission", "** Payment For Sales DV ** Time Created Date", { patterns: ["dateofpaymentsubmission", "timecreateddate"] })),
+        billingMonth: month,
         reversalDate: isoValue(reversalValue),
         payerEmail: text(row["Payer Email"] || rowValueByPatterns(row, "payeremail", "payeraccountprimaryemail")),
         payerBusinessName: text(row["Payer Business Name"] || rowValueByPatterns(row, "payerbusinessname", "payeraccountname")),

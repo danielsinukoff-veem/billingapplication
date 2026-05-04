@@ -1,0 +1,504 @@
+{
+  "generatedAt": "2026-05-04T22:14:09.508Z",
+  "rows": [
+    {
+      "section": "ltxn",
+      "rows": 2033,
+      "blankPartnerRows": 0,
+      "aprilRows": 289,
+      "aprilBlankPartnerRows": 0
+    },
+    {
+      "section": "lrev",
+      "rows": 47,
+      "blankPartnerRows": 0,
+      "aprilRows": 6,
+      "aprilBlankPartnerRows": 0
+    },
+    {
+      "section": "lva",
+      "rows": 420,
+      "blankPartnerRows": 0,
+      "aprilRows": 42,
+      "aprilBlankPartnerRows": 0
+    },
+    {
+      "section": "lrs",
+      "rows": 71,
+      "blankPartnerRows": 0,
+      "aprilRows": 46,
+      "aprilBlankPartnerRows": 0
+    },
+    {
+      "section": "lfxp",
+      "rows": 4,
+      "blankPartnerRows": 0,
+      "aprilRows": 1,
+      "aprilBlankPartnerRows": 0
+    }
+  ],
+  "aprilPartnerRows": [
+    {
+      "partner": "Afriex",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Altpay",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "BHN",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Blindpay",
+      "ltxnRows": 9,
+      "txns": 569,
+      "volume": 19419414.2,
+      "lrevRows": 1,
+      "reversals": 5,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Everflow",
+      "ltxnRows": 57,
+      "txns": 1628,
+      "volume": 58816324.16000001,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 45,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Factura",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Finastra",
+      "ltxnRows": 1,
+      "txns": 2,
+      "volume": 2775,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Frieghtos",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Fulfil",
+      "ltxnRows": 5,
+      "txns": 92,
+      "volume": 545001.9099999999,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "GME_Remit",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Goldstack",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Graph Finance",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Halorecruiting",
+      "ltxnRows": 4,
+      "txns": 42,
+      "volume": 23740.260000000002,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Jacques",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Jagger",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "LianLian",
+      "ltxnRows": 1,
+      "txns": 2,
+      "volume": 5473.71,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "M-DAQ",
+      "ltxnRows": 2,
+      "txns": 3,
+      "volume": 6817.05,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Magaya",
+      "ltxnRows": 2,
+      "txns": 10,
+      "volume": 132520,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Maplewave",
+      "ltxnRows": 32,
+      "txns": 125,
+      "volume": 10500958.74,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Mazal",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Mds",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Multigate",
+      "ltxnRows": 1,
+      "txns": 1,
+      "volume": 10,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "NIBSS ( TurboTech)",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Nium",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Nomad",
+      "ltxnRows": 5,
+      "txns": 31,
+      "volume": 90883.16,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Nsave",
+      "ltxnRows": 2,
+      "txns": 17,
+      "volume": 16990.4,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Nuvion",
+      "ltxnRows": 6,
+      "txns": 89,
+      "volume": 525211.96,
+      "lrevRows": 1,
+      "reversals": 15,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "OhentPay",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Popbooking",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Principal",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Q2",
+      "ltxnRows": 7,
+      "txns": 52,
+      "volume": 550095.37,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Quickbook",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Remittanceshub",
+      "ltxnRows": 56,
+      "txns": 126,
+      "volume": 14741259.859999998,
+      "lrevRows": 1,
+      "reversals": 2,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Shepherd",
+      "ltxnRows": 30,
+      "txns": 376,
+      "volume": 277695.33999999997,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 1,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Skydo",
+      "ltxnRows": 1,
+      "txns": 514,
+      "volume": 662906.73,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Stampli",
+      "ltxnRows": 56,
+      "txns": 63768,
+      "volume": 911176567.5500002,
+      "lrevRows": 1,
+      "reversals": 200,
+      "lrsRows": 0,
+      "lfxpRows": 1,
+      "lvaRows": 1
+    },
+    {
+      "partner": "TripleA",
+      "ltxnRows": 5,
+      "txns": 82,
+      "volume": 875122.55,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "VG Pay",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "VirtualLationos",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Whish",
+      "ltxnRows": 3,
+      "txns": 2631,
+      "volume": 3018941.22,
+      "lrevRows": 1,
+      "reversals": 1,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Xero",
+      "ltxnRows": 0,
+      "txns": 0,
+      "volume": 0,
+      "lrevRows": 0,
+      "reversals": 0,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    },
+    {
+      "partner": "Yeepay",
+      "ltxnRows": 4,
+      "txns": 95,
+      "volume": 1278580.0299999998,
+      "lrevRows": 1,
+      "reversals": 2,
+      "lrsRows": 0,
+      "lfxpRows": 0,
+      "lvaRows": 1
+    }
+  ]
+}

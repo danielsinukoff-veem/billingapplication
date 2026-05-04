@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-05-04T21:55:31.380Z",
+  "runId": "historical-data-20260504215443",
+  "source": "historical-partner-data",
+  "summary": {
+    "beforeCounts": {
+      "ltxn": 2033,
+      "lrev": 56,
+      "lva": 420,
+      "lrs": 71,
+      "lfxp": 4
+    },
+    "afterCounts": {
+      "ltxn": 2033,
+      "lrev": 47,
+      "lva": 420,
+      "lrs": 71,
+      "lfxp": 4
+    },
+    "detailFiles": 78,
+    "detailRows": 182010
+  },
+  "imports": [
+    {
+      "fileType": "partner_offline_billing",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Partner Offline Billing 2026-05-04T1319.xlsx",
+      "csvRows": 189352,
+      "sectionCounts": {
+        "ltxn": 587
+      },
+      "detailRows": 174746,
+      "warnings": []
+    },
+    {
+      "fileType": "all_registered_accounts_offline",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/All Registered Accounts - Offline Billing 2026-05-04T1336.xlsx",
+      "csvRows": 62499,
+      "sectionCounts": {
+        "lva": 168
+      },
+      "detailRows": 0,
+      "warnings": []
+    },
+    {
+      "fileType": "partner_offline_billing_reversals",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Partner Offline Billing (Reversals) 2026-05-04T1724.xlsx",
+      "csvRows": 634,
+      "sectionCounts": {
+        "lrev": 21
+      },
+      "detailRows": 627,
+      "warnings": []
+    },
+    {
+      "fileType": "revenue_share_report",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Revenue Share Report 2026-05-04T1302.xlsx",
+      "csvRows": 10038,
+      "sectionCounts": {
+        "ltxn": 366
+      },
+      "detailRows": 5226,
+      "warnings": []
+    },
+    {
+      "fileType": "rev_share_reversals",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Rev Share Reversals 2026-05-04T1303.xlsx",
+      "csvRows": 72,
+      "sectionCounts": {
+        "lrs": 71
+      },
+      "detailRows": 0,
+      "warnings": []
+    },
+    {
+      "fileType": "all_registered_accounts_rev_share",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/All Registered Accounts - Rev Share 2026-05-04T1334.xlsx",
+      "csvRows": 62498,
+      "sectionCounts": {
+        "lva": 168
+      },
+      "detailRows": 0,
+      "warnings": []
+    },
+    {
+      "fileType": "vba_accounts",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/VBA ACCOUNTS 2026-05-04T1248.xlsx",
+      "csvRows": 46,
+      "sectionCounts": {
+        "lva": 168
+      },
+      "detailRows": 0,
+      "warnings": []
+    },
+    {
+      "fileType": "vba_transactions",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/CC_Citi VBA Txns 2026-05-04T1726.xlsx",
+      "csvRows": 550,
+      "sectionCounts": {
+        "lva": 420
+      },
+      "detailRows": 0,
+      "warnings": []
+    },
+    {
+      "fileType": "stampli_fx_revenue_share",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Share 2026-05-04T1732.xlsx",
+      "csvRows": 701,
+      "sectionCounts": {
+        "lfxp": 4
+      },
+      "detailRows": 700,
+      "warnings": []
+    },
+    {
+      "fileType": "stampli_fx_revenue_reversal",
+      "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Reversal 2026-05-04T1734.xlsx",
+      "csvRows": 12,
+      "sectionCounts": {
+        "lfxp": 4
+      },
+      "detailRows": 711,
+      "warnings": []
+    }
+  ]
+}

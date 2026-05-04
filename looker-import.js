@@ -1,5 +1,5 @@
 export const importedLookerData = {
-  "generatedAt": "2026-05-04T19:34:12.336Z",
+  "generatedAt": "2026-05-04T21:55:31.380Z",
   "sourceFolder": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data",
   "period": "2026-05",
   "periods": [
@@ -22611,7 +22611,7 @@ export const importedLookerData = {
       "txnType": "Payout"
     },
     {
-      "id": "7l8k4g",
+      "id": "arowct",
       "period": "2026-02",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22632,7 +22632,7 @@ export const importedLookerData = {
       "avgTxnSize": 5.5
     },
     {
-      "id": "himtlm",
+      "id": "8ndt5x",
       "period": "2026-02",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22653,7 +22653,7 @@ export const importedLookerData = {
       "avgTxnSize": 25079.19
     },
     {
-      "id": "cujmxh",
+      "id": "vwljgc",
       "period": "2026-02",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22674,7 +22674,7 @@ export const importedLookerData = {
       "avgTxnSize": 13
     },
     {
-      "id": "u25q7m",
+      "id": "rxi9zz",
       "period": "2026-02",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22695,7 +22695,7 @@ export const importedLookerData = {
       "avgTxnSize": 28716.29
     },
     {
-      "id": "hpx924",
+      "id": "mir1eg",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22716,7 +22716,7 @@ export const importedLookerData = {
       "avgTxnSize": 15040.08
     },
     {
-      "id": "242hir",
+      "id": "f7p0zm",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22737,7 +22737,7 @@ export const importedLookerData = {
       "avgTxnSize": 60702.34
     },
     {
-      "id": "rqd4of",
+      "id": "vh2hus",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22758,7 +22758,7 @@ export const importedLookerData = {
       "avgTxnSize": 13404.49
     },
     {
-      "id": "sfsiwm",
+      "id": "noaznr",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22779,7 +22779,7 @@ export const importedLookerData = {
       "avgTxnSize": 4588.02
     },
     {
-      "id": "h4t63o",
+      "id": "q9hxf6",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22800,7 +22800,7 @@ export const importedLookerData = {
       "avgTxnSize": 11
     },
     {
-      "id": "r1n4ho",
+      "id": "uy8jo9",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22821,7 +22821,7 @@ export const importedLookerData = {
       "avgTxnSize": 23048.8
     },
     {
-      "id": "vivlr4",
+      "id": "o92rrc",
       "period": "2026-03",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22842,7 +22842,7 @@ export const importedLookerData = {
       "avgTxnSize": 17742.13
     },
     {
-      "id": "w85vzx",
+      "id": "pj2adj",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22863,7 +22863,7 @@ export const importedLookerData = {
       "avgTxnSize": 18575.73
     },
     {
-      "id": "ykk2e5",
+      "id": "lnai0g",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22884,7 +22884,7 @@ export const importedLookerData = {
       "avgTxnSize": 57083.47
     },
     {
-      "id": "p4z5ct",
+      "id": "wzm8xh",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22905,7 +22905,7 @@ export const importedLookerData = {
       "avgTxnSize": 20497.16
     },
     {
-      "id": "8gfpar",
+      "id": "es96fk",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22926,7 +22926,7 @@ export const importedLookerData = {
       "avgTxnSize": 1968.46
     },
     {
-      "id": "65jxkw",
+      "id": "s6oq20",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22947,7 +22947,7 @@ export const importedLookerData = {
       "avgTxnSize": 11.2
     },
     {
-      "id": "th5qoj",
+      "id": "w48sda",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22968,7 +22968,7 @@ export const importedLookerData = {
       "avgTxnSize": 25461.9
     },
     {
-      "id": "5lclai",
+      "id": "a0r5t4",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -22989,7 +22989,7 @@ export const importedLookerData = {
       "avgTxnSize": 4025.45
     },
     {
-      "id": "nenfzm",
+      "id": "5ks5lb",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23010,7 +23010,7 @@ export const importedLookerData = {
       "avgTxnSize": 4040.9
     },
     {
-      "id": "0cj7f8",
+      "id": "rsm45l",
       "period": "2026-04",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23031,7 +23031,7 @@ export const importedLookerData = {
       "avgTxnSize": 4300.99
     },
     {
-      "id": "5vbhsv",
+      "id": "ky3is1",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23052,7 +23052,7 @@ export const importedLookerData = {
       "avgTxnSize": 4247.95
     },
     {
-      "id": "z5pfa6",
+      "id": "a0uxw8",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23073,7 +23073,7 @@ export const importedLookerData = {
       "avgTxnSize": 17321.78
     },
     {
-      "id": "wfru7i",
+      "id": "ozlcu5",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23094,7 +23094,7 @@ export const importedLookerData = {
       "avgTxnSize": 25300.11
     },
     {
-      "id": "108062",
+      "id": "84avmm",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23115,7 +23115,7 @@ export const importedLookerData = {
       "avgTxnSize": 1042.77
     },
     {
-      "id": "mpm6ze",
+      "id": "1qirai",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23136,7 +23136,7 @@ export const importedLookerData = {
       "avgTxnSize": 4441.28
     },
     {
-      "id": "fa7zms",
+      "id": "5fb1at",
       "period": "2026-05",
       "partner": "Blindpay",
       "txnType": "Domestic",
@@ -23157,7 +23157,7 @@ export const importedLookerData = {
       "avgTxnSize": 1325
     },
     {
-      "id": "6siy88",
+      "id": "rckbci",
       "period": "2026-03",
       "partner": "LianLian",
       "txnType": "Domestic",
@@ -23178,7 +23178,7 @@ export const importedLookerData = {
       "avgTxnSize": 2010.67
     },
     {
-      "id": "rudr4q",
+      "id": "cp3swv",
       "period": "2026-03",
       "partner": "LianLian",
       "txnType": "Domestic",
@@ -23199,7 +23199,7 @@ export const importedLookerData = {
       "avgTxnSize": 2895.29
     },
     {
-      "id": "1nj27p",
+      "id": "uov19c",
       "period": "2026-04",
       "partner": "LianLian",
       "txnType": "Domestic",
@@ -23220,7 +23220,7 @@ export const importedLookerData = {
       "avgTxnSize": 2736.86
     },
     {
-      "id": "imsn6f",
+      "id": "d4ln6q",
       "period": "2026-03",
       "partner": "M-DAQ",
       "txnType": "Domestic",
@@ -23241,7 +23241,7 @@ export const importedLookerData = {
       "avgTxnSize": 4384.02
     },
     {
-      "id": "4ieoj6",
+      "id": "obnief",
       "period": "2026-03",
       "partner": "M-DAQ",
       "txnType": "Domestic",
@@ -23262,7 +23262,7 @@ export const importedLookerData = {
       "avgTxnSize": 5927.84
     },
     {
-      "id": "te0178",
+      "id": "5xplrc",
       "period": "2026-04",
       "partner": "M-DAQ",
       "txnType": "Domestic",
@@ -23283,7 +23283,7 @@ export const importedLookerData = {
       "avgTxnSize": 593.77
     },
     {
-      "id": "isat24",
+      "id": "f21wip",
       "period": "2026-04",
       "partner": "M-DAQ",
       "txnType": "Domestic",
@@ -23304,7 +23304,7 @@ export const importedLookerData = {
       "avgTxnSize": 5629.5
     },
     {
-      "id": "q1q5vw",
+      "id": "tulqam",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "Domestic",
@@ -23325,7 +23325,7 @@ export const importedLookerData = {
       "avgTxnSize": 50000
     },
     {
-      "id": "2j592e",
+      "id": "ma6izw",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "Domestic",
@@ -23346,7 +23346,7 @@ export const importedLookerData = {
       "avgTxnSize": 508358.2
     },
     {
-      "id": "zckd7h",
+      "id": "yvjfsp",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23367,7 +23367,7 @@ export const importedLookerData = {
       "avgTxnSize": 17892.23
     },
     {
-      "id": "6swm5l",
+      "id": "9k4fue",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23388,7 +23388,7 @@ export const importedLookerData = {
       "avgTxnSize": 149696.72
     },
     {
-      "id": "3xlvjz",
+      "id": "qxfsuy",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23409,7 +23409,7 @@ export const importedLookerData = {
       "avgTxnSize": 16938.4
     },
     {
-      "id": "a66ixo",
+      "id": "lozkh0",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -23430,7 +23430,7 @@ export const importedLookerData = {
       "avgTxnSize": 99250
     },
     {
-      "id": "278khv",
+      "id": "5ux4bf",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -23451,7 +23451,7 @@ export const importedLookerData = {
       "avgTxnSize": 48295
     },
     {
-      "id": "uyi2mc",
+      "id": "wxhlxl",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23472,7 +23472,7 @@ export const importedLookerData = {
       "avgTxnSize": 119510
     },
     {
-      "id": "u7t7hl",
+      "id": "luo460",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23493,7 +23493,7 @@ export const importedLookerData = {
       "avgTxnSize": 25919.76
     },
     {
-      "id": "932lqy",
+      "id": "jzs8bt",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23514,7 +23514,7 @@ export const importedLookerData = {
       "avgTxnSize": 26722.2
     },
     {
-      "id": "qysz32",
+      "id": "69jo4r",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23535,7 +23535,7 @@ export const importedLookerData = {
       "avgTxnSize": 88112
     },
     {
-      "id": "cx9em4",
+      "id": "x9352t",
       "period": "2026-02",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23556,7 +23556,7 @@ export const importedLookerData = {
       "avgTxnSize": 11903
     },
     {
-      "id": "v4xwr9",
+      "id": "g10l6g",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "Domestic",
@@ -23577,7 +23577,7 @@ export const importedLookerData = {
       "avgTxnSize": 47171.08
     },
     {
-      "id": "ntlx88",
+      "id": "f70qs8",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23598,7 +23598,7 @@ export const importedLookerData = {
       "avgTxnSize": 66401.77
     },
     {
-      "id": "4om14q",
+      "id": "ej8giu",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23619,7 +23619,7 @@ export const importedLookerData = {
       "avgTxnSize": 23092.45
     },
     {
-      "id": "8vw2xq",
+      "id": "q6tvp7",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23640,7 +23640,7 @@ export const importedLookerData = {
       "avgTxnSize": 16009.93
     },
     {
-      "id": "xd1x7c",
+      "id": "9734oi",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23661,7 +23661,7 @@ export const importedLookerData = {
       "avgTxnSize": 57754.5
     },
     {
-      "id": "6geuq2",
+      "id": "zh3byu",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -23682,7 +23682,7 @@ export const importedLookerData = {
       "avgTxnSize": 11593.6
     },
     {
-      "id": "ofa55n",
+      "id": "nlqcwc",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -23703,7 +23703,7 @@ export const importedLookerData = {
       "avgTxnSize": 67316.83
     },
     {
-      "id": "8ubpnj",
+      "id": "qn6e1c",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -23724,7 +23724,7 @@ export const importedLookerData = {
       "avgTxnSize": 6288
     },
     {
-      "id": "pyx8fr",
+      "id": "zie4n4",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23745,7 +23745,7 @@ export const importedLookerData = {
       "avgTxnSize": 6506.2
     },
     {
-      "id": "ej5hhd",
+      "id": "ixu1m2",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23766,7 +23766,7 @@ export const importedLookerData = {
       "avgTxnSize": 300000
     },
     {
-      "id": "hzjcg5",
+      "id": "0xx0vi",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23787,7 +23787,7 @@ export const importedLookerData = {
       "avgTxnSize": 40213.62
     },
     {
-      "id": "z7303x",
+      "id": "aut7f4",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23808,7 +23808,7 @@ export const importedLookerData = {
       "avgTxnSize": 20020
     },
     {
-      "id": "5yqj83",
+      "id": "mmiqzp",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23829,7 +23829,7 @@ export const importedLookerData = {
       "avgTxnSize": 48565.6
     },
     {
-      "id": "fww7qq",
+      "id": "5e1cse",
       "period": "2026-03",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -23850,7 +23850,7 @@ export const importedLookerData = {
       "avgTxnSize": 7547
     },
     {
-      "id": "p4swk4",
+      "id": "25gij4",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "Domestic",
@@ -23871,7 +23871,7 @@ export const importedLookerData = {
       "avgTxnSize": 43520.99
     },
     {
-      "id": "jvzift",
+      "id": "3v1row",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23892,7 +23892,7 @@ export const importedLookerData = {
       "avgTxnSize": 68566.6
     },
     {
-      "id": "p1vw0t",
+      "id": "u1quki",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23913,7 +23913,7 @@ export const importedLookerData = {
       "avgTxnSize": 38172.03
     },
     {
-      "id": "h0q036",
+      "id": "y70d91",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23934,7 +23934,7 @@ export const importedLookerData = {
       "avgTxnSize": 35266.7
     },
     {
-      "id": "s4g4xm",
+      "id": "3836xe",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23955,7 +23955,7 @@ export const importedLookerData = {
       "avgTxnSize": 10765.22
     },
     {
-      "id": "nywqtp",
+      "id": "b274py",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23976,7 +23976,7 @@ export const importedLookerData = {
       "avgTxnSize": 24346.34
     },
     {
-      "id": "d92iya",
+      "id": "fs8581",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -23997,7 +23997,7 @@ export const importedLookerData = {
       "avgTxnSize": 19879.47
     },
     {
-      "id": "8gmdfh",
+      "id": "t5cu9h",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -24018,7 +24018,7 @@ export const importedLookerData = {
       "avgTxnSize": 10830.94
     },
     {
-      "id": "6e8bzx",
+      "id": "n2lpc5",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "EUR Domestic",
@@ -24039,7 +24039,7 @@ export const importedLookerData = {
       "avgTxnSize": 22869.85
     },
     {
-      "id": "lva5p8",
+      "id": "1e66ex",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24060,7 +24060,7 @@ export const importedLookerData = {
       "avgTxnSize": 97953
     },
     {
-      "id": "xw1rmv",
+      "id": "grzu1q",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24081,7 +24081,7 @@ export const importedLookerData = {
       "avgTxnSize": 139452.5
     },
     {
-      "id": "ak9cgm",
+      "id": "a9xulg",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24102,7 +24102,7 @@ export const importedLookerData = {
       "avgTxnSize": 19932.16
     },
     {
-      "id": "7devo9",
+      "id": "skougg",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24123,7 +24123,7 @@ export const importedLookerData = {
       "avgTxnSize": 46913.02
     },
     {
-      "id": "6girci",
+      "id": "orqrbp",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24144,7 +24144,7 @@ export const importedLookerData = {
       "avgTxnSize": 8901.16
     },
     {
-      "id": "5o2fqa",
+      "id": "rmgbyy",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24165,7 +24165,7 @@ export const importedLookerData = {
       "avgTxnSize": 11760.7
     },
     {
-      "id": "93wd5i",
+      "id": "4bnr7r",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24186,7 +24186,7 @@ export const importedLookerData = {
       "avgTxnSize": 148272.08
     },
     {
-      "id": "u0ct4v",
+      "id": "4yofz3",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24207,7 +24207,7 @@ export const importedLookerData = {
       "avgTxnSize": 42970.65
     },
     {
-      "id": "5xwim9",
+      "id": "m986pd",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24228,7 +24228,7 @@ export const importedLookerData = {
       "avgTxnSize": 181378.8
     },
     {
-      "id": "h53qqr",
+      "id": "v1fbuk",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24249,7 +24249,7 @@ export const importedLookerData = {
       "avgTxnSize": 30000
     },
     {
-      "id": "bxnz26",
+      "id": "pcwqm9",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24270,7 +24270,7 @@ export const importedLookerData = {
       "avgTxnSize": 88570.83
     },
     {
-      "id": "zvb3i7",
+      "id": "fyn8sn",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24291,7 +24291,7 @@ export const importedLookerData = {
       "avgTxnSize": 58500
     },
     {
-      "id": "tgyrc7",
+      "id": "213c00",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24312,7 +24312,7 @@ export const importedLookerData = {
       "avgTxnSize": 85756.33
     },
     {
-      "id": "6upqnj",
+      "id": "hwzlec",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24333,7 +24333,7 @@ export const importedLookerData = {
       "avgTxnSize": 23295.9
     },
     {
-      "id": "b7ypme",
+      "id": "fczbj3",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24354,7 +24354,7 @@ export const importedLookerData = {
       "avgTxnSize": 75113.54
     },
     {
-      "id": "61m2cv",
+      "id": "5qiubr",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24375,7 +24375,7 @@ export const importedLookerData = {
       "avgTxnSize": 43875
     },
     {
-      "id": "8v9zkf",
+      "id": "kcwd2d",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24396,7 +24396,7 @@ export const importedLookerData = {
       "avgTxnSize": 23897.6
     },
     {
-      "id": "gpsscf",
+      "id": "e35ba8",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24417,7 +24417,7 @@ export const importedLookerData = {
       "avgTxnSize": 117000
     },
     {
-      "id": "06rxre",
+      "id": "qxjduz",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24438,7 +24438,7 @@ export const importedLookerData = {
       "avgTxnSize": 74490.31
     },
     {
-      "id": "q45773",
+      "id": "aceu2v",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24459,7 +24459,7 @@ export const importedLookerData = {
       "avgTxnSize": 42936.91
     },
     {
-      "id": "cpc09v",
+      "id": "lqnwbr",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24480,7 +24480,7 @@ export const importedLookerData = {
       "avgTxnSize": 22716.28
     },
     {
-      "id": "xmfnxr",
+      "id": "gda9az",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24501,7 +24501,7 @@ export const importedLookerData = {
       "avgTxnSize": 8435
     },
     {
-      "id": "7pzk1m",
+      "id": "z3mvws",
       "period": "2026-04",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24522,7 +24522,7 @@ export const importedLookerData = {
       "avgTxnSize": 32989.58
     },
     {
-      "id": "o798ms",
+      "id": "5rhutx",
       "period": "2026-05",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24543,7 +24543,7 @@ export const importedLookerData = {
       "avgTxnSize": 28738.19
     },
     {
-      "id": "g1kvui",
+      "id": "prxh9e",
       "period": "2026-05",
       "partner": "Maplewave",
       "txnType": "FX",
@@ -24564,7 +24564,7 @@ export const importedLookerData = {
       "avgTxnSize": 414544.67
     },
     {
-      "id": "yylgr7",
+      "id": "vc4g27",
       "period": "2026-05",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24585,7 +24585,7 @@ export const importedLookerData = {
       "avgTxnSize": 17753.41
     },
     {
-      "id": "pxqubl",
+      "id": "cccodc",
       "period": "2026-05",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24606,7 +24606,7 @@ export const importedLookerData = {
       "avgTxnSize": 69333.33
     },
     {
-      "id": "w1ev3q",
+      "id": "n86ipc",
       "period": "2026-05",
       "partner": "Maplewave",
       "txnType": "USD Abroad",
@@ -24627,7 +24627,7 @@ export const importedLookerData = {
       "avgTxnSize": 30100.42
     },
     {
-      "id": "hxul32",
+      "id": "nbcrkr",
       "period": "2026-04",
       "partner": "Multigate",
       "txnType": "USD Abroad",
@@ -24648,7 +24648,7 @@ export const importedLookerData = {
       "avgTxnSize": 10
     },
     {
-      "id": "ome13n",
+      "id": "cv1wxg",
       "period": "2026-02",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24669,7 +24669,7 @@ export const importedLookerData = {
       "avgTxnSize": 1.75
     },
     {
-      "id": "088dea",
+      "id": "yvb0x9",
       "period": "2026-02",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24690,7 +24690,7 @@ export const importedLookerData = {
       "avgTxnSize": 2299.9
     },
     {
-      "id": "mfh65e",
+      "id": "7yohyq",
       "period": "2026-02",
       "partner": "Nomad",
       "txnType": "USD Abroad",
@@ -24711,7 +24711,7 @@ export const importedLookerData = {
       "avgTxnSize": 6499.78
     },
     {
-      "id": "6zhmqv",
+      "id": "hhboua",
       "period": "2026-03",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24732,7 +24732,7 @@ export const importedLookerData = {
       "avgTxnSize": 6250
     },
     {
-      "id": "33tezn",
+      "id": "lz7ehw",
       "period": "2026-03",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24753,7 +24753,7 @@ export const importedLookerData = {
       "avgTxnSize": 2336.72
     },
     {
-      "id": "z4w5pc",
+      "id": "hj6aj0",
       "period": "2026-03",
       "partner": "Nomad",
       "txnType": "USD Abroad",
@@ -24774,7 +24774,7 @@ export const importedLookerData = {
       "avgTxnSize": 8399.7
     },
     {
-      "id": "iqglyn",
+      "id": "w9215j",
       "period": "2026-04",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24795,7 +24795,7 @@ export const importedLookerData = {
       "avgTxnSize": 100.17
     },
     {
-      "id": "nsugfy",
+      "id": "scxseb",
       "period": "2026-04",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24816,7 +24816,7 @@ export const importedLookerData = {
       "avgTxnSize": 1.35
     },
     {
-      "id": "h6bhok",
+      "id": "3014yh",
       "period": "2026-04",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24837,7 +24837,7 @@ export const importedLookerData = {
       "avgTxnSize": 3125.6
     },
     {
-      "id": "kdmt84",
+      "id": "ljhl7h",
       "period": "2026-04",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24858,7 +24858,7 @@ export const importedLookerData = {
       "avgTxnSize": 2472.34
     },
     {
-      "id": "reji35",
+      "id": "qtv4vd",
       "period": "2026-04",
       "partner": "Nomad",
       "txnType": "USD Abroad",
@@ -24879,7 +24879,7 @@ export const importedLookerData = {
       "avgTxnSize": 10499.62
     },
     {
-      "id": "04tewm",
+      "id": "kvji38",
       "period": "2026-05",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24900,7 +24900,7 @@ export const importedLookerData = {
       "avgTxnSize": 1.08
     },
     {
-      "id": "2ekqbc",
+      "id": "07bg4p",
       "period": "2026-05",
       "partner": "Nomad",
       "txnType": "Domestic",
@@ -24921,7 +24921,7 @@ export const importedLookerData = {
       "avgTxnSize": 1666.54
     },
     {
-      "id": "fl4xj1",
+      "id": "kmw03v",
       "period": "2026-02",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -24942,7 +24942,7 @@ export const importedLookerData = {
       "avgTxnSize": 1930.01
     },
     {
-      "id": "c6y9uz",
+      "id": "qreagk",
       "period": "2026-02",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -24963,7 +24963,7 @@ export const importedLookerData = {
       "avgTxnSize": 2040.01
     },
     {
-      "id": "ptan38",
+      "id": "4reorf",
       "period": "2026-03",
       "partner": "Nsave",
       "txnType": "FX",
@@ -24984,7 +24984,7 @@ export const importedLookerData = {
       "avgTxnSize": 285.36
     },
     {
-      "id": "ixslh8",
+      "id": "11j7l0",
       "period": "2026-03",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -25005,7 +25005,7 @@ export const importedLookerData = {
       "avgTxnSize": 1657.8
     },
     {
-      "id": "paqg5d",
+      "id": "tkk4ac",
       "period": "2026-03",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -25026,7 +25026,7 @@ export const importedLookerData = {
       "avgTxnSize": 2127.01
     },
     {
-      "id": "gejf25",
+      "id": "vykwa1",
       "period": "2026-04",
       "partner": "Nsave",
       "txnType": "FX",
@@ -25047,7 +25047,7 @@ export const importedLookerData = {
       "avgTxnSize": 320.94
     },
     {
-      "id": "766zee",
+      "id": "8i6nda",
       "period": "2026-04",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -25068,7 +25068,7 @@ export const importedLookerData = {
       "avgTxnSize": 1144.83
     },
     {
-      "id": "qdv0u4",
+      "id": "muj77u",
       "period": "2026-05",
       "partner": "Nsave",
       "txnType": "FX",
@@ -25089,7 +25089,7 @@ export const importedLookerData = {
       "avgTxnSize": 405.4
     },
     {
-      "id": "1gpjy6",
+      "id": "v6uykh",
       "period": "2026-05",
       "partner": "Nsave",
       "txnType": "USD Abroad",
@@ -25110,7 +25110,7 @@ export const importedLookerData = {
       "avgTxnSize": 2024
     },
     {
-      "id": "0ktakd",
+      "id": "b5b41j",
       "period": "2026-02",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25131,7 +25131,7 @@ export const importedLookerData = {
       "avgTxnSize": 3654.26
     },
     {
-      "id": "0xu69o",
+      "id": "d3sizt",
       "period": "2026-02",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25152,7 +25152,7 @@ export const importedLookerData = {
       "avgTxnSize": 2450
     },
     {
-      "id": "9ksj8x",
+      "id": "8cnbwb",
       "period": "2026-02",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25173,7 +25173,7 @@ export const importedLookerData = {
       "avgTxnSize": 5104.35
     },
     {
-      "id": "oo168x",
+      "id": "cgnrgu",
       "period": "2026-03",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25194,7 +25194,7 @@ export const importedLookerData = {
       "avgTxnSize": 3
     },
     {
-      "id": "ap3kua",
+      "id": "p8icyh",
       "period": "2026-03",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25215,7 +25215,7 @@ export const importedLookerData = {
       "avgTxnSize": 9600
     },
     {
-      "id": "9m3s8p",
+      "id": "6f5muc",
       "period": "2026-03",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25236,7 +25236,7 @@ export const importedLookerData = {
       "avgTxnSize": 4588.14
     },
     {
-      "id": "xdy3ar",
+      "id": "a6o9jn",
       "period": "2026-03",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25257,7 +25257,7 @@ export const importedLookerData = {
       "avgTxnSize": 1
     },
     {
-      "id": "27utuw",
+      "id": "g343q4",
       "period": "2026-03",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25278,7 +25278,7 @@ export const importedLookerData = {
       "avgTxnSize": 6204.68
     },
     {
-      "id": "naceor",
+      "id": "h300te",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "CAD Domestic",
@@ -25299,7 +25299,7 @@ export const importedLookerData = {
       "avgTxnSize": 188
     },
     {
-      "id": "kjca9p",
+      "id": "fn5e4p",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "CAD Domestic",
@@ -25320,7 +25320,7 @@ export const importedLookerData = {
       "avgTxnSize": 29.39
     },
     {
-      "id": "0j14b7",
+      "id": "pa3xve",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25341,7 +25341,7 @@ export const importedLookerData = {
       "avgTxnSize": 5783.51
     },
     {
-      "id": "vtcao2",
+      "id": "h6dw8q",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25362,7 +25362,7 @@ export const importedLookerData = {
       "avgTxnSize": 2277.45
     },
     {
-      "id": "1odfty",
+      "id": "alpb8x",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25383,7 +25383,7 @@ export const importedLookerData = {
       "avgTxnSize": 7453.1
     },
     {
-      "id": "6xv2su",
+      "id": "zvzrpd",
       "period": "2026-04",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25404,7 +25404,7 @@ export const importedLookerData = {
       "avgTxnSize": 6728.45
     },
     {
-      "id": "p6hi56",
+      "id": "2dy7yq",
       "period": "2026-05",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25425,7 +25425,7 @@ export const importedLookerData = {
       "avgTxnSize": 26560
     },
     {
-      "id": "btrg46",
+      "id": "kxj9cy",
       "period": "2026-05",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25446,7 +25446,7 @@ export const importedLookerData = {
       "avgTxnSize": 20000
     },
     {
-      "id": "sr7ru6",
+      "id": "t5uq24",
       "period": "2026-05",
       "partner": "Nuvion",
       "txnType": "Domestic",
@@ -25467,7 +25467,7 @@ export const importedLookerData = {
       "avgTxnSize": 100569.81
     },
     {
-      "id": "il43on",
+      "id": "7a9cu1",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "CAD Domestic",
@@ -25488,7 +25488,7 @@ export const importedLookerData = {
       "avgTxnSize": 13858.48
     },
     {
-      "id": "q46m2y",
+      "id": "q616g8",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25509,7 +25509,7 @@ export const importedLookerData = {
       "avgTxnSize": 1360.48
     },
     {
-      "id": "6wfyke",
+      "id": "81z2ln",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25530,7 +25530,7 @@ export const importedLookerData = {
       "avgTxnSize": 21779.5
     },
     {
-      "id": "qbb1jn",
+      "id": "decznh",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25551,7 +25551,7 @@ export const importedLookerData = {
       "avgTxnSize": 626
     },
     {
-      "id": "j138tq",
+      "id": "t08f48",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25572,7 +25572,7 @@ export const importedLookerData = {
       "avgTxnSize": 1859
     },
     {
-      "id": "5t1te3",
+      "id": "5wk38v",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25593,7 +25593,7 @@ export const importedLookerData = {
       "avgTxnSize": 28251
     },
     {
-      "id": "jfq5u6",
+      "id": "ygf4kl",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -25614,7 +25614,7 @@ export const importedLookerData = {
       "avgTxnSize": 8253.33
     },
     {
-      "id": "h5fqhu",
+      "id": "nnidrn",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25635,7 +25635,7 @@ export const importedLookerData = {
       "avgTxnSize": 6738.94
     },
     {
-      "id": "xhfug6",
+      "id": "dtb2dl",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25656,7 +25656,7 @@ export const importedLookerData = {
       "avgTxnSize": 35450.1
     },
     {
-      "id": "rd30si",
+      "id": "8iyhoj",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25677,7 +25677,7 @@ export const importedLookerData = {
       "avgTxnSize": 25923.06
     },
     {
-      "id": "kt792t",
+      "id": "jopvx6",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25698,7 +25698,7 @@ export const importedLookerData = {
       "avgTxnSize": 3389.1
     },
     {
-      "id": "domvjb",
+      "id": "aeq3jl",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25719,7 +25719,7 @@ export const importedLookerData = {
       "avgTxnSize": 27181.06
     },
     {
-      "id": "v7stq7",
+      "id": "1mfiyv",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25740,7 +25740,7 @@ export const importedLookerData = {
       "avgTxnSize": 45281.13
     },
     {
-      "id": "wq556u",
+      "id": "245t6s",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25761,7 +25761,7 @@ export const importedLookerData = {
       "avgTxnSize": 120014.8
     },
     {
-      "id": "r87i6u",
+      "id": "d3y4j2",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25782,7 +25782,7 @@ export const importedLookerData = {
       "avgTxnSize": 30459.09
     },
     {
-      "id": "g3u08b",
+      "id": "jarmxk",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25803,7 +25803,7 @@ export const importedLookerData = {
       "avgTxnSize": 53141.4
     },
     {
-      "id": "wjykcp",
+      "id": "berj4p",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25824,7 +25824,7 @@ export const importedLookerData = {
       "avgTxnSize": 133155.56
     },
     {
-      "id": "tqf0wx",
+      "id": "30ox1e",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25845,7 +25845,7 @@ export const importedLookerData = {
       "avgTxnSize": 57906.84
     },
     {
-      "id": "uwfpgt",
+      "id": "sq3vov",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25866,7 +25866,7 @@ export const importedLookerData = {
       "avgTxnSize": 15768.06
     },
     {
-      "id": "4579ic",
+      "id": "w4btop",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25887,7 +25887,7 @@ export const importedLookerData = {
       "avgTxnSize": 51476.08
     },
     {
-      "id": "w67qtm",
+      "id": "hgn1ke",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25908,7 +25908,7 @@ export const importedLookerData = {
       "avgTxnSize": 82790.61
     },
     {
-      "id": "oh846i",
+      "id": "x82yu6",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25929,7 +25929,7 @@ export const importedLookerData = {
       "avgTxnSize": 47962.93
     },
     {
-      "id": "wcuqfn",
+      "id": "st3mty",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25950,7 +25950,7 @@ export const importedLookerData = {
       "avgTxnSize": 53160.75
     },
     {
-      "id": "vjgf9d",
+      "id": "pxma0l",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25971,7 +25971,7 @@ export const importedLookerData = {
       "avgTxnSize": 23552.08
     },
     {
-      "id": "p8qsa1",
+      "id": "k3kxob",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -25992,7 +25992,7 @@ export const importedLookerData = {
       "avgTxnSize": 88996.75
     },
     {
-      "id": "v2m4tm",
+      "id": "4n75f0",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26013,7 +26013,7 @@ export const importedLookerData = {
       "avgTxnSize": 116621.55
     },
     {
-      "id": "wg9m73",
+      "id": "l0wku2",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26034,7 +26034,7 @@ export const importedLookerData = {
       "avgTxnSize": 17814.42
     },
     {
-      "id": "137uz3",
+      "id": "ayt03d",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26055,7 +26055,7 @@ export const importedLookerData = {
       "avgTxnSize": 29614.4
     },
     {
-      "id": "cmzt0t",
+      "id": "a0dub4",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26076,7 +26076,7 @@ export const importedLookerData = {
       "avgTxnSize": 115573.28
     },
     {
-      "id": "7ap8he",
+      "id": "rozhvt",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26097,7 +26097,7 @@ export const importedLookerData = {
       "avgTxnSize": 27080.57
     },
     {
-      "id": "9rf9x9",
+      "id": "sqqtdm",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26118,7 +26118,7 @@ export const importedLookerData = {
       "avgTxnSize": 184460.9
     },
     {
-      "id": "96a17y",
+      "id": "w9u7a1",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26139,7 +26139,7 @@ export const importedLookerData = {
       "avgTxnSize": 6344.46
     },
     {
-      "id": "xky9xy",
+      "id": "dok8nc",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26160,7 +26160,7 @@ export const importedLookerData = {
       "avgTxnSize": 7291.03
     },
     {
-      "id": "3zi13l",
+      "id": "j91xnz",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26181,7 +26181,7 @@ export const importedLookerData = {
       "avgTxnSize": 69791.72
     },
     {
-      "id": "7vlaw4",
+      "id": "39f6fq",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26202,7 +26202,7 @@ export const importedLookerData = {
       "avgTxnSize": 3810.24
     },
     {
-      "id": "ijsbuq",
+      "id": "lwqix7",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26223,7 +26223,7 @@ export const importedLookerData = {
       "avgTxnSize": 11562.24
     },
     {
-      "id": "0a7no8",
+      "id": "fsu3vq",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26244,7 +26244,7 @@ export const importedLookerData = {
       "avgTxnSize": 2721.96
     },
     {
-      "id": "oj0v6f",
+      "id": "rzg895",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26265,7 +26265,7 @@ export const importedLookerData = {
       "avgTxnSize": 9385.84
     },
     {
-      "id": "w8a7vk",
+      "id": "k7gesc",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -26286,7 +26286,7 @@ export const importedLookerData = {
       "avgTxnSize": 56512.44
     },
     {
-      "id": "trap2b",
+      "id": "o4q8mf",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26307,7 +26307,7 @@ export const importedLookerData = {
       "avgTxnSize": 62230.3
     },
     {
-      "id": "h2fke8",
+      "id": "mfwk30",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26328,7 +26328,7 @@ export const importedLookerData = {
       "avgTxnSize": 19500
     },
     {
-      "id": "1ahywa",
+      "id": "lpoo5b",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26349,7 +26349,7 @@ export const importedLookerData = {
       "avgTxnSize": 13435.66
     },
     {
-      "id": "vndsdr",
+      "id": "c9rj7d",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26370,7 +26370,7 @@ export const importedLookerData = {
       "avgTxnSize": 188.83
     },
     {
-      "id": "ey4dhm",
+      "id": "fmb7h1",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26391,7 +26391,7 @@ export const importedLookerData = {
       "avgTxnSize": 5551.88
     },
     {
-      "id": "h7h5w8",
+      "id": "ubli7f",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26412,7 +26412,7 @@ export const importedLookerData = {
       "avgTxnSize": 2561.46
     },
     {
-      "id": "mxgpy0",
+      "id": "ddcndw",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -26433,7 +26433,7 @@ export const importedLookerData = {
       "avgTxnSize": 199911.5
     },
     {
-      "id": "m6ldkx",
+      "id": "qc5ikz",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -26454,7 +26454,7 @@ export const importedLookerData = {
       "avgTxnSize": 313.91
     },
     {
-      "id": "kcdm9v",
+      "id": "g9ijze",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -26475,7 +26475,7 @@ export const importedLookerData = {
       "avgTxnSize": 5687.89
     },
     {
-      "id": "528x8e",
+      "id": "5z8o00",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -26496,7 +26496,7 @@ export const importedLookerData = {
       "avgTxnSize": 823.17
     },
     {
-      "id": "nii0ki",
+      "id": "zx3doj",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -26517,7 +26517,7 @@ export const importedLookerData = {
       "avgTxnSize": 6906.56
     },
     {
-      "id": "fwevay",
+      "id": "sw78id",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26538,7 +26538,7 @@ export const importedLookerData = {
       "avgTxnSize": 120000
     },
     {
-      "id": "5bu0lk",
+      "id": "pk8g1e",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26559,7 +26559,7 @@ export const importedLookerData = {
       "avgTxnSize": 13243.27
     },
     {
-      "id": "ya8e8s",
+      "id": "iwa3l1",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26580,7 +26580,7 @@ export const importedLookerData = {
       "avgTxnSize": 29266.04
     },
     {
-      "id": "ewwmk3",
+      "id": "vj9of4",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26601,7 +26601,7 @@ export const importedLookerData = {
       "avgTxnSize": 3051.5
     },
     {
-      "id": "7hv708",
+      "id": "0wpeok",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26622,7 +26622,7 @@ export const importedLookerData = {
       "avgTxnSize": 4500
     },
     {
-      "id": "y5lb2c",
+      "id": "3msfdm",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26643,7 +26643,7 @@ export const importedLookerData = {
       "avgTxnSize": 25
     },
     {
-      "id": "xowhli",
+      "id": "gvdfmx",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26664,7 +26664,7 @@ export const importedLookerData = {
       "avgTxnSize": 3965
     },
     {
-      "id": "koncwo",
+      "id": "aagjc2",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26685,7 +26685,7 @@ export const importedLookerData = {
       "avgTxnSize": 960
     },
     {
-      "id": "6tbwo0",
+      "id": "u6tsfe",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26706,7 +26706,7 @@ export const importedLookerData = {
       "avgTxnSize": 117050.87
     },
     {
-      "id": "6if6dc",
+      "id": "2o1upm",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26727,7 +26727,7 @@ export const importedLookerData = {
       "avgTxnSize": 2110
     },
     {
-      "id": "k843m9",
+      "id": "83px7p",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26748,7 +26748,7 @@ export const importedLookerData = {
       "avgTxnSize": 6803.68
     },
     {
-      "id": "ofr362",
+      "id": "qrjkcs",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26769,7 +26769,7 @@ export const importedLookerData = {
       "avgTxnSize": 50000
     },
     {
-      "id": "2dw7e7",
+      "id": "8ed6q3",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26790,7 +26790,7 @@ export const importedLookerData = {
       "avgTxnSize": 475075.12
     },
     {
-      "id": "l2th0o",
+      "id": "r93typ",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26811,7 +26811,7 @@ export const importedLookerData = {
       "avgTxnSize": 55000
     },
     {
-      "id": "5rf0bm",
+      "id": "7lba2l",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26832,7 +26832,7 @@ export const importedLookerData = {
       "avgTxnSize": 225000
     },
     {
-      "id": "ar4huy",
+      "id": "imz82q",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26853,7 +26853,7 @@ export const importedLookerData = {
       "avgTxnSize": 3583
     },
     {
-      "id": "xrw6tm",
+      "id": "7544j8",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26874,7 +26874,7 @@ export const importedLookerData = {
       "avgTxnSize": 6000
     },
     {
-      "id": "tqj8be",
+      "id": "yhu1vl",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26895,7 +26895,7 @@ export const importedLookerData = {
       "avgTxnSize": 22166.67
     },
     {
-      "id": "lkq4wo",
+      "id": "trl6zj",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26916,7 +26916,7 @@ export const importedLookerData = {
       "avgTxnSize": 85058
     },
     {
-      "id": "r8kifo",
+      "id": "3kx9p9",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26937,7 +26937,7 @@ export const importedLookerData = {
       "avgTxnSize": 1129888.76
     },
     {
-      "id": "3rj1ra",
+      "id": "llplgt",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26958,7 +26958,7 @@ export const importedLookerData = {
       "avgTxnSize": 444535.35
     },
     {
-      "id": "f8yp6g",
+      "id": "tf4ftb",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -26979,7 +26979,7 @@ export const importedLookerData = {
       "avgTxnSize": 110065.52
     },
     {
-      "id": "el74b5",
+      "id": "fbxfzz",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27000,7 +27000,7 @@ export const importedLookerData = {
       "avgTxnSize": 8000
     },
     {
-      "id": "gtibl4",
+      "id": "ze360y",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27021,7 +27021,7 @@ export const importedLookerData = {
       "avgTxnSize": 12494.01
     },
     {
-      "id": "nn2x6y",
+      "id": "lh36nm",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27042,7 +27042,7 @@ export const importedLookerData = {
       "avgTxnSize": 889
     },
     {
-      "id": "2iixoo",
+      "id": "8eqe6l",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27063,7 +27063,7 @@ export const importedLookerData = {
       "avgTxnSize": 140590
     },
     {
-      "id": "3akhuo",
+      "id": "jwlkpk",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27084,7 +27084,7 @@ export const importedLookerData = {
       "avgTxnSize": 5859.75
     },
     {
-      "id": "ensnzb",
+      "id": "10u3ze",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27105,7 +27105,7 @@ export const importedLookerData = {
       "avgTxnSize": 31850
     },
     {
-      "id": "aqrylo",
+      "id": "xxflwf",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27126,7 +27126,7 @@ export const importedLookerData = {
       "avgTxnSize": 151330
     },
     {
-      "id": "cljwgw",
+      "id": "xaqnuq",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27147,7 +27147,7 @@ export const importedLookerData = {
       "avgTxnSize": 2700.21
     },
     {
-      "id": "6tywrq",
+      "id": "5lq1ws",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27168,7 +27168,7 @@ export const importedLookerData = {
       "avgTxnSize": 2443
     },
     {
-      "id": "67hrxv",
+      "id": "ooexp6",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27189,7 +27189,7 @@ export const importedLookerData = {
       "avgTxnSize": 150000
     },
     {
-      "id": "kavfg4",
+      "id": "jb0nj1",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27210,7 +27210,7 @@ export const importedLookerData = {
       "avgTxnSize": 49475.5
     },
     {
-      "id": "tfra5v",
+      "id": "m99b5z",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27231,7 +27231,7 @@ export const importedLookerData = {
       "avgTxnSize": 6325
     },
     {
-      "id": "fvtcoe",
+      "id": "gyfidd",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27252,7 +27252,7 @@ export const importedLookerData = {
       "avgTxnSize": 19000
     },
     {
-      "id": "ep3jjz",
+      "id": "n9rn8p",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27273,7 +27273,7 @@ export const importedLookerData = {
       "avgTxnSize": 10212.5
     },
     {
-      "id": "oqdg87",
+      "id": "qx4ho9",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27294,7 +27294,7 @@ export const importedLookerData = {
       "avgTxnSize": 29485
     },
     {
-      "id": "1aadme",
+      "id": "kg9tqn",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27315,7 +27315,7 @@ export const importedLookerData = {
       "avgTxnSize": 23534.67
     },
     {
-      "id": "0ddval",
+      "id": "v1rs9n",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27336,7 +27336,7 @@ export const importedLookerData = {
       "avgTxnSize": 592.5
     },
     {
-      "id": "vf8oj7",
+      "id": "s8fb8p",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27357,7 +27357,7 @@ export const importedLookerData = {
       "avgTxnSize": 57563
     },
     {
-      "id": "z30blr",
+      "id": "xvdcrn",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27378,7 +27378,7 @@ export const importedLookerData = {
       "avgTxnSize": 400
     },
     {
-      "id": "f18cle",
+      "id": "efmufs",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27399,7 +27399,7 @@ export const importedLookerData = {
       "avgTxnSize": 28850
     },
     {
-      "id": "2wdb2d",
+      "id": "fax2hl",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27420,7 +27420,7 @@ export const importedLookerData = {
       "avgTxnSize": 28907
     },
     {
-      "id": "2je3oa",
+      "id": "goftz6",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27441,7 +27441,7 @@ export const importedLookerData = {
       "avgTxnSize": 224479.58
     },
     {
-      "id": "zti63k",
+      "id": "kowtd5",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27462,7 +27462,7 @@ export const importedLookerData = {
       "avgTxnSize": 11903.75
     },
     {
-      "id": "6yx7yc",
+      "id": "hxjqc4",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27483,7 +27483,7 @@ export const importedLookerData = {
       "avgTxnSize": 19157.15
     },
     {
-      "id": "eop6jn",
+      "id": "ay5vvw",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27504,7 +27504,7 @@ export const importedLookerData = {
       "avgTxnSize": 5691.5
     },
     {
-      "id": "tcr9ll",
+      "id": "hdrykm",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -27525,7 +27525,7 @@ export const importedLookerData = {
       "avgTxnSize": 246410
     },
     {
-      "id": "gbqwhj",
+      "id": "mj55se",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27546,7 +27546,7 @@ export const importedLookerData = {
       "avgTxnSize": 27
     },
     {
-      "id": "ejwsro",
+      "id": "bewabs",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27567,7 +27567,7 @@ export const importedLookerData = {
       "avgTxnSize": 3475.02
     },
     {
-      "id": "92yhl7",
+      "id": "gpk1f2",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27588,7 +27588,7 @@ export const importedLookerData = {
       "avgTxnSize": 289449.61
     },
     {
-      "id": "mmw3ut",
+      "id": "j126ap",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27609,7 +27609,7 @@ export const importedLookerData = {
       "avgTxnSize": 128720.4
     },
     {
-      "id": "p7l0pf",
+      "id": "sm5afv",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27630,7 +27630,7 @@ export const importedLookerData = {
       "avgTxnSize": 88000
     },
     {
-      "id": "2imsvs",
+      "id": "8cx45m",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27651,7 +27651,7 @@ export const importedLookerData = {
       "avgTxnSize": 42190
     },
     {
-      "id": "ga41p8",
+      "id": "ha3084",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27672,7 +27672,7 @@ export const importedLookerData = {
       "avgTxnSize": 2966.67
     },
     {
-      "id": "xp1unu",
+      "id": "3o1ka6",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27693,7 +27693,7 @@ export const importedLookerData = {
       "avgTxnSize": 9250
     },
     {
-      "id": "pq04lk",
+      "id": "rxglua",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -27714,7 +27714,7 @@ export const importedLookerData = {
       "avgTxnSize": 6812.5
     },
     {
-      "id": "yebofh",
+      "id": "bi6qqm",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27735,7 +27735,7 @@ export const importedLookerData = {
       "avgTxnSize": 171982.32
     },
     {
-      "id": "ercb3z",
+      "id": "q3qxw6",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27756,7 +27756,7 @@ export const importedLookerData = {
       "avgTxnSize": 2312.52
     },
     {
-      "id": "isbv13",
+      "id": "aozsoo",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27777,7 +27777,7 @@ export const importedLookerData = {
       "avgTxnSize": 57.61
     },
     {
-      "id": "0cbfsi",
+      "id": "fli1om",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27798,7 +27798,7 @@ export const importedLookerData = {
       "avgTxnSize": 75782.8
     },
     {
-      "id": "9il1bh",
+      "id": "5im1pz",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27819,7 +27819,7 @@ export const importedLookerData = {
       "avgTxnSize": 80684.8
     },
     {
-      "id": "jbfca3",
+      "id": "b0jh1h",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27840,7 +27840,7 @@ export const importedLookerData = {
       "avgTxnSize": 8256.31
     },
     {
-      "id": "rm7uhk",
+      "id": "o8v31k",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27861,7 +27861,7 @@ export const importedLookerData = {
       "avgTxnSize": 226853.78
     },
     {
-      "id": "tac92y",
+      "id": "2wzsv6",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27882,7 +27882,7 @@ export const importedLookerData = {
       "avgTxnSize": 10198.4
     },
     {
-      "id": "7xjgm8",
+      "id": "4jm7ok",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27903,7 +27903,7 @@ export const importedLookerData = {
       "avgTxnSize": 63889.06
     },
     {
-      "id": "7pjfnu",
+      "id": "b45rf7",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -27924,7 +27924,7 @@ export const importedLookerData = {
       "avgTxnSize": 23614.87
     },
     {
-      "id": "dj5ysg",
+      "id": "vqetlv",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -27945,7 +27945,7 @@ export const importedLookerData = {
       "avgTxnSize": 13466.77
     },
     {
-      "id": "ou474v",
+      "id": "sflob1",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -27966,7 +27966,7 @@ export const importedLookerData = {
       "avgTxnSize": 24902.42
     },
     {
-      "id": "wfu7pf",
+      "id": "fisrgt",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -27987,7 +27987,7 @@ export const importedLookerData = {
       "avgTxnSize": 774.51
     },
     {
-      "id": "s1974h",
+      "id": "lo4olg",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -28008,7 +28008,7 @@ export const importedLookerData = {
       "avgTxnSize": 2569.53
     },
     {
-      "id": "4grx23",
+      "id": "so6due",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -28029,7 +28029,7 @@ export const importedLookerData = {
       "avgTxnSize": 52256.84
     },
     {
-      "id": "hs0bul",
+      "id": "ycv7w5",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -28050,7 +28050,7 @@ export const importedLookerData = {
       "avgTxnSize": 116.02
     },
     {
-      "id": "o71ds5",
+      "id": "q6163l",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -28071,7 +28071,7 @@ export const importedLookerData = {
       "avgTxnSize": 57392.25
     },
     {
-      "id": "ba9yrn",
+      "id": "ixwu4l",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -28092,7 +28092,7 @@ export const importedLookerData = {
       "avgTxnSize": 4000.77
     },
     {
-      "id": "eu3zub",
+      "id": "993d6u",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -28113,7 +28113,7 @@ export const importedLookerData = {
       "avgTxnSize": 258.06
     },
     {
-      "id": "pcf37w",
+      "id": "bnv18o",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28134,7 +28134,7 @@ export const importedLookerData = {
       "avgTxnSize": 101808
     },
     {
-      "id": "huvo8r",
+      "id": "lmrsgm",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28155,7 +28155,7 @@ export const importedLookerData = {
       "avgTxnSize": 2665.75
     },
     {
-      "id": "2tsjkf",
+      "id": "662jdr",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28176,7 +28176,7 @@ export const importedLookerData = {
       "avgTxnSize": 269
     },
     {
-      "id": "q33pof",
+      "id": "nrxrki",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28197,7 +28197,7 @@ export const importedLookerData = {
       "avgTxnSize": 4970
     },
     {
-      "id": "11fjuk",
+      "id": "k31zpx",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28218,7 +28218,7 @@ export const importedLookerData = {
       "avgTxnSize": 7124.35
     },
     {
-      "id": "3oiu1h",
+      "id": "ldqjao",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28239,7 +28239,7 @@ export const importedLookerData = {
       "avgTxnSize": 9009.1
     },
     {
-      "id": "ijs1fo",
+      "id": "g81fl4",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28260,7 +28260,7 @@ export const importedLookerData = {
       "avgTxnSize": 26507.08
     },
     {
-      "id": "dpzd9f",
+      "id": "3a644n",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28281,7 +28281,7 @@ export const importedLookerData = {
       "avgTxnSize": 1021.78
     },
     {
-      "id": "0ptsj7",
+      "id": "l9e3du",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28302,7 +28302,7 @@ export const importedLookerData = {
       "avgTxnSize": 722.5
     },
     {
-      "id": "5sgwdw",
+      "id": "rmq9vl",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28323,7 +28323,7 @@ export const importedLookerData = {
       "avgTxnSize": 27500
     },
     {
-      "id": "mkp8uw",
+      "id": "bf9ejy",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28344,7 +28344,7 @@ export const importedLookerData = {
       "avgTxnSize": 37500
     },
     {
-      "id": "wmxdat",
+      "id": "dfrqhz",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28365,7 +28365,7 @@ export const importedLookerData = {
       "avgTxnSize": 26624.18
     },
     {
-      "id": "tfwg7h",
+      "id": "8q5j8u",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28386,7 +28386,7 @@ export const importedLookerData = {
       "avgTxnSize": 24862.5
     },
     {
-      "id": "s8iu2i",
+      "id": "jd8wrn",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28407,7 +28407,7 @@ export const importedLookerData = {
       "avgTxnSize": 27859.78
     },
     {
-      "id": "74o2ta",
+      "id": "wwhh9p",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28428,7 +28428,7 @@ export const importedLookerData = {
       "avgTxnSize": 49842
     },
     {
-      "id": "8h3g4e",
+      "id": "0l40c5",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28449,7 +28449,7 @@ export const importedLookerData = {
       "avgTxnSize": 140345
     },
     {
-      "id": "xg3snh",
+      "id": "g54ed7",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28470,7 +28470,7 @@ export const importedLookerData = {
       "avgTxnSize": 77543.17
     },
     {
-      "id": "4hvtsi",
+      "id": "gjl9le",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28491,7 +28491,7 @@ export const importedLookerData = {
       "avgTxnSize": 889
     },
     {
-      "id": "tefbyi",
+      "id": "yi5zwd",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28512,7 +28512,7 @@ export const importedLookerData = {
       "avgTxnSize": 15600
     },
     {
-      "id": "sqyvg0",
+      "id": "sb607a",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28533,7 +28533,7 @@ export const importedLookerData = {
       "avgTxnSize": 44807.2
     },
     {
-      "id": "qbpaev",
+      "id": "tv3evm",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28554,7 +28554,7 @@ export const importedLookerData = {
       "avgTxnSize": 40552.2
     },
     {
-      "id": "gt1sf2",
+      "id": "p8jx70",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28575,7 +28575,7 @@ export const importedLookerData = {
       "avgTxnSize": 98950
     },
     {
-      "id": "10oikr",
+      "id": "f3tibq",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28596,7 +28596,7 @@ export const importedLookerData = {
       "avgTxnSize": 84341
     },
     {
-      "id": "whfubl",
+      "id": "ir6c73",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28617,7 +28617,7 @@ export const importedLookerData = {
       "avgTxnSize": 41418
     },
     {
-      "id": "dcobd6",
+      "id": "q25lzw",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28638,7 +28638,7 @@ export const importedLookerData = {
       "avgTxnSize": 9700
     },
     {
-      "id": "2z2jfy",
+      "id": "t2i5p0",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28659,7 +28659,7 @@ export const importedLookerData = {
       "avgTxnSize": 99950
     },
     {
-      "id": "luea9e",
+      "id": "ampuod",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28680,7 +28680,7 @@ export const importedLookerData = {
       "avgTxnSize": 87541.21
     },
     {
-      "id": "j6gh2d",
+      "id": "m9qwyi",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28701,7 +28701,7 @@ export const importedLookerData = {
       "avgTxnSize": 30000
     },
     {
-      "id": "ld5t7i",
+      "id": "320pda",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28722,7 +28722,7 @@ export const importedLookerData = {
       "avgTxnSize": 42782.46
     },
     {
-      "id": "sknbki",
+      "id": "uca5ah",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28743,7 +28743,7 @@ export const importedLookerData = {
       "avgTxnSize": 720
     },
     {
-      "id": "byfwe9",
+      "id": "gs3cym",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28764,7 +28764,7 @@ export const importedLookerData = {
       "avgTxnSize": 500
     },
     {
-      "id": "011h1m",
+      "id": "wabfna",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28785,7 +28785,7 @@ export const importedLookerData = {
       "avgTxnSize": 12827.52
     },
     {
-      "id": "ul6h4w",
+      "id": "x3zm9c",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28806,7 +28806,7 @@ export const importedLookerData = {
       "avgTxnSize": 3016
     },
     {
-      "id": "ynti0d",
+      "id": "2ypcle",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28827,7 +28827,7 @@ export const importedLookerData = {
       "avgTxnSize": 5030
     },
     {
-      "id": "53iluz",
+      "id": "0zijb3",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28848,7 +28848,7 @@ export const importedLookerData = {
       "avgTxnSize": 99556
     },
     {
-      "id": "zyogi6",
+      "id": "ylufgr",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28869,7 +28869,7 @@ export const importedLookerData = {
       "avgTxnSize": 138850
     },
     {
-      "id": "yi6lrr",
+      "id": "w2fave",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28890,7 +28890,7 @@ export const importedLookerData = {
       "avgTxnSize": 30000
     },
     {
-      "id": "cf2irc",
+      "id": "m27g0y",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28911,7 +28911,7 @@ export const importedLookerData = {
       "avgTxnSize": 2900
     },
     {
-      "id": "2bmvst",
+      "id": "14jtd1",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28932,7 +28932,7 @@ export const importedLookerData = {
       "avgTxnSize": 499900
     },
     {
-      "id": "g9uee3",
+      "id": "a21s6l",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28953,7 +28953,7 @@ export const importedLookerData = {
       "avgTxnSize": 1045.44
     },
     {
-      "id": "gdc19j",
+      "id": "8obclx",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -28974,7 +28974,7 @@ export const importedLookerData = {
       "avgTxnSize": 1870
     },
     {
-      "id": "pkppz1",
+      "id": "lr3qns",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "CAD Domestic",
@@ -28995,7 +28995,7 @@ export const importedLookerData = {
       "avgTxnSize": 6641.02
     },
     {
-      "id": "8hnqsf",
+      "id": "81833a",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29016,7 +29016,7 @@ export const importedLookerData = {
       "avgTxnSize": 49490
     },
     {
-      "id": "wh5tvt",
+      "id": "30txtp",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29037,7 +29037,7 @@ export const importedLookerData = {
       "avgTxnSize": 431692.02
     },
     {
-      "id": "5qahj4",
+      "id": "o39c7b",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29058,7 +29058,7 @@ export const importedLookerData = {
       "avgTxnSize": 6000
     },
     {
-      "id": "x1aaub",
+      "id": "gm1tqs",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29079,7 +29079,7 @@ export const importedLookerData = {
       "avgTxnSize": 47992
     },
     {
-      "id": "m1jptp",
+      "id": "0ydf7r",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29100,7 +29100,7 @@ export const importedLookerData = {
       "avgTxnSize": 18774
     },
     {
-      "id": "ri3p04",
+      "id": "8fgq1h",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29121,7 +29121,7 @@ export const importedLookerData = {
       "avgTxnSize": 2305.5
     },
     {
-      "id": "cwg5wh",
+      "id": "0mqj2v",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29142,7 +29142,7 @@ export const importedLookerData = {
       "avgTxnSize": 25350
     },
     {
-      "id": "ebvs2u",
+      "id": "heewp7",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "Domestic",
@@ -29163,7 +29163,7 @@ export const importedLookerData = {
       "avgTxnSize": 6730
     },
     {
-      "id": "gwijc6",
+      "id": "gwpbkc",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29184,7 +29184,7 @@ export const importedLookerData = {
       "avgTxnSize": 15267.37
     },
     {
-      "id": "xsf098",
+      "id": "elqzkx",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29205,7 +29205,7 @@ export const importedLookerData = {
       "avgTxnSize": 203498
     },
     {
-      "id": "9jtqqm",
+      "id": "kkbo2a",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29226,7 +29226,7 @@ export const importedLookerData = {
       "avgTxnSize": 2633.83
     },
     {
-      "id": "eytfdh",
+      "id": "19po7u",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29247,7 +29247,7 @@ export const importedLookerData = {
       "avgTxnSize": 3144.01
     },
     {
-      "id": "g3waq1",
+      "id": "6gyh28",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29268,7 +29268,7 @@ export const importedLookerData = {
       "avgTxnSize": 271150.41
     },
     {
-      "id": "gr7373",
+      "id": "7jq0ss",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29289,7 +29289,7 @@ export const importedLookerData = {
       "avgTxnSize": 397392
     },
     {
-      "id": "wprtrp",
+      "id": "alomkx",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "EUR Domestic",
@@ -29310,7 +29310,7 @@ export const importedLookerData = {
       "avgTxnSize": 34197.23
     },
     {
-      "id": "c4f0vq",
+      "id": "4k8qr3",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29331,7 +29331,7 @@ export const importedLookerData = {
       "avgTxnSize": 9505.48
     },
     {
-      "id": "8jca80",
+      "id": "b6t981",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29352,7 +29352,7 @@ export const importedLookerData = {
       "avgTxnSize": 13046.59
     },
     {
-      "id": "ndytdp",
+      "id": "kfqlsp",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29373,7 +29373,7 @@ export const importedLookerData = {
       "avgTxnSize": 2264.36
     },
     {
-      "id": "lxogap",
+      "id": "o7v2x0",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29394,7 +29394,7 @@ export const importedLookerData = {
       "avgTxnSize": 666.2
     },
     {
-      "id": "nn0yvx",
+      "id": "954r75",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29415,7 +29415,7 @@ export const importedLookerData = {
       "avgTxnSize": 26041.84
     },
     {
-      "id": "i69x42",
+      "id": "gkfo59",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29436,7 +29436,7 @@ export const importedLookerData = {
       "avgTxnSize": 748.8
     },
     {
-      "id": "xpr8qk",
+      "id": "rjph00",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29457,7 +29457,7 @@ export const importedLookerData = {
       "avgTxnSize": 3059.23
     },
     {
-      "id": "ei33r7",
+      "id": "14tceq",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29478,7 +29478,7 @@ export const importedLookerData = {
       "avgTxnSize": 2569.72
     },
     {
-      "id": "3dztfp",
+      "id": "bg0sdu",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29499,7 +29499,7 @@ export const importedLookerData = {
       "avgTxnSize": 2514.5
     },
     {
-      "id": "zdludc",
+      "id": "h4dwtc",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -29520,7 +29520,7 @@ export const importedLookerData = {
       "avgTxnSize": 14617.25
     },
     {
-      "id": "5k5ein",
+      "id": "b3c0zx",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -29541,7 +29541,7 @@ export const importedLookerData = {
       "avgTxnSize": 157985.27
     },
     {
-      "id": "dkzai4",
+      "id": "43o1a6",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -29562,7 +29562,7 @@ export const importedLookerData = {
       "avgTxnSize": 20422.87
     },
     {
-      "id": "o9lfcc",
+      "id": "04jcwb",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -29583,7 +29583,7 @@ export const importedLookerData = {
       "avgTxnSize": 2010.8
     },
     {
-      "id": "vkv47z",
+      "id": "ktx02y",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -29604,7 +29604,7 @@ export const importedLookerData = {
       "avgTxnSize": 2273.41
     },
     {
-      "id": "2yslz2",
+      "id": "5mo6ec",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29625,7 +29625,7 @@ export const importedLookerData = {
       "avgTxnSize": 27393.35
     },
     {
-      "id": "dooup1",
+      "id": "1nyll9",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29646,7 +29646,7 @@ export const importedLookerData = {
       "avgTxnSize": 42227.5
     },
     {
-      "id": "fb38rh",
+      "id": "7y7g6e",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29667,7 +29667,7 @@ export const importedLookerData = {
       "avgTxnSize": 127260
     },
     {
-      "id": "ra1vni",
+      "id": "whgcsg",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29688,7 +29688,7 @@ export const importedLookerData = {
       "avgTxnSize": 1450
     },
     {
-      "id": "kwv9c0",
+      "id": "9qpwz7",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29709,7 +29709,7 @@ export const importedLookerData = {
       "avgTxnSize": 886.1
     },
     {
-      "id": "i26ud8",
+      "id": "70txvx",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29730,7 +29730,7 @@ export const importedLookerData = {
       "avgTxnSize": 2500
     },
     {
-      "id": "blgvhb",
+      "id": "q0m6u7",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29751,7 +29751,7 @@ export const importedLookerData = {
       "avgTxnSize": 32500
     },
     {
-      "id": "m6paqy",
+      "id": "q851ps",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29772,7 +29772,7 @@ export const importedLookerData = {
       "avgTxnSize": 100
     },
     {
-      "id": "zb00p5",
+      "id": "dfc46f",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29793,7 +29793,7 @@ export const importedLookerData = {
       "avgTxnSize": 155
     },
     {
-      "id": "thrhyb",
+      "id": "vbyqtp",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29814,7 +29814,7 @@ export const importedLookerData = {
       "avgTxnSize": 44694
     },
     {
-      "id": "8f27lu",
+      "id": "uobfvt",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29835,7 +29835,7 @@ export const importedLookerData = {
       "avgTxnSize": 27945.97
     },
     {
-      "id": "aku0sv",
+      "id": "i6to2v",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29856,7 +29856,7 @@ export const importedLookerData = {
       "avgTxnSize": 50076
     },
     {
-      "id": "ra5gz9",
+      "id": "ph6h95",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29877,7 +29877,7 @@ export const importedLookerData = {
       "avgTxnSize": 8400
     },
     {
-      "id": "r55bs4",
+      "id": "t1avxy",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29898,7 +29898,7 @@ export const importedLookerData = {
       "avgTxnSize": 889
     },
     {
-      "id": "uf2u2u",
+      "id": "a83hp5",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29919,7 +29919,7 @@ export const importedLookerData = {
       "avgTxnSize": 21879
     },
     {
-      "id": "sjc9gh",
+      "id": "1v49m9",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29940,7 +29940,7 @@ export const importedLookerData = {
       "avgTxnSize": 40000
     },
     {
-      "id": "gpyqzk",
+      "id": "6jglnw",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29961,7 +29961,7 @@ export const importedLookerData = {
       "avgTxnSize": 73100
     },
     {
-      "id": "2rc1jc",
+      "id": "amn2ec",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -29982,7 +29982,7 @@ export const importedLookerData = {
       "avgTxnSize": 192000
     },
     {
-      "id": "35njtk",
+      "id": "havtid",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30003,7 +30003,7 @@ export const importedLookerData = {
       "avgTxnSize": 44700
     },
     {
-      "id": "1qma50",
+      "id": "4n70t2",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30024,7 +30024,7 @@ export const importedLookerData = {
       "avgTxnSize": 145500.22
     },
     {
-      "id": "kq9pjt",
+      "id": "k9vbfg",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30045,7 +30045,7 @@ export const importedLookerData = {
       "avgTxnSize": 52706.67
     },
     {
-      "id": "h6jcwv",
+      "id": "ch79ld",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30066,7 +30066,7 @@ export const importedLookerData = {
       "avgTxnSize": 48797.55
     },
     {
-      "id": "tsvx44",
+      "id": "tsubmi",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30087,7 +30087,7 @@ export const importedLookerData = {
       "avgTxnSize": 5000
     },
     {
-      "id": "wi6wkb",
+      "id": "sw29qs",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30108,7 +30108,7 @@ export const importedLookerData = {
       "avgTxnSize": 310800
     },
     {
-      "id": "a4dcp8",
+      "id": "xj68qx",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30129,7 +30129,7 @@ export const importedLookerData = {
       "avgTxnSize": 409.74
     },
     {
-      "id": "9lge52",
+      "id": "4php5h",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30150,7 +30150,7 @@ export const importedLookerData = {
       "avgTxnSize": 3286.67
     },
     {
-      "id": "2onti8",
+      "id": "nllck0",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "FX",
@@ -30171,7 +30171,7 @@ export const importedLookerData = {
       "avgTxnSize": 526.06
     },
     {
-      "id": "gu845u",
+      "id": "c8p0jf",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -30192,7 +30192,7 @@ export const importedLookerData = {
       "avgTxnSize": 46635.26
     },
     {
-      "id": "zutxd5",
+      "id": "0pjpxp",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "GBP Domestic",
@@ -30213,7 +30213,7 @@ export const importedLookerData = {
       "avgTxnSize": 2021.12
     },
     {
-      "id": "x8tfi1",
+      "id": "irsplm",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30234,7 +30234,7 @@ export const importedLookerData = {
       "avgTxnSize": 41405.01
     },
     {
-      "id": "3j4f87",
+      "id": "u4ru40",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30255,7 +30255,7 @@ export const importedLookerData = {
       "avgTxnSize": 1450
     },
     {
-      "id": "bk8ajo",
+      "id": "2w3xmv",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30276,7 +30276,7 @@ export const importedLookerData = {
       "avgTxnSize": 2500
     },
     {
-      "id": "p20haj",
+      "id": "r844nw",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30297,7 +30297,7 @@ export const importedLookerData = {
       "avgTxnSize": 2600
     },
     {
-      "id": "n6tsqt",
+      "id": "dyt0pi",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30318,7 +30318,7 @@ export const importedLookerData = {
       "avgTxnSize": 50000
     },
     {
-      "id": "q9a12p",
+      "id": "t9vpdk",
       "period": "2026-05",
       "partner": "Remittanceshub",
       "txnType": "USD Abroad",
@@ -30339,7 +30339,7 @@ export const importedLookerData = {
       "avgTxnSize": 53268.8
     },
     {
-      "id": "tocg6w",
+      "id": "kqpv4h",
       "period": "2026-02",
       "partner": "Skydo",
       "txnType": "Domestic",
@@ -30360,7 +30360,7 @@ export const importedLookerData = {
       "avgTxnSize": 1105.55
     },
     {
-      "id": "o5pbf6",
+      "id": "czl8pp",
       "period": "2026-03",
       "partner": "Skydo",
       "txnType": "Domestic",
@@ -30381,7 +30381,7 @@ export const importedLookerData = {
       "avgTxnSize": 1040.87
     },
     {
-      "id": "m7rg0i",
+      "id": "bnz0t5",
       "period": "2026-04",
       "partner": "Skydo",
       "txnType": "Domestic",
@@ -30402,7 +30402,7 @@ export const importedLookerData = {
       "avgTxnSize": 1289.7
     },
     {
-      "id": "e08mj0",
+      "id": "7ln8u8",
       "period": "2026-05",
       "partner": "Skydo",
       "txnType": "Domestic",
@@ -30423,7 +30423,7 @@ export const importedLookerData = {
       "avgTxnSize": 1003.15
     },
     {
-      "id": "o9fbkq",
+      "id": "vyfx51",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -30444,7 +30444,7 @@ export const importedLookerData = {
       "avgTxnSize": 9572.41
     },
     {
-      "id": "62q5ao",
+      "id": "vrlsoj",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -30465,7 +30465,7 @@ export const importedLookerData = {
       "avgTxnSize": 13734.97
     },
     {
-      "id": "6xp9je",
+      "id": "3uo347",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30486,7 +30486,7 @@ export const importedLookerData = {
       "avgTxnSize": 15273.82
     },
     {
-      "id": "125gsh",
+      "id": "g645su",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30507,7 +30507,7 @@ export const importedLookerData = {
       "avgTxnSize": 2868
     },
     {
-      "id": "ghy21g",
+      "id": "5bgjx6",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30528,7 +30528,7 @@ export const importedLookerData = {
       "avgTxnSize": 6249.85
     },
     {
-      "id": "8y0ay6",
+      "id": "ln0l2k",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30549,7 +30549,7 @@ export const importedLookerData = {
       "avgTxnSize": 5000
     },
     {
-      "id": "hghwqh",
+      "id": "anou8s",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30570,7 +30570,7 @@ export const importedLookerData = {
       "avgTxnSize": 4764.81
     },
     {
-      "id": "ueulam",
+      "id": "82jqaa",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30591,7 +30591,7 @@ export const importedLookerData = {
       "avgTxnSize": 15000
     },
     {
-      "id": "22tm3q",
+      "id": "i7po2b",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30612,7 +30612,7 @@ export const importedLookerData = {
       "avgTxnSize": 32175.55
     },
     {
-      "id": "odcpqy",
+      "id": "tlnzsq",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30633,7 +30633,7 @@ export const importedLookerData = {
       "avgTxnSize": 4866.67
     },
     {
-      "id": "guux88",
+      "id": "wtthue",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30654,7 +30654,7 @@ export const importedLookerData = {
       "avgTxnSize": 71739.95
     },
     {
-      "id": "w8m3jv",
+      "id": "81hkr7",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30675,7 +30675,7 @@ export const importedLookerData = {
       "avgTxnSize": 4648.83
     },
     {
-      "id": "e3haa1",
+      "id": "311w74",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30696,7 +30696,7 @@ export const importedLookerData = {
       "avgTxnSize": 132255.43
     },
     {
-      "id": "uy6h6y",
+      "id": "30kq5k",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30717,7 +30717,7 @@ export const importedLookerData = {
       "avgTxnSize": 7452.75
     },
     {
-      "id": "w2j2vq",
+      "id": "429aet",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30738,7 +30738,7 @@ export const importedLookerData = {
       "avgTxnSize": 5512
     },
     {
-      "id": "ve5cr1",
+      "id": "21ivvm",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30759,7 +30759,7 @@ export const importedLookerData = {
       "avgTxnSize": 17709.82
     },
     {
-      "id": "5ti28y",
+      "id": "67n8ra",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30780,7 +30780,7 @@ export const importedLookerData = {
       "avgTxnSize": 45662.5
     },
     {
-      "id": "hpt17i",
+      "id": "bzghyu",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30801,7 +30801,7 @@ export const importedLookerData = {
       "avgTxnSize": 3193.89
     },
     {
-      "id": "m8vmfa",
+      "id": "qa59yn",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30822,7 +30822,7 @@ export const importedLookerData = {
       "avgTxnSize": 12204.69
     },
     {
-      "id": "cqlowa",
+      "id": "up3gzq",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30843,7 +30843,7 @@ export const importedLookerData = {
       "avgTxnSize": 14952.97
     },
     {
-      "id": "jpddkc",
+      "id": "4kw3od",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30864,7 +30864,7 @@ export const importedLookerData = {
       "avgTxnSize": 1999.67
     },
     {
-      "id": "zp5gkr",
+      "id": "mb7aqq",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30885,7 +30885,7 @@ export const importedLookerData = {
       "avgTxnSize": 126520.07
     },
     {
-      "id": "mb6y8j",
+      "id": "1hjxme",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30906,7 +30906,7 @@ export const importedLookerData = {
       "avgTxnSize": 22085.62
     },
     {
-      "id": "atx9ed",
+      "id": "ta02im",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30927,7 +30927,7 @@ export const importedLookerData = {
       "avgTxnSize": 24452.67
     },
     {
-      "id": "3zu7ez",
+      "id": "dtr6q6",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30948,7 +30948,7 @@ export const importedLookerData = {
       "avgTxnSize": 35746.9
     },
     {
-      "id": "c1bce5",
+      "id": "et9rva",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30969,7 +30969,7 @@ export const importedLookerData = {
       "avgTxnSize": 31090.17
     },
     {
-      "id": "94vfbv",
+      "id": "ogqrxs",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -30990,7 +30990,7 @@ export const importedLookerData = {
       "avgTxnSize": 24761.64
     },
     {
-      "id": "igbdke",
+      "id": "05bnja",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31011,7 +31011,7 @@ export const importedLookerData = {
       "avgTxnSize": 86627.93
     },
     {
-      "id": "xe3q6o",
+      "id": "q2nqok",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31032,7 +31032,7 @@ export const importedLookerData = {
       "avgTxnSize": 3043.34
     },
     {
-      "id": "lh86n3",
+      "id": "qdisqv",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31053,7 +31053,7 @@ export const importedLookerData = {
       "avgTxnSize": 106500
     },
     {
-      "id": "szj1aw",
+      "id": "pziztz",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31074,7 +31074,7 @@ export const importedLookerData = {
       "avgTxnSize": 512.5
     },
     {
-      "id": "g58a11",
+      "id": "x97mdv",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31095,7 +31095,7 @@ export const importedLookerData = {
       "avgTxnSize": 3264.78
     },
     {
-      "id": "2qs04g",
+      "id": "a0rf5f",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31116,7 +31116,7 @@ export const importedLookerData = {
       "avgTxnSize": 14653.58
     },
     {
-      "id": "87pobn",
+      "id": "xt4sl7",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31137,7 +31137,7 @@ export const importedLookerData = {
       "avgTxnSize": 36735.46
     },
     {
-      "id": "ujjb7m",
+      "id": "wzc2fn",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31158,7 +31158,7 @@ export const importedLookerData = {
       "avgTxnSize": 189
     },
     {
-      "id": "7zrgeh",
+      "id": "39dzef",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31179,7 +31179,7 @@ export const importedLookerData = {
       "avgTxnSize": 27247.94
     },
     {
-      "id": "txker2",
+      "id": "zgsex4",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31200,7 +31200,7 @@ export const importedLookerData = {
       "avgTxnSize": 13286.4
     },
     {
-      "id": "teio44",
+      "id": "y5kapi",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31221,7 +31221,7 @@ export const importedLookerData = {
       "avgTxnSize": 22587.05
     },
     {
-      "id": "m5c4eq",
+      "id": "www05x",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31242,7 +31242,7 @@ export const importedLookerData = {
       "avgTxnSize": 1500
     },
     {
-      "id": "j5p0p7",
+      "id": "21lmsv",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31263,7 +31263,7 @@ export const importedLookerData = {
       "avgTxnSize": 1550
     },
     {
-      "id": "0pmh2g",
+      "id": "q9a0m3",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31284,7 +31284,7 @@ export const importedLookerData = {
       "avgTxnSize": 5602.76
     },
     {
-      "id": "4wks1m",
+      "id": "qnie5g",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31305,7 +31305,7 @@ export const importedLookerData = {
       "avgTxnSize": 31277.59
     },
     {
-      "id": "gs4yjq",
+      "id": "43lkdb",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31326,7 +31326,7 @@ export const importedLookerData = {
       "avgTxnSize": 12344.92
     },
     {
-      "id": "f4xi6t",
+      "id": "s70eyb",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31347,7 +31347,7 @@ export const importedLookerData = {
       "avgTxnSize": 790.83
     },
     {
-      "id": "4a29st",
+      "id": "cf7xfa",
       "period": "2026-02",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31368,7 +31368,7 @@ export const importedLookerData = {
       "avgTxnSize": 15378.23
     },
     {
-      "id": "vbkbbr",
+      "id": "eq605j",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -31389,7 +31389,7 @@ export const importedLookerData = {
       "avgTxnSize": 9398.56
     },
     {
-      "id": "rilmlb",
+      "id": "q9ta8a",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -31410,7 +31410,7 @@ export const importedLookerData = {
       "avgTxnSize": 14254.43
     },
     {
-      "id": "bwpq4d",
+      "id": "yx3pz5",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31431,7 +31431,7 @@ export const importedLookerData = {
       "avgTxnSize": 24432.07
     },
     {
-      "id": "6fleh2",
+      "id": "wq204o",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31452,7 +31452,7 @@ export const importedLookerData = {
       "avgTxnSize": 35972.61
     },
     {
-      "id": "2zgcjx",
+      "id": "f0fyh5",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31473,7 +31473,7 @@ export const importedLookerData = {
       "avgTxnSize": 25771.35
     },
     {
-      "id": "vnigfe",
+      "id": "m7jijd",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31494,7 +31494,7 @@ export const importedLookerData = {
       "avgTxnSize": 3590
     },
     {
-      "id": "1a9f7w",
+      "id": "1ovh6e",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31515,7 +31515,7 @@ export const importedLookerData = {
       "avgTxnSize": 4116.5
     },
     {
-      "id": "8k3bb9",
+      "id": "c7lwjk",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31536,7 +31536,7 @@ export const importedLookerData = {
       "avgTxnSize": 8763.39
     },
     {
-      "id": "t474z6",
+      "id": "aexw2p",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31557,7 +31557,7 @@ export const importedLookerData = {
       "avgTxnSize": 6073.58
     },
     {
-      "id": "1hxr1b",
+      "id": "yhh6hg",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31578,7 +31578,7 @@ export const importedLookerData = {
       "avgTxnSize": 76308.34
     },
     {
-      "id": "8edu7a",
+      "id": "36ox6j",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31599,7 +31599,7 @@ export const importedLookerData = {
       "avgTxnSize": 72467.22
     },
     {
-      "id": "3crsd6",
+      "id": "ainp0z",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31620,7 +31620,7 @@ export const importedLookerData = {
       "avgTxnSize": 2708.32
     },
     {
-      "id": "f0fp0x",
+      "id": "c01dxh",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31641,7 +31641,7 @@ export const importedLookerData = {
       "avgTxnSize": 6870.33
     },
     {
-      "id": "6kqxq6",
+      "id": "qtsu9j",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31662,7 +31662,7 @@ export const importedLookerData = {
       "avgTxnSize": 4000
     },
     {
-      "id": "hqmwk3",
+      "id": "5dr8s3",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31683,7 +31683,7 @@ export const importedLookerData = {
       "avgTxnSize": 8254.32
     },
     {
-      "id": "f8u7p8",
+      "id": "g6q0ys",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31704,7 +31704,7 @@ export const importedLookerData = {
       "avgTxnSize": 11495
     },
     {
-      "id": "kc06al",
+      "id": "rzojgy",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31725,7 +31725,7 @@ export const importedLookerData = {
       "avgTxnSize": 1404.25
     },
     {
-      "id": "u1yajw",
+      "id": "7tvj4n",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31746,7 +31746,7 @@ export const importedLookerData = {
       "avgTxnSize": 12392.28
     },
     {
-      "id": "jpht1m",
+      "id": "xfanwx",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31767,7 +31767,7 @@ export const importedLookerData = {
       "avgTxnSize": 2620.56
     },
     {
-      "id": "kxqy4w",
+      "id": "nd4dzl",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31788,7 +31788,7 @@ export const importedLookerData = {
       "avgTxnSize": 855.7
     },
     {
-      "id": "80qf2r",
+      "id": "wswmho",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31809,7 +31809,7 @@ export const importedLookerData = {
       "avgTxnSize": 16474.8
     },
     {
-      "id": "lnc6md",
+      "id": "qfgp68",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31830,7 +31830,7 @@ export const importedLookerData = {
       "avgTxnSize": 2040.45
     },
     {
-      "id": "6roi3w",
+      "id": "grctkl",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31851,7 +31851,7 @@ export const importedLookerData = {
       "avgTxnSize": 110086.9
     },
     {
-      "id": "agr8w6",
+      "id": "9lnrrn",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31872,7 +31872,7 @@ export const importedLookerData = {
       "avgTxnSize": 13597.08
     },
     {
-      "id": "r8k89f",
+      "id": "0tfc97",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31893,7 +31893,7 @@ export const importedLookerData = {
       "avgTxnSize": 2325.45
     },
     {
-      "id": "ndi6or",
+      "id": "53qo9b",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31914,7 +31914,7 @@ export const importedLookerData = {
       "avgTxnSize": 28392.99
     },
     {
-      "id": "ih4p7v",
+      "id": "wm0i8t",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31935,7 +31935,7 @@ export const importedLookerData = {
       "avgTxnSize": 29184.45
     },
     {
-      "id": "a0tl3l",
+      "id": "39q4g6",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31956,7 +31956,7 @@ export const importedLookerData = {
       "avgTxnSize": 33622.32
     },
     {
-      "id": "vy3zza",
+      "id": "z0xucx",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31977,7 +31977,7 @@ export const importedLookerData = {
       "avgTxnSize": 22305.06
     },
     {
-      "id": "8ivzb1",
+      "id": "772p9q",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -31998,7 +31998,7 @@ export const importedLookerData = {
       "avgTxnSize": 220572.98
     },
     {
-      "id": "v8xncl",
+      "id": "e8n933",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32019,7 +32019,7 @@ export const importedLookerData = {
       "avgTxnSize": 34288.39
     },
     {
-      "id": "5wozbl",
+      "id": "y5z5wd",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32040,7 +32040,7 @@ export const importedLookerData = {
       "avgTxnSize": 20316
     },
     {
-      "id": "ydx6qn",
+      "id": "xk1az8",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32061,7 +32061,7 @@ export const importedLookerData = {
       "avgTxnSize": 3976.83
     },
     {
-      "id": "5lc7wc",
+      "id": "q0j834",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32082,7 +32082,7 @@ export const importedLookerData = {
       "avgTxnSize": 4312.1
     },
     {
-      "id": "uii6q4",
+      "id": "ftzxt9",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32103,7 +32103,7 @@ export const importedLookerData = {
       "avgTxnSize": 32872.96
     },
     {
-      "id": "ywxybc",
+      "id": "l4tll7",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32124,7 +32124,7 @@ export const importedLookerData = {
       "avgTxnSize": 78650
     },
     {
-      "id": "88q9rb",
+      "id": "pcxapn",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32145,7 +32145,7 @@ export const importedLookerData = {
       "avgTxnSize": 67064.6
     },
     {
-      "id": "oz99cy",
+      "id": "iegxvl",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32166,7 +32166,7 @@ export const importedLookerData = {
       "avgTxnSize": 41007.11
     },
     {
-      "id": "3tbju6",
+      "id": "9ql6cs",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32187,7 +32187,7 @@ export const importedLookerData = {
       "avgTxnSize": 17951.1
     },
     {
-      "id": "h807ud",
+      "id": "ix184y",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32208,7 +32208,7 @@ export const importedLookerData = {
       "avgTxnSize": 7525.65
     },
     {
-      "id": "v5zfzf",
+      "id": "vhqlu9",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32229,7 +32229,7 @@ export const importedLookerData = {
       "avgTxnSize": 5243.95
     },
     {
-      "id": "1r07fj",
+      "id": "xj4g12",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32250,7 +32250,7 @@ export const importedLookerData = {
       "avgTxnSize": 13226
     },
     {
-      "id": "qwirsu",
+      "id": "8e1lwy",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32271,7 +32271,7 @@ export const importedLookerData = {
       "avgTxnSize": 19992.34
     },
     {
-      "id": "lcybfg",
+      "id": "8wgl0c",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32292,7 +32292,7 @@ export const importedLookerData = {
       "avgTxnSize": 2178
     },
     {
-      "id": "mko87o",
+      "id": "w5ln2n",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32313,7 +32313,7 @@ export const importedLookerData = {
       "avgTxnSize": 8345.91
     },
     {
-      "id": "5zpxqx",
+      "id": "mx1vwa",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32334,7 +32334,7 @@ export const importedLookerData = {
       "avgTxnSize": 1500
     },
     {
-      "id": "0vl7a8",
+      "id": "3ytbmk",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32355,7 +32355,7 @@ export const importedLookerData = {
       "avgTxnSize": 8004.99
     },
     {
-      "id": "3vvubd",
+      "id": "9z41in",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32376,7 +32376,7 @@ export const importedLookerData = {
       "avgTxnSize": 19200
     },
     {
-      "id": "nrhg10",
+      "id": "ouxjbv",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32397,7 +32397,7 @@ export const importedLookerData = {
       "avgTxnSize": 2500
     },
     {
-      "id": "vq5hs4",
+      "id": "idkoqe",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32418,7 +32418,7 @@ export const importedLookerData = {
       "avgTxnSize": 11666.8
     },
     {
-      "id": "cpe1zu",
+      "id": "42y3mt",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32439,7 +32439,7 @@ export const importedLookerData = {
       "avgTxnSize": 62030.93
     },
     {
-      "id": "824az7",
+      "id": "gkqf1n",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32460,7 +32460,7 @@ export const importedLookerData = {
       "avgTxnSize": 6508.57
     },
     {
-      "id": "p9b8bv",
+      "id": "pbzu28",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32481,7 +32481,7 @@ export const importedLookerData = {
       "avgTxnSize": 9240.44
     },
     {
-      "id": "33vvo2",
+      "id": "co0twj",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32502,7 +32502,7 @@ export const importedLookerData = {
       "avgTxnSize": 988.1
     },
     {
-      "id": "kev80m",
+      "id": "tq8jfz",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32523,7 +32523,7 @@ export const importedLookerData = {
       "avgTxnSize": 1749.59
     },
     {
-      "id": "4szizl",
+      "id": "8zwd70",
       "period": "2026-03",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32544,7 +32544,7 @@ export const importedLookerData = {
       "avgTxnSize": 7662.5
     },
     {
-      "id": "6ypjrr",
+      "id": "dqe3ry",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -32565,7 +32565,7 @@ export const importedLookerData = {
       "avgTxnSize": 9449.06
     },
     {
-      "id": "ibmgay",
+      "id": "ysi5jx",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -32586,7 +32586,7 @@ export const importedLookerData = {
       "avgTxnSize": 14204.28
     },
     {
-      "id": "g8g0ne",
+      "id": "pf4p3k",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -32607,7 +32607,7 @@ export const importedLookerData = {
       "avgTxnSize": 2500
     },
     {
-      "id": "niavj4",
+      "id": "krud3u",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32628,7 +32628,7 @@ export const importedLookerData = {
       "avgTxnSize": 8549.2
     },
     {
-      "id": "otckpn",
+      "id": "8a89yc",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32649,7 +32649,7 @@ export const importedLookerData = {
       "avgTxnSize": 1298.63
     },
     {
-      "id": "9oohqo",
+      "id": "rbzjt0",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32670,7 +32670,7 @@ export const importedLookerData = {
       "avgTxnSize": 90484.37
     },
     {
-      "id": "m2nwgp",
+      "id": "d3g6uz",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32691,7 +32691,7 @@ export const importedLookerData = {
       "avgTxnSize": 225
     },
     {
-      "id": "hfbnwl",
+      "id": "nrchxf",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32712,7 +32712,7 @@ export const importedLookerData = {
       "avgTxnSize": 5000
     },
     {
-      "id": "brx777",
+      "id": "mg3mpg",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32733,7 +32733,7 @@ export const importedLookerData = {
       "avgTxnSize": 3000
     },
     {
-      "id": "k0okrs",
+      "id": "cdkylv",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32754,7 +32754,7 @@ export const importedLookerData = {
       "avgTxnSize": 15000
     },
     {
-      "id": "jzo5ff",
+      "id": "y9eyk4",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32775,7 +32775,7 @@ export const importedLookerData = {
       "avgTxnSize": 10367.71
     },
     {
-      "id": "mql1vh",
+      "id": "upfxjn",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32796,7 +32796,7 @@ export const importedLookerData = {
       "avgTxnSize": 76391.92
     },
     {
-      "id": "ndaig4",
+      "id": "nt8f56",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32817,7 +32817,7 @@ export const importedLookerData = {
       "avgTxnSize": 2460.83
     },
     {
-      "id": "2zg79z",
+      "id": "klew4d",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32838,7 +32838,7 @@ export const importedLookerData = {
       "avgTxnSize": 45956.59
     },
     {
-      "id": "uh986a",
+      "id": "szgygn",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32859,7 +32859,7 @@ export const importedLookerData = {
       "avgTxnSize": 4000
     },
     {
-      "id": "uopjlq",
+      "id": "a1rgmb",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32880,7 +32880,7 @@ export const importedLookerData = {
       "avgTxnSize": 9710.44
     },
     {
-      "id": "0i97op",
+      "id": "3f6brg",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32901,7 +32901,7 @@ export const importedLookerData = {
       "avgTxnSize": 15308.34
     },
     {
-      "id": "q3jyuk",
+      "id": "ptoex2",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32922,7 +32922,7 @@ export const importedLookerData = {
       "avgTxnSize": 70596.67
     },
     {
-      "id": "8xl4rz",
+      "id": "wamwbd",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32943,7 +32943,7 @@ export const importedLookerData = {
       "avgTxnSize": 4480.28
     },
     {
-      "id": "ie3pf2",
+      "id": "74uj48",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32964,7 +32964,7 @@ export const importedLookerData = {
       "avgTxnSize": 21179.85
     },
     {
-      "id": "ej3fld",
+      "id": "lpvbcb",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -32985,7 +32985,7 @@ export const importedLookerData = {
       "avgTxnSize": 16234.9
     },
     {
-      "id": "bohjkw",
+      "id": "ex9mho",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33006,7 +33006,7 @@ export const importedLookerData = {
       "avgTxnSize": 2119.09
     },
     {
-      "id": "qp5j1w",
+      "id": "47yewk",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33027,7 +33027,7 @@ export const importedLookerData = {
       "avgTxnSize": 52754.36
     },
     {
-      "id": "qzjje8",
+      "id": "0g8gmh",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33048,7 +33048,7 @@ export const importedLookerData = {
       "avgTxnSize": 52332.11
     },
     {
-      "id": "lgqxo2",
+      "id": "5vbmqk",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33069,7 +33069,7 @@ export const importedLookerData = {
       "avgTxnSize": 600
     },
     {
-      "id": "t3cuc0",
+      "id": "vcx3kb",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33090,7 +33090,7 @@ export const importedLookerData = {
       "avgTxnSize": 2014.65
     },
     {
-      "id": "dcqopx",
+      "id": "k0339j",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33111,7 +33111,7 @@ export const importedLookerData = {
       "avgTxnSize": 1574.63
     },
     {
-      "id": "tdxmv2",
+      "id": "4t3gib",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33132,7 +33132,7 @@ export const importedLookerData = {
       "avgTxnSize": 21713
     },
     {
-      "id": "5f7yah",
+      "id": "l8hb3x",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33153,7 +33153,7 @@ export const importedLookerData = {
       "avgTxnSize": 18837.68
     },
     {
-      "id": "jfsdsp",
+      "id": "qj8kwm",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33174,7 +33174,7 @@ export const importedLookerData = {
       "avgTxnSize": 3293.21
     },
     {
-      "id": "aonygg",
+      "id": "s70kut",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33195,7 +33195,7 @@ export const importedLookerData = {
       "avgTxnSize": 81533.33
     },
     {
-      "id": "73ipw3",
+      "id": "3okpob",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33216,7 +33216,7 @@ export const importedLookerData = {
       "avgTxnSize": 20098.75
     },
     {
-      "id": "68rft3",
+      "id": "t33oeg",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33237,7 +33237,7 @@ export const importedLookerData = {
       "avgTxnSize": 306524.46
     },
     {
-      "id": "8xhwyv",
+      "id": "qwcaqi",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33258,7 +33258,7 @@ export const importedLookerData = {
       "avgTxnSize": 2082.19
     },
     {
-      "id": "goytqa",
+      "id": "cuca90",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33279,7 +33279,7 @@ export const importedLookerData = {
       "avgTxnSize": 10500
     },
     {
-      "id": "vnhw5z",
+      "id": "gpu116",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33300,7 +33300,7 @@ export const importedLookerData = {
       "avgTxnSize": 18197.51
     },
     {
-      "id": "6h4ci5",
+      "id": "91tny9",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33321,7 +33321,7 @@ export const importedLookerData = {
       "avgTxnSize": 65324.29
     },
     {
-      "id": "ew3qd9",
+      "id": "ugsgzv",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33342,7 +33342,7 @@ export const importedLookerData = {
       "avgTxnSize": 21570.29
     },
     {
-      "id": "f1apv5",
+      "id": "8cltby",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33363,7 +33363,7 @@ export const importedLookerData = {
       "avgTxnSize": 15409.21
     },
     {
-      "id": "igmt3r",
+      "id": "vzdx34",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33384,7 +33384,7 @@ export const importedLookerData = {
       "avgTxnSize": 3804.04
     },
     {
-      "id": "o1on08",
+      "id": "lu7mjw",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33405,7 +33405,7 @@ export const importedLookerData = {
       "avgTxnSize": 29674.9
     },
     {
-      "id": "g3kpuq",
+      "id": "cx463n",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33426,7 +33426,7 @@ export const importedLookerData = {
       "avgTxnSize": 4516.23
     },
     {
-      "id": "kltfe5",
+      "id": "ahvvo9",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33447,7 +33447,7 @@ export const importedLookerData = {
       "avgTxnSize": 8651.5
     },
     {
-      "id": "i35ha6",
+      "id": "jkhj37",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33468,7 +33468,7 @@ export const importedLookerData = {
       "avgTxnSize": 16722.45
     },
     {
-      "id": "9ssfr2",
+      "id": "ihomp9",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33489,7 +33489,7 @@ export const importedLookerData = {
       "avgTxnSize": 58432.89
     },
     {
-      "id": "d904yy",
+      "id": "s7cjii",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33510,7 +33510,7 @@ export const importedLookerData = {
       "avgTxnSize": 11111.05
     },
     {
-      "id": "uxdy7x",
+      "id": "mp9oep",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33531,7 +33531,7 @@ export const importedLookerData = {
       "avgTxnSize": 1500
     },
     {
-      "id": "az342g",
+      "id": "reazn6",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33552,7 +33552,7 @@ export const importedLookerData = {
       "avgTxnSize": 2825
     },
     {
-      "id": "11l927",
+      "id": "6y8kuf",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33573,7 +33573,7 @@ export const importedLookerData = {
       "avgTxnSize": 4254.89
     },
     {
-      "id": "iw8h2x",
+      "id": "mx3mqi",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33594,7 +33594,7 @@ export const importedLookerData = {
       "avgTxnSize": 11966.52
     },
     {
-      "id": "wveywx",
+      "id": "i5hznj",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33615,7 +33615,7 @@ export const importedLookerData = {
       "avgTxnSize": 4032.64
     },
     {
-      "id": "ahcxmi",
+      "id": "s4mhd6",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33636,7 +33636,7 @@ export const importedLookerData = {
       "avgTxnSize": 157232.38
     },
     {
-      "id": "r7qt74",
+      "id": "xifk08",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33657,7 +33657,7 @@ export const importedLookerData = {
       "avgTxnSize": 12701.79
     },
     {
-      "id": "l9muz0",
+      "id": "mm1s0v",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33678,7 +33678,7 @@ export const importedLookerData = {
       "avgTxnSize": 652.62
     },
     {
-      "id": "pgor4j",
+      "id": "lhc7ku",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33699,7 +33699,7 @@ export const importedLookerData = {
       "avgTxnSize": 1257.21
     },
     {
-      "id": "7gr5v4",
+      "id": "d25riw",
       "period": "2026-04",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33720,7 +33720,7 @@ export const importedLookerData = {
       "avgTxnSize": 1350
     },
     {
-      "id": "a01q1p",
+      "id": "nln6tr",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -33741,7 +33741,7 @@ export const importedLookerData = {
       "avgTxnSize": 9051.06
     },
     {
-      "id": "1ezitm",
+      "id": "3vtr5w",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "Domestic",
@@ -33762,7 +33762,7 @@ export const importedLookerData = {
       "avgTxnSize": 14570.46
     },
     {
-      "id": "bkaibv",
+      "id": "tdtjj4",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33783,7 +33783,7 @@ export const importedLookerData = {
       "avgTxnSize": 571.25
     },
     {
-      "id": "2bxoci",
+      "id": "cipi4l",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33804,7 +33804,7 @@ export const importedLookerData = {
       "avgTxnSize": 41022.18
     },
     {
-      "id": "x24yl9",
+      "id": "03sg8w",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33825,7 +33825,7 @@ export const importedLookerData = {
       "avgTxnSize": 333.83
     },
     {
-      "id": "zv91gm",
+      "id": "04etpv",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33846,7 +33846,7 @@ export const importedLookerData = {
       "avgTxnSize": 22804.05
     },
     {
-      "id": "1o2r1g",
+      "id": "eo5g3f",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33867,7 +33867,7 @@ export const importedLookerData = {
       "avgTxnSize": 500
     },
     {
-      "id": "rhj4vb",
+      "id": "65vkz6",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33888,7 +33888,7 @@ export const importedLookerData = {
       "avgTxnSize": 3211.5
     },
     {
-      "id": "bwwc96",
+      "id": "3voiue",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33909,7 +33909,7 @@ export const importedLookerData = {
       "avgTxnSize": 4348.94
     },
     {
-      "id": "60z8b7",
+      "id": "m0a81e",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33930,7 +33930,7 @@ export const importedLookerData = {
       "avgTxnSize": 18365.98
     },
     {
-      "id": "ju0qw7",
+      "id": "0fbew4",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33951,7 +33951,7 @@ export const importedLookerData = {
       "avgTxnSize": 8825
     },
     {
-      "id": "af1hle",
+      "id": "rv2up6",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33972,7 +33972,7 @@ export const importedLookerData = {
       "avgTxnSize": 10992.5
     },
     {
-      "id": "rvtgid",
+      "id": "qvdk4y",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -33993,7 +33993,7 @@ export const importedLookerData = {
       "avgTxnSize": 377.38
     },
     {
-      "id": "yjm3py",
+      "id": "ff3b0c",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34014,7 +34014,7 @@ export const importedLookerData = {
       "avgTxnSize": 120008.5
     },
     {
-      "id": "oerqui",
+      "id": "81r74l",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34035,7 +34035,7 @@ export const importedLookerData = {
       "avgTxnSize": 3786.3
     },
     {
-      "id": "yc9o0u",
+      "id": "ezrx95",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34056,7 +34056,7 @@ export const importedLookerData = {
       "avgTxnSize": 600
     },
     {
-      "id": "0nty3w",
+      "id": "imc3tg",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34077,7 +34077,7 @@ export const importedLookerData = {
       "avgTxnSize": 101407.11
     },
     {
-      "id": "fdeefz",
+      "id": "dv9c3a",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34098,7 +34098,7 @@ export const importedLookerData = {
       "avgTxnSize": 53634.9
     },
     {
-      "id": "yhcgms",
+      "id": "ckh459",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34119,7 +34119,7 @@ export const importedLookerData = {
       "avgTxnSize": 44052.81
     },
     {
-      "id": "0or6b2",
+      "id": "2451qk",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34140,7 +34140,7 @@ export const importedLookerData = {
       "avgTxnSize": 460
     },
     {
-      "id": "nn1bus",
+      "id": "x3upig",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34161,7 +34161,7 @@ export const importedLookerData = {
       "avgTxnSize": 7095.9
     },
     {
-      "id": "0y16vo",
+      "id": "hjfgap",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34182,7 +34182,7 @@ export const importedLookerData = {
       "avgTxnSize": 3080
     },
     {
-      "id": "ryba8l",
+      "id": "struew",
       "period": "2026-05",
       "partner": "Stampli",
       "txnType": "USD Abroad",
@@ -34203,7 +34203,7 @@ export const importedLookerData = {
       "avgTxnSize": 37776.27
     },
     {
-      "id": "qdvrrm",
+      "id": "dbe8xl",
       "period": "2026-02",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34224,7 +34224,7 @@ export const importedLookerData = {
       "avgTxnSize": 2845.44
     },
     {
-      "id": "z3uoig",
+      "id": "rry54d",
       "period": "2026-02",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34245,7 +34245,7 @@ export const importedLookerData = {
       "avgTxnSize": 70000
     },
     {
-      "id": "i0at6u",
+      "id": "2i0twb",
       "period": "2026-03",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34266,7 +34266,7 @@ export const importedLookerData = {
       "avgTxnSize": 1.01
     },
     {
-      "id": "vs2b12",
+      "id": "vks23q",
       "period": "2026-03",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34287,7 +34287,7 @@ export const importedLookerData = {
       "avgTxnSize": 6.38
     },
     {
-      "id": "a77kzt",
+      "id": "3ntf9j",
       "period": "2026-03",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34308,7 +34308,7 @@ export const importedLookerData = {
       "avgTxnSize": 9030.86
     },
     {
-      "id": "jlmhuw",
+      "id": "m4enet",
       "period": "2026-03",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34329,7 +34329,7 @@ export const importedLookerData = {
       "avgTxnSize": 50000
     },
     {
-      "id": "hbnsd7",
+      "id": "lmtv9e",
       "period": "2026-04",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34350,7 +34350,7 @@ export const importedLookerData = {
       "avgTxnSize": 17037.68
     },
     {
-      "id": "z0dtjn",
+      "id": "fokais",
       "period": "2026-04",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34371,7 +34371,7 @@ export const importedLookerData = {
       "avgTxnSize": 0.87
     },
     {
-      "id": "6cm4b4",
+      "id": "j675dq",
       "period": "2026-04",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34392,7 +34392,7 @@ export const importedLookerData = {
       "avgTxnSize": 9695.54
     },
     {
-      "id": "puef9p",
+      "id": "zfyqxp",
       "period": "2026-04",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34413,7 +34413,7 @@ export const importedLookerData = {
       "avgTxnSize": 0.89
     },
     {
-      "id": "pvpdxd",
+      "id": "5irleo",
       "period": "2026-04",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34434,7 +34434,7 @@ export const importedLookerData = {
       "avgTxnSize": 80000
     },
     {
-      "id": "itib1h",
+      "id": "af9qgg",
       "period": "2026-05",
       "partner": "TripleA",
       "txnType": "Domestic",
@@ -34455,7 +34455,7 @@ export const importedLookerData = {
       "avgTxnSize": 11357.84
     },
     {
-      "id": "lpm4ft",
+      "id": "1lnvyu",
       "period": "2026-02",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34476,7 +34476,7 @@ export const importedLookerData = {
       "avgTxnSize": 1312.69
     },
     {
-      "id": "k4u9fl",
+      "id": "ecqjrd",
       "period": "2026-02",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34497,7 +34497,7 @@ export const importedLookerData = {
       "avgTxnSize": 1191.55
     },
     {
-      "id": "urwl0n",
+      "id": "6rc35w",
       "period": "2026-02",
       "partner": "Whish",
       "txnType": "Payin",
@@ -34518,7 +34518,7 @@ export const importedLookerData = {
       "avgTxnSize": 554.94
     },
     {
-      "id": "5j0v7i",
+      "id": "wr3a9d",
       "period": "2026-03",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34539,7 +34539,7 @@ export const importedLookerData = {
       "avgTxnSize": 1302.79
     },
     {
-      "id": "jwh06b",
+      "id": "k4higy",
       "period": "2026-03",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34560,7 +34560,7 @@ export const importedLookerData = {
       "avgTxnSize": 1067.34
     },
     {
-      "id": "afswwb",
+      "id": "ltu6h9",
       "period": "2026-03",
       "partner": "Whish",
       "txnType": "Payin",
@@ -34581,7 +34581,7 @@ export const importedLookerData = {
       "avgTxnSize": 579.03
     },
     {
-      "id": "vcgsj4",
+      "id": "ui2f1a",
       "period": "2026-04",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34602,7 +34602,7 @@ export const importedLookerData = {
       "avgTxnSize": 699
     },
     {
-      "id": "6kekaz",
+      "id": "5rhd5z",
       "period": "2026-04",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34623,7 +34623,7 @@ export const importedLookerData = {
       "avgTxnSize": 1212
     },
     {
-      "id": "xinomn",
+      "id": "uutocv",
       "period": "2026-04",
       "partner": "Whish",
       "txnType": "Payin",
@@ -34644,7 +34644,7 @@ export const importedLookerData = {
       "avgTxnSize": 514.47
     },
     {
-      "id": "x4t878",
+      "id": "5j18as",
       "period": "2026-05",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34665,7 +34665,7 @@ export const importedLookerData = {
       "avgTxnSize": 100
     },
     {
-      "id": "rg9rqm",
+      "id": "6fw7qb",
       "period": "2026-05",
       "partner": "Whish",
       "txnType": "Domestic",
@@ -34686,7 +34686,7 @@ export const importedLookerData = {
       "avgTxnSize": 1269.01
     },
     {
-      "id": "y2uzia",
+      "id": "u5qzfy",
       "period": "2026-05",
       "partner": "Whish",
       "txnType": "Payin",
@@ -34707,7 +34707,7 @@ export const importedLookerData = {
       "avgTxnSize": 351.92
     },
     {
-      "id": "q1a6jq",
+      "id": "lw1ekv",
       "period": "2026-02",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34728,7 +34728,7 @@ export const importedLookerData = {
       "avgTxnSize": 0
     },
     {
-      "id": "0mvy3c",
+      "id": "d46krz",
       "period": "2026-02",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34749,7 +34749,7 @@ export const importedLookerData = {
       "avgTxnSize": 9845.51
     },
     {
-      "id": "jfr3ow",
+      "id": "ma35i4",
       "period": "2026-03",
       "partner": "Yeepay",
       "txnType": "CAD Domestic",
@@ -34770,7 +34770,7 @@ export const importedLookerData = {
       "avgTxnSize": 3529.28
     },
     {
-      "id": "xg7bhu",
+      "id": "watprj",
       "period": "2026-03",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34791,7 +34791,7 @@ export const importedLookerData = {
       "avgTxnSize": 0
     },
     {
-      "id": "pd6h6p",
+      "id": "sz00q4",
       "period": "2026-03",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34812,7 +34812,7 @@ export const importedLookerData = {
       "avgTxnSize": 28649.66
     },
     {
-      "id": "73jyfo",
+      "id": "cyfzwp",
       "period": "2026-03",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34833,7 +34833,7 @@ export const importedLookerData = {
       "avgTxnSize": 35750
     },
     {
-      "id": "r55n6y",
+      "id": "22lerc",
       "period": "2026-04",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34854,7 +34854,7 @@ export const importedLookerData = {
       "avgTxnSize": 0
     },
     {
-      "id": "c217ki",
+      "id": "0nswgk",
       "period": "2026-04",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34875,7 +34875,7 @@ export const importedLookerData = {
       "avgTxnSize": 149451.58
     },
     {
-      "id": "j26d0o",
+      "id": "hnw3le",
       "period": "2026-04",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34896,7 +34896,7 @@ export const importedLookerData = {
       "avgTxnSize": 7327.4
     },
     {
-      "id": "24gqqs",
+      "id": "gmxaoe",
       "period": "2026-04",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34917,7 +34917,7 @@ export const importedLookerData = {
       "avgTxnSize": 12595.09
     },
     {
-      "id": "dvdmql",
+      "id": "27ms06",
       "period": "2026-05",
       "partner": "Yeepay",
       "txnType": "Domestic",
@@ -34938,7 +34938,7 @@ export const importedLookerData = {
       "avgTxnSize": 115.61
     },
     {
-      "id": "gi776t",
+      "id": "zc8avn",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -34960,7 +34960,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1ijoan",
+      "id": "4ymkz2",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -34982,7 +34982,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jmuh7i",
+      "id": "q071xu",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -35004,7 +35004,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1otbek",
+      "id": "nlzc37",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -35026,7 +35026,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zt2cyi",
+      "id": "c29xng",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -35048,7 +35048,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "47hm0t",
+      "id": "559lks",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -35070,7 +35070,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kwfu5m",
+      "id": "tkjut9",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -35092,7 +35092,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "h1pigo",
+      "id": "myh2jp",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35114,7 +35114,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wdrx21",
+      "id": "2l3cr5",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35136,7 +35136,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e6tyal",
+      "id": "xgbfgg",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35158,7 +35158,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x598ar",
+      "id": "p8y5p1",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35180,7 +35180,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dqzoxg",
+      "id": "fnsm5i",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35202,7 +35202,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2733i8",
+      "id": "636c63",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35224,7 +35224,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "znc5t0",
+      "id": "csungp",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35246,7 +35246,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "uoj6rb",
+      "id": "i4l33a",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35268,7 +35268,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "24nkha",
+      "id": "6k1ptu",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35290,7 +35290,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "v4l3zz",
+      "id": "99e2pp",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35312,7 +35312,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3ptcra",
+      "id": "4k2g31",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35334,7 +35334,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e9y7dr",
+      "id": "h5ibul",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35356,7 +35356,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1h11lt",
+      "id": "9sucze",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35378,7 +35378,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "crbc8h",
+      "id": "odzgae",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35400,7 +35400,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jhjrn7",
+      "id": "muvloj",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35422,7 +35422,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "97qktp",
+      "id": "qi2lj8",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35444,7 +35444,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "s22z2q",
+      "id": "k0bam6",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35466,7 +35466,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2k5z1c",
+      "id": "q3nrfq",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35488,7 +35488,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "mudgzb",
+      "id": "9vu889",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35510,7 +35510,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "72a1dz",
+      "id": "lkp3lm",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35532,7 +35532,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "904zd5",
+      "id": "swqz3v",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35554,7 +35554,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "axfgjb",
+      "id": "04kuyj",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "FX",
@@ -35576,7 +35576,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "nesh9k",
+      "id": "qqh2rl",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35598,7 +35598,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fhf3p7",
+      "id": "0mxzom",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35620,7 +35620,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ddnuks",
+      "id": "d7nqny",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35642,7 +35642,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "093dbw",
+      "id": "15kwn5",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35664,7 +35664,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3mt1uy",
+      "id": "ujeujw",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35686,7 +35686,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kxtakx",
+      "id": "ka6nkz",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35708,7 +35708,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "lf9vt6",
+      "id": "29lojs",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35730,7 +35730,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9snjca",
+      "id": "1v8pee",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35752,7 +35752,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tcnbxy",
+      "id": "mnq84c",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35774,7 +35774,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "h24d29",
+      "id": "764iu0",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35796,7 +35796,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2uo6mj",
+      "id": "tnrynf",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35818,7 +35818,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "q77mac",
+      "id": "qpm0vz",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35840,7 +35840,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2xrwcy",
+      "id": "wcvy20",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35862,7 +35862,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "h2bd4q",
+      "id": "mdfthj",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35884,7 +35884,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0lc79v",
+      "id": "9dmkkc",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35906,7 +35906,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "n70mje",
+      "id": "ousc7y",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35928,7 +35928,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2edyew",
+      "id": "1mbg8n",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35950,7 +35950,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4kmiyd",
+      "id": "myof75",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35972,7 +35972,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rzgo12",
+      "id": "tso4g5",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -35994,7 +35994,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "asgb5a",
+      "id": "rtpy6o",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36016,7 +36016,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1ycqcc",
+      "id": "vb5hy4",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36038,7 +36038,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tqgcjl",
+      "id": "379aab",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36060,7 +36060,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "sfq7t4",
+      "id": "gl5jtp",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36082,7 +36082,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x5855u",
+      "id": "8ynmb3",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36104,7 +36104,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9r359u",
+      "id": "xbw0fx",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36126,7 +36126,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "whk28d",
+      "id": "2rcze0",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36148,7 +36148,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3zn0ws",
+      "id": "13pu1u",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36170,7 +36170,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zm5xs5",
+      "id": "iiww5b",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36192,7 +36192,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5ohhuz",
+      "id": "wc7q7g",
       "period": "2026-02",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36214,7 +36214,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4h88mq",
+      "id": "mahy89",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36236,7 +36236,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ett7cz",
+      "id": "l130u5",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36258,7 +36258,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3iqu5k",
+      "id": "36aswc",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36280,7 +36280,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "mzak8r",
+      "id": "phuooy",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36302,7 +36302,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "y3iud1",
+      "id": "wzzdkc",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36324,7 +36324,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zu36hu",
+      "id": "6zuw8f",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36346,7 +36346,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z3t5c5",
+      "id": "eje87i",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -36368,7 +36368,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "irok5y",
+      "id": "1227ar",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36390,7 +36390,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ldebfm",
+      "id": "28tema",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36412,7 +36412,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fsxu42",
+      "id": "nu3x8y",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36434,7 +36434,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fx7fe0",
+      "id": "3w0m7r",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36456,7 +36456,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pdylwl",
+      "id": "yaq8ot",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36478,7 +36478,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pnz6w6",
+      "id": "44ywce",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36500,7 +36500,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "es89gi",
+      "id": "evdc9s",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36522,7 +36522,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "yuqm4b",
+      "id": "nwdtmc",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36544,7 +36544,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z0luqv",
+      "id": "lrwa45",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36566,7 +36566,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4pikf8",
+      "id": "bda9qp",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36588,7 +36588,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "v5b3nh",
+      "id": "qgk6vl",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36610,7 +36610,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "buyftq",
+      "id": "onhnq1",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36632,7 +36632,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1hesdh",
+      "id": "qout1o",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36654,7 +36654,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rxdji7",
+      "id": "papdj1",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36676,7 +36676,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wv7okd",
+      "id": "5oar9c",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36698,7 +36698,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9w5whw",
+      "id": "pq35bn",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36720,7 +36720,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fv79bd",
+      "id": "6intcl",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36742,7 +36742,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "r3hlox",
+      "id": "9g8tx1",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36764,7 +36764,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "skz4ku",
+      "id": "tr2srv",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36786,7 +36786,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "lq54ld",
+      "id": "x63t5k",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36808,7 +36808,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0e5955",
+      "id": "hp5rlx",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36830,7 +36830,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x72nd3",
+      "id": "7v0omf",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36852,7 +36852,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tg2mzl",
+      "id": "1l8hpp",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "FX",
@@ -36874,7 +36874,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "xfdrs4",
+      "id": "w0y9vk",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36896,7 +36896,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "b06azm",
+      "id": "7turrp",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36918,7 +36918,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rf94kl",
+      "id": "ywnrbv",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36940,7 +36940,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "klwlw0",
+      "id": "fsomm0",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36962,7 +36962,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "f5ybvq",
+      "id": "isyo5a",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -36984,7 +36984,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "vdqx7q",
+      "id": "rl9bba",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37006,7 +37006,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9xohf4",
+      "id": "uprp20",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37028,7 +37028,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "f8ypff",
+      "id": "byg599",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37050,7 +37050,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ax322b",
+      "id": "47t0ev",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37072,7 +37072,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "l64w6f",
+      "id": "h4lyjz",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37094,7 +37094,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "to4zc3",
+      "id": "dwhgkt",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37116,7 +37116,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p3r317",
+      "id": "uo9xav",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37138,7 +37138,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "o755j8",
+      "id": "bgszzp",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37160,7 +37160,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "atd5es",
+      "id": "368upw",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37182,7 +37182,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "sugyzy",
+      "id": "el1cac",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37204,7 +37204,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x3ivyv",
+      "id": "volcy7",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37226,7 +37226,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5j6cjj",
+      "id": "gstwab",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37248,7 +37248,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "lgvq0a",
+      "id": "duqeej",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37270,7 +37270,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4x3lsm",
+      "id": "8qml4t",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37292,7 +37292,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "r2mm4y",
+      "id": "bzj3sd",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37314,7 +37314,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wxzjli",
+      "id": "0d5hph",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37336,7 +37336,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3d52it",
+      "id": "gfivvj",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37358,7 +37358,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4y47j6",
+      "id": "0c885y",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37380,7 +37380,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "q2shkg",
+      "id": "jnx1zc",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37402,7 +37402,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5hqadj",
+      "id": "u36qzx",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37424,7 +37424,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "7l2mai",
+      "id": "cwirlw",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37446,7 +37446,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ihai3g",
+      "id": "wug3wb",
       "period": "2026-03",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -37468,7 +37468,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "gjqna9",
+      "id": "4icb0i",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37490,7 +37490,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "xw91a4",
+      "id": "hq5myd",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37512,7 +37512,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rgeaf9",
+      "id": "1r13sq",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37534,7 +37534,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zpw96u",
+      "id": "bxccm2",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37556,7 +37556,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ynk4y9",
+      "id": "9yaok0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37578,7 +37578,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rzkl5p",
+      "id": "bs6vvj",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37600,7 +37600,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "oqx2sz",
+      "id": "hmx0nf",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -37622,7 +37622,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ito6cu",
+      "id": "feaeh0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37644,7 +37644,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wqvwyp",
+      "id": "si5qxr",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37666,7 +37666,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2e58m9",
+      "id": "kjktpd",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37688,7 +37688,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kvlx4t",
+      "id": "f17pjp",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37710,7 +37710,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0mll4v",
+      "id": "6ynwrd",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37732,7 +37732,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "09qg55",
+      "id": "e5rold",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37754,7 +37754,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "hur20v",
+      "id": "jbkopo",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37776,7 +37776,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "cqxdnm",
+      "id": "18ckt0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37798,7 +37798,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "sqpdfs",
+      "id": "rzhkq9",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37820,7 +37820,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "j1x1u8",
+      "id": "5mo716",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37842,7 +37842,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3updm0",
+      "id": "ovombk",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37864,7 +37864,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "i2y44p",
+      "id": "zvin4n",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37886,7 +37886,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "y8jobv",
+      "id": "7bgisv",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37908,7 +37908,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dvo16w",
+      "id": "khjm5s",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37930,7 +37930,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qu123x",
+      "id": "4q2yx1",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37952,7 +37952,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "g5aufv",
+      "id": "flanu4",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37974,7 +37974,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wqcgg7",
+      "id": "pntrkt",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -37996,7 +37996,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p1gg46",
+      "id": "25kyde",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38018,7 +38018,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "en4c5a",
+      "id": "pn1v9h",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38040,7 +38040,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "viacv6",
+      "id": "q1c7xo",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38062,7 +38062,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9p5k4n",
+      "id": "nmtjzz",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38084,7 +38084,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zk2mzk",
+      "id": "bj215e",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38106,7 +38106,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fblkur",
+      "id": "ko2x4m",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38128,7 +38128,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x34c6v",
+      "id": "kq2d0a",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38150,7 +38150,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "gguvdw",
+      "id": "kflz6c",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38172,7 +38172,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "t2grpm",
+      "id": "y6qaky",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38194,7 +38194,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ap1o85",
+      "id": "fwru95",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38216,7 +38216,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qf27mz",
+      "id": "0wfopr",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38238,7 +38238,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "yoouna",
+      "id": "7x3k75",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38260,7 +38260,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ctcddk",
+      "id": "nh0ii0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38282,7 +38282,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "274edq",
+      "id": "u05qrb",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38304,7 +38304,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ndwzn5",
+      "id": "um4wyg",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38326,7 +38326,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "y1st24",
+      "id": "yvp3vo",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38348,7 +38348,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "m8cau9",
+      "id": "nd1zi0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38370,7 +38370,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qp63qd",
+      "id": "62idp0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38392,7 +38392,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "en9zlg",
+      "id": "msoh1p",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38414,7 +38414,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "nof5pf",
+      "id": "n9cf7e",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38436,7 +38436,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4ztx8q",
+      "id": "npmdas",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38458,7 +38458,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "l9ugoj",
+      "id": "r9c3em",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38480,7 +38480,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "agdvz0",
+      "id": "7zw1hb",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38502,7 +38502,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jkzgri",
+      "id": "edlobg",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38524,7 +38524,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wsfe3g",
+      "id": "fa2qp8",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38546,7 +38546,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4ma6wv",
+      "id": "hx4m3e",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38568,7 +38568,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "av5q9s",
+      "id": "inuv6v",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38590,7 +38590,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "chhm9t",
+      "id": "3m6oh0",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38612,7 +38612,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "eb2fry",
+      "id": "n58875",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38634,7 +38634,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dxp983",
+      "id": "xxfl9g",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38656,7 +38656,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "am5yol",
+      "id": "okifig",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38678,7 +38678,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "bokwgy",
+      "id": "6aogfl",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38700,7 +38700,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "c7sfpq",
+      "id": "38jm2n",
       "period": "2026-04",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -38722,7 +38722,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "cxurmf",
+      "id": "934f27",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38744,7 +38744,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "wtps4j",
+      "id": "7t8ck5",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38766,7 +38766,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "51hh00",
+      "id": "60isrp",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38788,7 +38788,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e2rxpe",
+      "id": "3tmokz",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38810,7 +38810,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "36i4fp",
+      "id": "rkui2c",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38832,7 +38832,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "vtkrfn",
+      "id": "ngfn89",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38854,7 +38854,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dbsopy",
+      "id": "a5hhh2",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "Domestic",
@@ -38876,7 +38876,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rcz8fg",
+      "id": "makbth",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38898,7 +38898,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dc0m7f",
+      "id": "9yzvo2",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38920,7 +38920,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p7wyyo",
+      "id": "qaplwu",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38942,7 +38942,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9c6uyf",
+      "id": "bcsi2s",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38964,7 +38964,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "bhpm24",
+      "id": "blyg30",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -38986,7 +38986,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qibb32",
+      "id": "sxieq7",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39008,7 +39008,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kok31f",
+      "id": "3d0t36",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39030,7 +39030,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5mct71",
+      "id": "4jj71b",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39052,7 +39052,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kdzqbq",
+      "id": "779xsm",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39074,7 +39074,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qs6rsd",
+      "id": "iacc15",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39096,7 +39096,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "k1hock",
+      "id": "k1pdl3",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39118,7 +39118,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "t5tsd1",
+      "id": "y2o79d",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "FX",
@@ -39140,7 +39140,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "03jy8v",
+      "id": "0khx21",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39162,7 +39162,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "cg0v7h",
+      "id": "yivd55",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39184,7 +39184,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "limn1q",
+      "id": "igkzbu",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39206,7 +39206,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "18c3yr",
+      "id": "1th1ed",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39228,7 +39228,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "lm6mwf",
+      "id": "w1f12f",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39250,7 +39250,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1o69h8",
+      "id": "d2q5tc",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39272,7 +39272,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qzlcn2",
+      "id": "5j1xvq",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39294,7 +39294,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9zaysn",
+      "id": "wyej43",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39316,7 +39316,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ojd7pl",
+      "id": "wtwn1z",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39338,7 +39338,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "r2gtfs",
+      "id": "8kw6yu",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39360,7 +39360,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3ea417",
+      "id": "jqte37",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39382,7 +39382,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qrmy97",
+      "id": "d62p5j",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39404,7 +39404,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kyt45y",
+      "id": "210t43",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39426,7 +39426,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "b78736",
+      "id": "34l281",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39448,7 +39448,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2qyelq",
+      "id": "7eqhj3",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39470,7 +39470,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "q4k1m9",
+      "id": "pxp2qc",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39492,7 +39492,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3tadez",
+      "id": "fgcjt1",
       "period": "2026-05",
       "partner": "Everflow",
       "txnType": "USD Abroad",
@@ -39514,7 +39514,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e4g1yq",
+      "id": "rl5wjs",
       "period": "2026-02",
       "partner": "Finastra",
       "txnType": "Domestic",
@@ -39536,7 +39536,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kngcww",
+      "id": "gjm7eh",
       "period": "2026-03",
       "partner": "Finastra",
       "txnType": "Domestic",
@@ -39558,7 +39558,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "usex8h",
+      "id": "dkylw4",
       "period": "2026-04",
       "partner": "Finastra",
       "txnType": "Domestic",
@@ -39580,7 +39580,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fbrtdc",
+      "id": "wguhiz",
       "period": "2026-05",
       "partner": "Finastra",
       "txnType": "Domestic",
@@ -39602,7 +39602,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0bvv43",
+      "id": "1p9vh2",
       "period": "2026-02",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39624,7 +39624,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z47p97",
+      "id": "19d434",
       "period": "2026-02",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39646,7 +39646,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "y9piyc",
+      "id": "fpnhwx",
       "period": "2026-02",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39668,7 +39668,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "t4asvt",
+      "id": "1eujm1",
       "period": "2026-02",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39690,7 +39690,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qowzp7",
+      "id": "4c1jl6",
       "period": "2026-03",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39712,7 +39712,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "frgrvs",
+      "id": "tzlofp",
       "period": "2026-03",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39734,7 +39734,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9h1r15",
+      "id": "5q8kfw",
       "period": "2026-03",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39756,7 +39756,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pr7t8q",
+      "id": "k9kr4m",
       "period": "2026-03",
       "partner": "Fulfil",
       "txnType": "FX",
@@ -39778,7 +39778,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "g3fxox",
+      "id": "s3y8p3",
       "period": "2026-03",
       "partner": "Fulfil",
       "txnType": "USD Abroad",
@@ -39800,7 +39800,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tsv925",
+      "id": "pte3w6",
       "period": "2026-04",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39822,7 +39822,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "o3kr63",
+      "id": "0x57xw",
       "period": "2026-04",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39844,7 +39844,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "vj1pg7",
+      "id": "q641bj",
       "period": "2026-04",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39866,7 +39866,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2pk2o6",
+      "id": "1k4uzw",
       "period": "2026-04",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39888,7 +39888,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "hbb00c",
+      "id": "wjyhcn",
       "period": "2026-04",
       "partner": "Fulfil",
       "txnType": "USD Abroad",
@@ -39910,7 +39910,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "985lr5",
+      "id": "oa5pms",
       "period": "2026-05",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39932,7 +39932,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pl1pfl",
+      "id": "mywmoz",
       "period": "2026-05",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39954,7 +39954,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zl1ac0",
+      "id": "ws9rm6",
       "period": "2026-05",
       "partner": "Fulfil",
       "txnType": "Domestic",
@@ -39976,7 +39976,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "a2ms2z",
+      "id": "jowm6l",
       "period": "2026-02",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -39998,7 +39998,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "b544b8",
+      "id": "rh60f8",
       "period": "2026-02",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40020,7 +40020,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fso24s",
+      "id": "s1j5kg",
       "period": "2026-02",
       "partner": "Halorecruiting",
       "txnType": "FX",
@@ -40042,7 +40042,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "hlmdfm",
+      "id": "04e1f5",
       "period": "2026-03",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40064,7 +40064,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "uglri6",
+      "id": "5o8apt",
       "period": "2026-03",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40086,7 +40086,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "bnt9n8",
+      "id": "fhek11",
       "period": "2026-03",
       "partner": "Halorecruiting",
       "txnType": "FX",
@@ -40108,7 +40108,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "al9qgq",
+      "id": "s007j5",
       "period": "2026-03",
       "partner": "Halorecruiting",
       "txnType": "USD Abroad",
@@ -40130,7 +40130,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ixql1g",
+      "id": "fy2ii4",
       "period": "2026-04",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40152,7 +40152,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1oitmf",
+      "id": "rs0fu4",
       "period": "2026-04",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40174,7 +40174,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "gtp4rf",
+      "id": "krxuik",
       "period": "2026-04",
       "partner": "Halorecruiting",
       "txnType": "FX",
@@ -40196,7 +40196,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ri3neq",
+      "id": "6pwphz",
       "period": "2026-04",
       "partner": "Halorecruiting",
       "txnType": "USD Abroad",
@@ -40218,7 +40218,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "78nfwn",
+      "id": "j6dusn",
       "period": "2026-05",
       "partner": "Halorecruiting",
       "txnType": "Domestic",
@@ -40240,7 +40240,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "nukp9u",
+      "id": "kreoqx",
       "period": "2026-05",
       "partner": "Halorecruiting",
       "txnType": "FX",
@@ -40262,7 +40262,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e1nth3",
+      "id": "xgjk3v",
       "period": "2026-05",
       "partner": "Halorecruiting",
       "txnType": "USD Abroad",
@@ -40284,7 +40284,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "hxzar3",
+      "id": "068804",
       "period": "2026-02",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40306,7 +40306,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p95d2d",
+      "id": "8ilzy0",
       "period": "2026-02",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40328,7 +40328,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "810iuo",
+      "id": "ylqvwh",
       "period": "2026-03",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40350,7 +40350,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tx4oqu",
+      "id": "qg10p6",
       "period": "2026-03",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40372,7 +40372,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "g5ndqk",
+      "id": "xwd2l2",
       "period": "2026-04",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40394,7 +40394,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "eya2kt",
+      "id": "pphadb",
       "period": "2026-04",
       "partner": "Magaya",
       "txnType": "Domestic",
@@ -40416,7 +40416,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "l6rqoa",
+      "id": "r09pss",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40438,7 +40438,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "47bjyr",
+      "id": "idyee1",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40460,7 +40460,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "c2nt4p",
+      "id": "paocjs",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40482,7 +40482,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "s8ynf9",
+      "id": "gv46ak",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40504,7 +40504,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ny3q05",
+      "id": "6gu4br",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "FX",
@@ -40526,7 +40526,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rn4zya",
+      "id": "aq0o2k",
       "period": "2026-02",
       "partner": "Q2",
       "txnType": "FX",
@@ -40548,7 +40548,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ff07vc",
+      "id": "lsnvk6",
       "period": "2026-03",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40570,7 +40570,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6x1mr6",
+      "id": "z1ximy",
       "period": "2026-03",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40592,7 +40592,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "t4qnot",
+      "id": "a09vuo",
       "period": "2026-03",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40614,7 +40614,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "joyzta",
+      "id": "1w17l4",
       "period": "2026-03",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40636,7 +40636,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "659k40",
+      "id": "cxrefm",
       "period": "2026-03",
       "partner": "Q2",
       "txnType": "FX",
@@ -40658,7 +40658,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "16ge71",
+      "id": "4xa7mo",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40680,7 +40680,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z5v3ip",
+      "id": "tnacmb",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40702,7 +40702,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "7scvre",
+      "id": "1mz97g",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40724,7 +40724,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p0d1s6",
+      "id": "83fikg",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40746,7 +40746,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "viz9if",
+      "id": "r3h5o6",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40768,7 +40768,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "yvsrrq",
+      "id": "lqvcme",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "FX",
@@ -40790,7 +40790,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "kh3iy0",
+      "id": "3xb4lu",
       "period": "2026-04",
       "partner": "Q2",
       "txnType": "USD Abroad",
@@ -40812,7 +40812,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "poq6oa",
+      "id": "901dt2",
       "period": "2026-05",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40834,7 +40834,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "7a52lf",
+      "id": "fhcrcc",
       "period": "2026-05",
       "partner": "Q2",
       "txnType": "Domestic",
@@ -40856,7 +40856,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6nfapg",
+      "id": "i7omkh",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40878,7 +40878,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "c6yg3d",
+      "id": "corw0t",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40900,7 +40900,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "cxfwry",
+      "id": "ntcdw6",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40922,7 +40922,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "3gypa3",
+      "id": "d3y5zw",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40944,7 +40944,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "cfwdj0",
+      "id": "fz14n7",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40966,7 +40966,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z183ih",
+      "id": "b41vn8",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -40988,7 +40988,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "7pji0b",
+      "id": "b1gngw",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41010,7 +41010,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "t87p1t",
+      "id": "aagcyk",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41032,7 +41032,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9m69rd",
+      "id": "wik3ew",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41054,7 +41054,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9ak26t",
+      "id": "9dd4bi",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41076,7 +41076,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "u0d5kd",
+      "id": "g8n0r2",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41098,7 +41098,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6rodpx",
+      "id": "asc9y3",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41120,7 +41120,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p1j1np",
+      "id": "x3ftq6",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41142,7 +41142,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zn4gvm",
+      "id": "81hvae",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41164,7 +41164,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ey88z2",
+      "id": "wc80tk",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41186,7 +41186,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ng5dcs",
+      "id": "i619w8",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41208,7 +41208,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tfhhwj",
+      "id": "89cfif",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41230,7 +41230,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "vw3dpu",
+      "id": "h3sthg",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41252,7 +41252,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "s5oe48",
+      "id": "uywn0j",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41274,7 +41274,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "d4kzvq",
+      "id": "idne6l",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41296,7 +41296,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "43d4ww",
+      "id": "x9cmjg",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -41318,7 +41318,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "k0izdj",
+      "id": "ub2yes",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -41340,7 +41340,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tcpt33",
+      "id": "eo93ts",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -41362,7 +41362,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "nlxajx",
+      "id": "ytbta5",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -41384,7 +41384,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "khccz5",
+      "id": "oiukiv",
       "period": "2026-02",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -41406,7 +41406,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "m3kdfo",
+      "id": "iw7s2d",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41428,7 +41428,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "zvxjud",
+      "id": "3203n4",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41450,7 +41450,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "28vipc",
+      "id": "2yckk4",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41472,7 +41472,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ds51c4",
+      "id": "ovmowm",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41494,7 +41494,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6nidr2",
+      "id": "i6077g",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41516,7 +41516,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "dmr9l8",
+      "id": "xfen0x",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41538,7 +41538,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pg65zm",
+      "id": "vkj4ly",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41560,7 +41560,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "xjw2nj",
+      "id": "8stw5r",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41582,7 +41582,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "org18f",
+      "id": "y9x7ht",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41604,7 +41604,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "f4krgq",
+      "id": "rini2r",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -41626,7 +41626,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "h11gfb",
+      "id": "g8kbxe",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41648,7 +41648,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "u4p1vu",
+      "id": "0fci69",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41670,7 +41670,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "8mll5c",
+      "id": "a0q4ix",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41692,7 +41692,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jrxjk2",
+      "id": "2jt8o7",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41714,7 +41714,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0t6zex",
+      "id": "jslr7c",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41736,7 +41736,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6w8kef",
+      "id": "hewaj5",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41758,7 +41758,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jw6klx",
+      "id": "dxu228",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41780,7 +41780,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "klex6k",
+      "id": "7d9hkt",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41802,7 +41802,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "miemxy",
+      "id": "ok780r",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41824,7 +41824,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "6zcn7k",
+      "id": "lxxno3",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41846,7 +41846,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tmd6zn",
+      "id": "57z0zf",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41868,7 +41868,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "nfds1t",
+      "id": "j4c70h",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41890,7 +41890,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "i2ddgg",
+      "id": "nrcvia",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -41912,7 +41912,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "8l1sd9",
+      "id": "t10aoz",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -41934,7 +41934,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "rysnyj",
+      "id": "1tahpz",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -41956,7 +41956,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "y30kyz",
+      "id": "zddudx",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -41978,7 +41978,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1kwrfq",
+      "id": "ou1rb9",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42000,7 +42000,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "p23y3j",
+      "id": "xwdot5",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42022,7 +42022,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "18lf4h",
+      "id": "9r6uqy",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42044,7 +42044,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "glemlt",
+      "id": "l5w03n",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42066,7 +42066,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "x2jnz0",
+      "id": "7w3eup",
       "period": "2026-03",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42088,7 +42088,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5pyu0d",
+      "id": "r50a7f",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42110,7 +42110,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ekglqx",
+      "id": "wbba9r",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42132,7 +42132,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2op1ex",
+      "id": "296ei2",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42154,7 +42154,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "sllec5",
+      "id": "b3fj08",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42176,7 +42176,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "70b2dy",
+      "id": "z0x4nj",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42198,7 +42198,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "e5e1po",
+      "id": "zehger",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42220,7 +42220,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "vjlegz",
+      "id": "24fw5b",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42242,7 +42242,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9poche",
+      "id": "621mhw",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42264,7 +42264,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "pvynp6",
+      "id": "4nf6j1",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42286,7 +42286,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "c0xoys",
+      "id": "750mj8",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42308,7 +42308,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "bllld8",
+      "id": "mtwjje",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42330,7 +42330,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5atnyj",
+      "id": "yagt4s",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42352,7 +42352,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "2a4fit",
+      "id": "024h63",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42374,7 +42374,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "1hvu7p",
+      "id": "cz9ecg",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42396,7 +42396,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "gqdjlf",
+      "id": "o9phpm",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42418,7 +42418,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "7nu01u",
+      "id": "i34yoa",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42440,7 +42440,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "xz78ix",
+      "id": "zcb1xo",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42462,7 +42462,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "c5dv92",
+      "id": "sdbqfu",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42484,7 +42484,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4641kh",
+      "id": "9j7dre",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42506,7 +42506,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "j7r63y",
+      "id": "ikx26r",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42528,7 +42528,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "qcbj81",
+      "id": "5r9ecg",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42550,7 +42550,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "z7ma9s",
+      "id": "9ehudh",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42572,7 +42572,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "4jytr2",
+      "id": "45go61",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42594,7 +42594,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "fpkouw",
+      "id": "dpb5j7",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -42616,7 +42616,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "ylf20a",
+      "id": "u819ce",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -42638,7 +42638,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "xe8nfu",
+      "id": "7i3mik",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -42660,7 +42660,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "edye7h",
+      "id": "b5jh2u",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42682,7 +42682,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "k1zey5",
+      "id": "a5i2wj",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42704,7 +42704,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "739iwc",
+      "id": "lva848",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42726,7 +42726,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "aliwh9",
+      "id": "elwvol",
       "period": "2026-04",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -42748,7 +42748,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "5xtbei",
+      "id": "n7ji7d",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42770,7 +42770,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "jw648a",
+      "id": "glofzh",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42792,7 +42792,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "oyiee9",
+      "id": "1oyd9u",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "Domestic",
@@ -42814,7 +42814,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "9jzcb2",
+      "id": "sb5qoa",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42836,7 +42836,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "tv608d",
+      "id": "ncgist",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42858,7 +42858,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "f60n4k",
+      "id": "ycpnux",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42880,7 +42880,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "yh1gq0",
+      "id": "2mqoqi",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42902,7 +42902,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "g2dm0l",
+      "id": "b0hihj",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42924,7 +42924,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "0vve37",
+      "id": "pgt43w",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "FX",
@@ -42946,7 +42946,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "8f4tym",
+      "id": "i6vxrg",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "Payin",
@@ -42968,7 +42968,7 @@ export const importedLookerData = {
       "revenueBasis": "gross"
     },
     {
-      "id": "da3mj4",
+      "id": "ig973r",
       "period": "2026-05",
       "partner": "Shepherd",
       "txnType": "USD Abroad",
@@ -43146,27 +43146,6 @@ export const importedLookerData = {
       "reversalCount": 112
     },
     {
-      "id": "k9f7il",
-      "partner": "Skydo",
-      "payerFunding": "Bank",
-      "period": "2025-12",
-      "reversalCount": 3
-    },
-    {
-      "id": "cqbb1q",
-      "partner": "Skydo",
-      "payerFunding": "Card",
-      "period": "2025-12",
-      "reversalCount": 22
-    },
-    {
-      "id": "5pp28y",
-      "partner": "Whish",
-      "payerFunding": "Bank",
-      "period": "2025-12",
-      "reversalCount": 115
-    },
-    {
       "id": "fv5jvh",
       "partner": "Nomad",
       "payerFunding": "Bank",
@@ -43195,189 +43174,147 @@ export const importedLookerData = {
       "reversalCount": 187
     },
     {
-      "id": "4i1li4",
+      "id": "f741tt",
+      "period": "2025-12",
+      "partner": "Remittanceshub",
+      "payerFunding": "Wallet",
+      "reversalCount": 1
+    },
+    {
+      "id": "p465se",
+      "period": "2025-12",
+      "partner": "Stampli",
+      "payerFunding": "Bank",
+      "reversalCount": 2
+    },
+    {
+      "id": "9wej31",
       "period": "2026-02",
       "partner": "Blindpay",
       "payerFunding": "Wallet",
       "reversalCount": 1
     },
     {
-      "id": "5v4rpd",
-      "period": "2026-02",
-      "partner": "Capi",
-      "payerFunding": "Bank",
-      "reversalCount": 1
-    },
-    {
-      "id": "itxl9h",
+      "id": "zn23ou",
       "period": "2026-02",
       "partner": "Remittanceshub",
       "payerFunding": "Wallet",
-      "reversalCount": 2
+      "reversalCount": 5
     },
     {
-      "id": "5zpj0h",
+      "id": "w268k2",
       "period": "2026-02",
       "partner": "Stampli",
       "payerFunding": "Bank",
-      "reversalCount": 147
+      "reversalCount": 171
     },
     {
-      "id": "5h6649",
+      "id": "mbhssg",
       "period": "2026-02",
       "partner": "Yeepay",
       "payerFunding": "Wallet",
       "reversalCount": 6
     },
     {
-      "id": "wb1kmx",
+      "id": "lqcydm",
       "period": "2026-03",
       "partner": "Blindpay",
       "payerFunding": "Wallet",
       "reversalCount": 6
     },
     {
-      "id": "t4fmqh",
-      "period": "2026-03",
-      "partner": "Capi",
-      "payerFunding": "Bank",
-      "reversalCount": 7
-    },
-    {
-      "id": "izshga",
-      "period": "2026-03",
-      "partner": "Graph Finance",
-      "payerFunding": "Bank",
-      "reversalCount": 2
-    },
-    {
-      "id": "chlmt2",
-      "period": "2026-03",
-      "partner": "Nium",
-      "payerFunding": "Bank",
-      "reversalCount": 1
-    },
-    {
-      "id": "p6nk61",
+      "id": "6cwgf9",
       "period": "2026-03",
       "partner": "Nuvion",
       "payerFunding": "Wallet",
       "reversalCount": 8
     },
     {
-      "id": "5juyat",
+      "id": "kenfou",
       "period": "2026-03",
       "partner": "Remittanceshub",
       "payerFunding": "Wallet",
-      "reversalCount": 4
+      "reversalCount": 5
     },
     {
-      "id": "gd9sj3",
+      "id": "2yc1yq",
       "period": "2026-03",
       "partner": "Stampli",
       "payerFunding": "Bank",
-      "reversalCount": 175
+      "reversalCount": 172
     },
     {
-      "id": "1jni0p",
+      "id": "5jrpjb",
       "period": "2026-03",
       "partner": "TripleA",
       "payerFunding": "Wallet",
       "reversalCount": 2
     },
     {
-      "id": "clmr58",
-      "period": "2026-03",
-      "partner": "Whish",
-      "payerFunding": "Bank",
-      "reversalCount": 1
-    },
-    {
-      "id": "qlduee",
+      "id": "5529xh",
       "period": "2026-03",
       "partner": "Yeepay",
       "payerFunding": "Wallet",
       "reversalCount": 10
     },
     {
-      "id": "91719x",
+      "id": "7y7yf9",
       "period": "2026-04",
       "partner": "Blindpay",
       "payerFunding": "Wallet",
-      "reversalCount": 4
+      "reversalCount": 5
     },
     {
-      "id": "nn7f3j",
-      "period": "2026-04",
-      "partner": "Capi",
-      "payerFunding": "Bank",
-      "reversalCount": 3
-    },
-    {
-      "id": "zpu1k3",
-      "period": "2026-04",
-      "partner": "Capi",
-      "payerFunding": "Wallet",
-      "reversalCount": 1
-    },
-    {
-      "id": "li4tj7",
-      "period": "2026-04",
-      "partner": "Graph Finance",
-      "payerFunding": "Bank",
-      "reversalCount": 2
-    },
-    {
-      "id": "afxexw",
+      "id": "8vy9bf",
       "period": "2026-04",
       "partner": "Nuvion",
       "payerFunding": "Wallet",
-      "reversalCount": 14
+      "reversalCount": 15
     },
     {
-      "id": "rqm34c",
-      "period": "2026-04",
-      "partner": "Q2",
-      "payerFunding": "Wallet",
-      "reversalCount": 1
-    },
-    {
-      "id": "8116fg",
+      "id": "4941hm",
       "period": "2026-04",
       "partner": "Remittanceshub",
       "payerFunding": "Wallet",
-      "reversalCount": 3
+      "reversalCount": 2
     },
     {
-      "id": "ws6sbx",
+      "id": "149mw2",
       "period": "2026-04",
       "partner": "Stampli",
       "payerFunding": "Bank",
-      "reversalCount": 193
+      "reversalCount": 200
     },
     {
-      "id": "09ct8m",
+      "id": "y1ptg6",
+      "period": "2026-04",
+      "partner": "Whish",
+      "payerFunding": "Bank",
+      "reversalCount": 1
+    },
+    {
+      "id": "y3bw12",
       "period": "2026-04",
       "partner": "Yeepay",
       "payerFunding": "Wallet",
       "reversalCount": 2
     },
     {
-      "id": "5qkwij",
+      "id": "gx2adn",
       "period": "2026-05",
       "partner": "Nuvion",
       "payerFunding": "Wallet",
       "reversalCount": 2
     },
     {
-      "id": "zoumva",
+      "id": "e32tsp",
       "period": "2026-05",
       "partner": "Stampli",
       "payerFunding": "Bank",
-      "reversalCount": 23
+      "reversalCount": 9
     },
     {
-      "id": "oj40kd",
+      "id": "i7a864",
       "period": "2026-05",
       "partner": "Yeepay",
       "payerFunding": "Wallet",
@@ -43386,7 +43323,7 @@ export const importedLookerData = {
   ],
   "lrs": [
     {
-      "id": "y87anv",
+      "id": "fcm92b",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43396,7 +43333,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "wjouy9",
+      "id": "yi8htz",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43406,7 +43343,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "c76r0w",
+      "id": "zm9a6w",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43416,7 +43353,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "lmr0r4",
+      "id": "o1p1xt",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43426,7 +43363,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "zzufoe",
+      "id": "be9tpo",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43436,7 +43373,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "e9r5hg",
+      "id": "4opbki",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43446,7 +43383,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "k5okyu",
+      "id": "4c7if5",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43456,7 +43393,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "otlyvw",
+      "id": "fc31gm",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43466,7 +43403,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "fvtsx2",
+      "id": "4gdzq9",
       "period": "2026-02",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43476,7 +43413,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "tk19y0",
+      "id": "g0c0g2",
       "period": "2026-03",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43486,7 +43423,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "fl2xph",
+      "id": "giz7pq",
       "period": "2026-03",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43496,7 +43433,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "arj0g5",
+      "id": "r7x48a",
       "period": "2026-03",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43506,7 +43443,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "wqi1lu",
+      "id": "q7hcxb",
       "period": "2026-03",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43516,7 +43453,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "5m25gj",
+      "id": "mnjdgs",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43526,7 +43463,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "1zf1jl",
+      "id": "kvnc0m",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43536,7 +43473,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "5j2q07",
+      "id": "d73wre",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43546,7 +43483,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "vz5h12",
+      "id": "a4caa1",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43556,7 +43493,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "66vnkj",
+      "id": "zcbvkr",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43566,7 +43503,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "hyuluv",
+      "id": "xggkgg",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43576,7 +43513,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "v1msdy",
+      "id": "29rsj7",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43586,7 +43523,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "idbew4",
+      "id": "roi62a",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43596,7 +43533,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "v6bf84",
+      "id": "g082eu",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43606,7 +43543,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "imq5e3",
+      "id": "0fh3k8",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43616,7 +43553,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "7bs0no",
+      "id": "ipm8u8",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43626,7 +43563,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "yr02hb",
+      "id": "89f7p5",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43636,7 +43573,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "b9rdfc",
+      "id": "abfvc6",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43646,7 +43583,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "6ucxmm",
+      "id": "hvg6yi",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43656,7 +43593,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "0f6p2o",
+      "id": "8w7n9q",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43666,7 +43603,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "cd359y",
+      "id": "2ei73z",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43676,7 +43613,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "gi68y1",
+      "id": "cnarm7",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43686,7 +43623,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "wpes7n",
+      "id": "0v4tyy",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43696,7 +43633,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "oa6m22",
+      "id": "sscy6w",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43706,7 +43643,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "9lfuxu",
+      "id": "7w62d7",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43716,7 +43653,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "iwdcsy",
+      "id": "dvh3ew",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43726,7 +43663,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "be0u99",
+      "id": "8fqinm",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43736,7 +43673,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "wh42rh",
+      "id": "rbr0ao",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43746,7 +43683,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "ooyctv",
+      "id": "a9cc7t",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43756,7 +43693,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "ywkmi8",
+      "id": "j87ofg",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43766,7 +43703,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "y8g8u5",
+      "id": "r9u0rx",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43776,7 +43713,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "tk9ku5",
+      "id": "yipunv",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43786,7 +43723,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "kb8jt4",
+      "id": "vm7ab4",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43796,7 +43733,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "dutdrc",
+      "id": "hyuqeo",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43806,7 +43743,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "13z5mj",
+      "id": "3h916s",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43816,7 +43753,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "3mecay",
+      "id": "1x25mo",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43826,7 +43763,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "bogs9n",
+      "id": "tnhojd",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43836,7 +43773,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "y3vy6j",
+      "id": "91732n",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43846,7 +43783,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "tl93ef",
+      "id": "koujkf",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43856,7 +43793,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "2u5id0",
+      "id": "nkkk2k",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43866,7 +43803,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "ly0knq",
+      "id": "hrxigo",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43876,7 +43813,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "sue8b0",
+      "id": "8zr2tf",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43886,7 +43823,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "klleyo",
+      "id": "vd2xc0",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43896,7 +43833,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "we1rzp",
+      "id": "k13xco",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43906,7 +43843,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "z04fo1",
+      "id": "28i1y0",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43916,7 +43853,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "g6zq28",
+      "id": "owgy18",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43926,7 +43863,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "fl7lpt",
+      "id": "l03w9b",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43936,7 +43873,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "r0fbzu",
+      "id": "u8xx4l",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43946,7 +43883,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "ohhboq",
+      "id": "z0z5r2",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43956,7 +43893,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "mhjwqh",
+      "id": "y7gt1j",
       "period": "2026-04",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43966,7 +43903,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "342qut",
+      "id": "9p1l2h",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43976,7 +43913,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "thjpk9",
+      "id": "c4prja",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43986,7 +43923,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "zzz1ek",
+      "id": "xpoggt",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -43996,7 +43933,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "xu2x2s",
+      "id": "g4o8jm",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44006,7 +43943,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "0e2qdw",
+      "id": "lpl0va",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44016,7 +43953,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "0qhsx5",
+      "id": "2iw799",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44026,7 +43963,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "ltl319",
+      "id": "xiwdmz",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44036,7 +43973,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "mluyah",
+      "id": "h48vou",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44046,7 +43983,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "nrrieq",
+      "id": "8kw31q",
       "period": "2026-05",
       "partner": "Everflow",
       "netRevenue": 0,
@@ -44056,7 +43993,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "843esu",
+      "id": "x13j2o",
       "period": "2026-02",
       "partner": "Shepherd",
       "netRevenue": 0,
@@ -44066,7 +44003,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "y2f2me",
+      "id": "c2l2jp",
       "period": "2026-02",
       "partner": "Shepherd",
       "netRevenue": 0,
@@ -44076,7 +44013,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "tlkhhr",
+      "id": "m9uewl",
       "period": "2026-03",
       "partner": "Shepherd",
       "netRevenue": 0,
@@ -44086,7 +44023,7 @@ export const importedLookerData = {
       "revenueSource": "reversal"
     },
     {
-      "id": "l2uhrq",
+      "id": "fl26g3",
       "period": "2026-04",
       "partner": "Shepherd",
       "netRevenue": 0,
@@ -44196,16 +44133,16 @@ export const importedLookerData = {
     {
       "partner": "Stampli",
       "period": "2026-05",
-      "txnCount": 12,
-      "shareTxnCount": 12,
+      "txnCount": 13,
+      "shareTxnCount": 13,
       "reversalTxnCount": 0,
-      "partnerPayout": 739.01,
-      "shareAmount": 739.01,
+      "partnerPayout": 771.86,
+      "shareAmount": 771.86,
       "reversalAmount": 0,
-      "totalUsdDebited": 35521.69,
-      "totalMidMarketUsd": 34829.25,
-      "shareTotalUsdDebited": 35521.69,
-      "shareTotalMidMarketUsd": 34829.25,
+      "totalUsdDebited": 37021.69,
+      "totalMidMarketUsd": 36329.25,
+      "shareTotalUsdDebited": 37021.69,
+      "shareTotalMidMarketUsd": 36329.25,
       "reversalTotalUsdDebited": 0,
       "reversalTotalMidMarketUsd": 0,
       "totalGrossMarkup": 692.44,
@@ -44219,11 +44156,11 @@ export const importedLookerData = {
       "negativePayoutTxnCount": 0,
       "validationCheckedCount": 0,
       "validationAmountMismatchCount": 0,
-      "validationPctCheckedCount": 12,
+      "validationPctCheckedCount": 13,
       "validationPctMismatchCount": 0,
       "validationAmountDelta": 0,
       "skippedBlankPaymentIdCount": 0,
-      "note": "Direct Stampli FX revenue-share feed; 12 payout txn(s), 0 reversal txn(s); Markup-rate formula matched on 12/12 rows"
+      "note": "Direct Stampli FX revenue-share feed; 13 payout txn(s), 0 reversal txn(s); Markup-rate formula matched on 13/13 rows"
     }
   ],
   "lva": [
@@ -45382,10 +45319,10 @@ export const importedLookerData = {
     {
       "period": "2026-02",
       "partner": "GME_Remit",
-      "newAccountsOpened": 2,
-      "totalActiveAccounts": 2,
+      "newAccountsOpened": 1,
+      "totalActiveAccounts": 1,
       "totalBusinessAccounts": 0,
-      "totalIndividualAccounts": 2,
+      "totalIndividualAccounts": 1,
       "dormantAccounts": 0,
       "closedAccounts": 0,
       "newBusinessSetups": 0,
@@ -45395,6 +45332,18 @@ export const importedLookerData = {
       "period": "2026-03",
       "partner": "GME_Remit",
       "newAccountsOpened": 0,
+      "totalActiveAccounts": 1,
+      "totalBusinessAccounts": 0,
+      "totalIndividualAccounts": 1,
+      "dormantAccounts": 0,
+      "closedAccounts": 0,
+      "newBusinessSetups": 0,
+      "settlementCount": 0
+    },
+    {
+      "period": "2026-04",
+      "partner": "GME_Remit",
+      "newAccountsOpened": 1,
       "totalActiveAccounts": 2,
       "totalBusinessAccounts": 0,
       "totalIndividualAccounts": 2,
@@ -45404,25 +45353,13 @@ export const importedLookerData = {
       "settlementCount": 0
     },
     {
-      "period": "2026-04",
-      "partner": "GME_Remit",
-      "newAccountsOpened": 2,
-      "totalActiveAccounts": 4,
-      "totalBusinessAccounts": 0,
-      "totalIndividualAccounts": 4,
-      "dormantAccounts": 0,
-      "closedAccounts": 0,
-      "newBusinessSetups": 0,
-      "settlementCount": 0
-    },
-    {
       "period": "2026-05",
       "partner": "GME_Remit",
       "newAccountsOpened": 0,
-      "totalActiveAccounts": 4,
+      "totalActiveAccounts": 2,
       "totalBusinessAccounts": 0,
-      "totalIndividualAccounts": 4,
-      "dormantAccounts": 2,
+      "totalIndividualAccounts": 2,
+      "dormantAccounts": 1,
       "closedAccounts": 0,
       "newBusinessSetups": 0,
       "settlementCount": 0
@@ -46222,47 +46159,47 @@ export const importedLookerData = {
     {
       "period": "2026-02",
       "partner": "M-DAQ",
-      "newAccountsOpened": 2,
-      "totalActiveAccounts": 2,
-      "totalBusinessAccounts": 2,
+      "newAccountsOpened": 1,
+      "totalActiveAccounts": 1,
+      "totalBusinessAccounts": 1,
       "totalIndividualAccounts": 0,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 2,
+      "newBusinessSetups": 1,
       "settlementCount": 0
     },
     {
       "period": "2026-03",
       "partner": "M-DAQ",
-      "newAccountsOpened": 44,
-      "totalActiveAccounts": 46,
-      "totalBusinessAccounts": 42,
-      "totalIndividualAccounts": 4,
+      "newAccountsOpened": 22,
+      "totalActiveAccounts": 23,
+      "totalBusinessAccounts": 21,
+      "totalIndividualAccounts": 2,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 40,
+      "newBusinessSetups": 20,
       "settlementCount": 11
     },
     {
       "period": "2026-04",
       "partner": "M-DAQ",
-      "newAccountsOpened": 4,
-      "totalActiveAccounts": 50,
-      "totalBusinessAccounts": 46,
-      "totalIndividualAccounts": 4,
+      "newAccountsOpened": 2,
+      "totalActiveAccounts": 25,
+      "totalBusinessAccounts": 23,
+      "totalIndividualAccounts": 2,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 4,
+      "newBusinessSetups": 2,
       "settlementCount": 2
     },
     {
       "period": "2026-05",
       "partner": "M-DAQ",
       "newAccountsOpened": 0,
-      "totalActiveAccounts": 50,
-      "totalBusinessAccounts": 46,
-      "totalIndividualAccounts": 4,
-      "dormantAccounts": 2,
+      "totalActiveAccounts": 25,
+      "totalBusinessAccounts": 23,
+      "totalIndividualAccounts": 2,
+      "dormantAccounts": 1,
       "closedAccounts": 0,
       "newBusinessSetups": 0,
       "settlementCount": 0
@@ -48622,49 +48559,49 @@ export const importedLookerData = {
     {
       "period": "2026-02",
       "partner": "TripleA",
-      "newAccountsOpened": 34,
-      "totalActiveAccounts": 34,
-      "totalBusinessAccounts": 6,
+      "newAccountsOpened": 17,
+      "totalActiveAccounts": 17,
+      "totalBusinessAccounts": 3,
       "totalIndividualAccounts": 0,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 6,
+      "newBusinessSetups": 3,
       "settlementCount": 8
     },
     {
       "period": "2026-03",
       "partner": "TripleA",
-      "newAccountsOpened": 240,
-      "totalActiveAccounts": 274,
-      "totalBusinessAccounts": 190,
-      "totalIndividualAccounts": 14,
+      "newAccountsOpened": 120,
+      "totalActiveAccounts": 137,
+      "totalBusinessAccounts": 95,
+      "totalIndividualAccounts": 7,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 184,
+      "newBusinessSetups": 92,
       "settlementCount": 22
     },
     {
       "period": "2026-04",
       "partner": "TripleA",
-      "newAccountsOpened": 322,
-      "totalActiveAccounts": 596,
-      "totalBusinessAccounts": 488,
-      "totalIndividualAccounts": 38,
+      "newAccountsOpened": 161,
+      "totalActiveAccounts": 298,
+      "totalBusinessAccounts": 244,
+      "totalIndividualAccounts": 19,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 298,
+      "newBusinessSetups": 149,
       "settlementCount": 20
     },
     {
       "period": "2026-05",
       "partner": "TripleA",
-      "newAccountsOpened": 20,
-      "totalActiveAccounts": 616,
-      "totalBusinessAccounts": 508,
-      "totalIndividualAccounts": 38,
-      "dormantAccounts": 36,
+      "newAccountsOpened": 10,
+      "totalActiveAccounts": 308,
+      "totalBusinessAccounts": 254,
+      "totalIndividualAccounts": 19,
+      "dormantAccounts": 18,
       "closedAccounts": 0,
-      "newBusinessSetups": 20,
+      "newBusinessSetups": 10,
       "settlementCount": 1
     },
     {
@@ -48742,34 +48679,34 @@ export const importedLookerData = {
     {
       "period": "2026-02",
       "partner": "VG Pay",
-      "newAccountsOpened": 2,
-      "totalActiveAccounts": 2,
-      "totalBusinessAccounts": 2,
+      "newAccountsOpened": 1,
+      "totalActiveAccounts": 1,
+      "totalBusinessAccounts": 1,
       "totalIndividualAccounts": 0,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 2,
+      "newBusinessSetups": 1,
       "settlementCount": 0
     },
     {
       "period": "2026-03",
       "partner": "VG Pay",
-      "newAccountsOpened": 18,
-      "totalActiveAccounts": 20,
-      "totalBusinessAccounts": 12,
-      "totalIndividualAccounts": 2,
+      "newAccountsOpened": 9,
+      "totalActiveAccounts": 10,
+      "totalBusinessAccounts": 6,
+      "totalIndividualAccounts": 1,
       "dormantAccounts": 0,
       "closedAccounts": 0,
-      "newBusinessSetups": 10,
+      "newBusinessSetups": 5,
       "settlementCount": 0
     },
     {
       "period": "2026-04",
       "partner": "VG Pay",
       "newAccountsOpened": 0,
-      "totalActiveAccounts": 20,
-      "totalBusinessAccounts": 12,
-      "totalIndividualAccounts": 2,
+      "totalActiveAccounts": 10,
+      "totalBusinessAccounts": 6,
+      "totalIndividualAccounts": 1,
       "dormantAccounts": 0,
       "closedAccounts": 0,
       "newBusinessSetups": 0,
@@ -48779,10 +48716,10 @@ export const importedLookerData = {
       "period": "2026-05",
       "partner": "VG Pay",
       "newAccountsOpened": 0,
-      "totalActiveAccounts": 20,
-      "totalBusinessAccounts": 12,
-      "totalIndividualAccounts": 2,
-      "dormantAccounts": 2,
+      "totalActiveAccounts": 10,
+      "totalBusinessAccounts": 6,
+      "totalIndividualAccounts": 1,
+      "dormantAccounts": 1,
       "closedAccounts": 0,
       "newBusinessSetups": 0,
       "settlementCount": 0
@@ -49273,9 +49210,6 @@ export const importedLookerData = {
     "Blindpay|2026-03": "./hosted-detail-files-v1/blindpay-2026-03-details.csv",
     "Blindpay|2026-04": "./hosted-detail-files-v1/blindpay-2026-04-details.csv",
     "Blindpay|2026-05": "./hosted-detail-files-v1/blindpay-2026-05-details.csv",
-    "Capi|2026-02": "./hosted-detail-files-v1/capi-2026-02-details.csv",
-    "Capi|2026-03": "./hosted-detail-files-v1/capi-2026-03-details.csv",
-    "Capi|2026-04": "./hosted-detail-files-v1/capi-2026-04-details.csv",
     "Everflow|2026-02": "./hosted-detail-files-v1/everflow-2026-02-details.csv",
     "Everflow|2026-03": "./hosted-detail-files-v1/everflow-2026-03-details.csv",
     "Everflow|2026-04": "./hosted-detail-files-v1/everflow-2026-04-details.csv",
@@ -49288,8 +49222,6 @@ export const importedLookerData = {
     "Fulfil|2026-03": "./hosted-detail-files-v1/fulfil-2026-03-details.csv",
     "Fulfil|2026-04": "./hosted-detail-files-v1/fulfil-2026-04-details.csv",
     "Fulfil|2026-05": "./hosted-detail-files-v1/fulfil-2026-05-details.csv",
-    "Graph Finance|2026-03": "./hosted-detail-files-v1/graph-finance-2026-03-details.csv",
-    "Graph Finance|2026-04": "./hosted-detail-files-v1/graph-finance-2026-04-details.csv",
     "Halorecruiting|2026-02": "./hosted-detail-files-v1/halorecruiting-2026-02-details.csv",
     "Halorecruiting|2026-03": "./hosted-detail-files-v1/halorecruiting-2026-03-details.csv",
     "Halorecruiting|2026-04": "./hosted-detail-files-v1/halorecruiting-2026-04-details.csv",
@@ -49306,7 +49238,6 @@ export const importedLookerData = {
     "Maplewave|2026-04": "./hosted-detail-files-v1/maplewave-2026-04-details.csv",
     "Maplewave|2026-05": "./hosted-detail-files-v1/maplewave-2026-05-details.csv",
     "Multigate|2026-04": "./hosted-detail-files-v1/multigate-2026-04-details.csv",
-    "Nium|2026-03": "./hosted-detail-files-v1/nium-2026-03-details.csv",
     "Nomad|2026-02": "./hosted-detail-files-v1/nomad-2026-02-details.csv",
     "Nomad|2026-03": "./hosted-detail-files-v1/nomad-2026-03-details.csv",
     "Nomad|2026-04": "./hosted-detail-files-v1/nomad-2026-04-details.csv",
@@ -49323,6 +49254,7 @@ export const importedLookerData = {
     "Q2|2026-03": "./hosted-detail-files-v1/q2-2026-03-details.csv",
     "Q2|2026-04": "./hosted-detail-files-v1/q2-2026-04-details.csv",
     "Q2|2026-05": "./hosted-detail-files-v1/q2-2026-05-details.csv",
+    "Remittanceshub|2025-12": "./hosted-detail-files-v1/remittanceshub-2025-12-details.csv",
     "Remittanceshub|2026-02": "./hosted-detail-files-v1/remittanceshub-2026-02-details.csv",
     "Remittanceshub|2026-03": "./hosted-detail-files-v1/remittanceshub-2026-03-details.csv",
     "Remittanceshub|2026-04": "./hosted-detail-files-v1/remittanceshub-2026-04-details.csv",
@@ -49335,6 +49267,7 @@ export const importedLookerData = {
     "Skydo|2026-03": "./hosted-detail-files-v1/skydo-2026-03-details.csv",
     "Skydo|2026-04": "./hosted-detail-files-v1/skydo-2026-04-details.csv",
     "Skydo|2026-05": "./hosted-detail-files-v1/skydo-2026-05-details.csv",
+    "Stampli|2025-12": "./hosted-detail-files-v1/stampli-2025-12-details.csv",
     "Stampli|2026-02": "./hosted-detail-files-v1/stampli-2026-02-details.csv",
     "Stampli|2026-03": "./hosted-detail-files-v1/stampli-2026-03-details.csv",
     "Stampli|2026-04": "./hosted-detail-files-v1/stampli-2026-04-details.csv",
@@ -49356,26 +49289,26 @@ export const importedLookerData = {
     "Generated from the refreshed Historical Partner Data folder. Detail rows are hosted in hosted-detail-files-v1 to keep current-workbook.json small."
   ],
   "meta": {
-    "generatedAt": "2026-05-04T19:34:12.336Z",
-    "runId": "historical-data-20260504193412",
+    "generatedAt": "2026-05-04T21:55:31.380Z",
+    "runId": "historical-data-20260504215443",
     "source": "historical-partner-data",
     "summary": {
       "beforeCounts": {
-        "ltxn": 2034,
-        "lrev": 56,
-        "lva": 430,
-        "lrs": 71,
-        "lfxp": 4
-      },
-      "afterCounts": {
         "ltxn": 2033,
         "lrev": 56,
         "lva": 420,
         "lrs": 71,
         "lfxp": 4
       },
-      "detailFiles": 82,
-      "detailRows": 182015
+      "afterCounts": {
+        "ltxn": 2033,
+        "lrev": 47,
+        "lva": 420,
+        "lrs": 71,
+        "lfxp": 4
+      },
+      "detailFiles": 78,
+      "detailRows": 182010
     },
     "imports": [
       {
@@ -49400,15 +49333,13 @@ export const importedLookerData = {
       },
       {
         "fileType": "partner_offline_billing_reversals",
-        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Partner Offline Billing (Reversals) 2026-05-04T1313.xlsx",
+        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Partner Offline Billing (Reversals) 2026-05-04T1724.xlsx",
         "csvRows": 634,
         "sectionCounts": {
-          "lrev": 27
+          "lrev": 21
         },
-        "detailRows": 623,
-        "warnings": [
-          "Some reversal rows could not be matched to a partner."
-        ]
+        "detailRows": 627,
+        "warnings": []
       },
       {
         "fileType": "revenue_share_report",
@@ -49452,8 +49383,8 @@ export const importedLookerData = {
       },
       {
         "fileType": "vba_transactions",
-        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/CC_Citi VBA Txns 2026-05-04T1333.xlsx",
-        "csvRows": 547,
+        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/CC_Citi VBA Txns 2026-05-04T1726.xlsx",
+        "csvRows": 550,
         "sectionCounts": {
           "lva": 420
         },
@@ -49462,22 +49393,22 @@ export const importedLookerData = {
       },
       {
         "fileType": "stampli_fx_revenue_share",
-        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Share 2026-05-04T1252.xlsx",
-        "csvRows": 700,
+        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Share 2026-05-04T1732.xlsx",
+        "csvRows": 701,
         "sectionCounts": {
           "lfxp": 4
         },
-        "detailRows": 710,
+        "detailRows": 700,
         "warnings": []
       },
       {
         "fileType": "stampli_fx_revenue_reversal",
-        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Reversal 2026-05-04T1254.xlsx",
+        "source": "/Users/danielsinukoff/Documents/billing-workbook/Historical Partner Data/Stampli FX Revenue Reversal 2026-05-04T1734.xlsx",
         "csvRows": 12,
         "sectionCounts": {
           "lfxp": 4
         },
-        "detailRows": 710,
+        "detailRows": 711,
         "warnings": []
       }
     ]

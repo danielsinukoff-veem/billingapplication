@@ -1,0 +1,278 @@
+partner,period,invoiceStatus,active,inactiveReason,category,direction,amount,groupLabel,description,activityRowCount,sourceTxnCount,sourceVolume,minimumEligible
+Afriex,2026-04,calculated,false,,,,0,,,0,0,0,false
+Altpay,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Feb 1, 2026.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Feb 1, 2026.",0,0,0,false
+Athena,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Mar 1, 2025.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Mar 1, 2025.",0,0,0,false
+BHN,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,65,Domestic Standard ACH,Domestic Standard ACH (65x$1.00),1,65,1332315.46,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,36,Domestic Standard ACH,Domestic Standard ACH (36x$1.00),1,36,70864.6,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,22.4,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,94,Domestic Standard ACH,Domestic Standard ACH (94x$1.00),1,94,2393418.73,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,8050.91,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,8081.8,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,33,Domestic Standard ACH,Domestic Standard ACH (33x$1.00),1,33,141932.56,true
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Volume,charge,6700,Domestic RTP,"Domestic RTP  (0.6000%x$15,464,727.74 MAX@$20.00/txn)",2,335,15464727.74,true
+Blindpay,2026-04,calculated,true,,Reversal,charge,25,Wallet reversals,Wallet 5x$5.00,1,5,0,false
+Blindpay,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Virtual Acct,charge,700,Account Opening,Account Opening: 280 accts x $2.50,0,0,0,true
+Blindpay,2026-04,calculated,true,,Minimum,charge,10000,Monthly minimum,"Monthly minimum fee for period ($10,000.00) replaces $7,634.00 generated revenue",0,0,0,false
+Capi,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: May 1, 2025.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: May 1, 2025.",0,0,0,false
+Cellpay,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jun 1, 2025.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jun 1, 2025.",0,0,0,false
+Clearshift,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jan 1, 2026.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jan 1, 2026.",0,0,0,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,147.04,Payout RTP,Payout RTP: 40.0000%x($375.20 est revenue-$7.60 cost),1,19,371629.68,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,1.4,Payout Standard,Payout Standard: 40.0000%x($3.50 est revenue-$0.00 cost),1,2,228.21,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,4.2,Payout Standard,Payout Standard: 40.0000%x($10.50 est revenue-$0.00 cost),1,505,12881813.7,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,9.73,Payout Standard,Payout Standard: 40.0000%x($28.92 est revenue-$4.60 cost),1,1,400,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,119.59,Payout Standard,Payout Standard: 40.0000%x($373.07 est revenue-$74.10 cost),1,15,9400.96,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,1042.62,Payout Standard,"Payout Standard: 40.0000%x($3,281.06 est revenue-$674.51 cost)",1,15,399675.71,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,26.72,Payout Standard,Payout Standard: 40.0000%x($78.88 est revenue-$12.08 cost),1,2,2720,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,34.34,Payout Standard,Payout Standard: 40.0000%x($98.61 est revenue-$12.76 cost),1,2,3172.5,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,64.45,Payout Standard,Payout Standard: 40.0000%x($203.69 est revenue-$42.56 cost),1,6,8372.86,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,3.87,Payout Standard,Payout Standard: 40.0000%x($15.51 est revenue-$5.83 cost),1,1,550,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,2.45,Payout Standard,Payout Standard: 40.0000%x($11.76 est revenue-$5.63 cost),1,1,419.85,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,279.44,Payout Standard,Payout Standard: 40.0000%x($854.96 est revenue-$156.36 cost),1,7,80904.63,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,16.2,Payout Standard,Payout Standard: 40.0000%x($58.91 est revenue-$18.41 cost),1,3,2274.71,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,11.58,Payout Standard,Payout Standard: 40.0000%x($41.14 est revenue-$12.19 cost),1,2,1462.36,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,18.41,Payout Standard,Payout Standard: 40.0000%x($54.29 est revenue-$8.26 cost),1,1,2171.49,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,456.86,Payout Standard,"Payout Standard: 40.0000%x($1,323.34 est revenue-$181.20 cost)",1,17,64134.64,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,5.98,Payout Standard,Payout Standard: 40.0000%x($28.16 est revenue-$13.20 cost),1,3,800,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,537.5,Payout Standard,"Payout Standard: 40.0000%x($1,630.43 est revenue-$286.69 cost)",1,37,67793.59,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,2605.74,Payout Standard,"Payout Standard: 40.0000%x($7,167.19 est revenue-$652.84 cost)",1,72,243227.25,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,48.85,Payout Standard,Payout Standard: 40.0000%x($135.02 est revenue-$12.89 cost),1,2,3260,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,34.2,Payout Standard,Payout Standard: 40.0000%x($225.14 est revenue-$139.63 cost),1,19,4420,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,77.07,Payout Standard,Payout Standard: 40.0000%x($227.20 est revenue-$34.53 cost),1,7,4354.99,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,0.12,Payout Standard,Payout Standard: 40.0000%x($5.60 est revenue-$5.30 cost),1,1,200,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,18.56,Payout RTP,Payout RTP: 40.0000%x($80.00 est revenue-$33.60 cost),1,4,34335,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,12.64,Payout Standard,Payout Standard: 40.0000%x($40.00 est revenue-$8.40 cost),1,1,30322.5,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,5365.6,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,29.12,Payout Standard,Payout Standard: 40.0000%x($98.00 est revenue-$25.20 cost),1,3,109322.89,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,16.48,Payout Standard,Payout Standard: 40.0000%x($58.00 est revenue-$16.80 cost),1,2,4264,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,158.8,Payout Standard,Payout Standard: 40.0000%x($523.00 est revenue-$126.00 cost),1,15,211335,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,1176.69,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,1335,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,600,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,5555,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,32.96,Payout Standard,Payout Standard: 40.0000%x($116.00 est revenue-$33.60 cost),1,4,5624.92,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,49.44,Payout Standard,Payout Standard: 40.0000%x($174.00 est revenue-$50.40 cost),1,6,13835.56,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,54.4,Payout Standard,Payout Standard: 40.0000%x($178.00 est revenue-$42.00 cost),1,5,222852.41,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,332.96,Payout Standard,"Payout Standard: 40.0000%x($1,118.00 est revenue-$285.60 cost)",1,34,329825,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,181.28,Payout Standard,Payout Standard: 40.0000%x($638.00 est revenue-$184.80 cost),1,22,43398.98,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,300,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,65.92,Payout Standard,Payout Standard: 40.0000%x($232.00 est revenue-$67.20 cost),1,8,9176,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,499.92,Payout Standard,"Payout Standard: 40.0000%x($1,737.00 est revenue-$487.20 cost)",1,58,207320.13,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,66.48,Payout Standard,Payout Standard: 40.0000%x($225.00 est revenue-$58.80 cost),1,7,45166.07,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,6171.15,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,2464.8,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,6637.22,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,24.72,Payout Standard,Payout Standard: 40.0000%x($87.00 est revenue-$25.20 cost),1,3,728.5,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,819.81,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,103.28,Payout Standard,Payout Standard: 40.0000%x($359.00 est revenue-$100.80 cost),1,12,63395.56,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,109.36,Payout Standard,Payout Standard: 40.0000%x($349.00 est revenue-$75.60 cost),1,9,2723662,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,50,Payout Standard,Payout Standard: 40.0000%x($167.00 est revenue-$42.00 cost),1,5,166700,false
+Everflow,2026-04,calculated,true,,Rev Share,pay,8.24,Payout Standard,Payout Standard: 40.0000%x($29.00 est revenue-$8.40 cost),1,1,750,false
+Factura,2026-04,calculated,false,,,,0,,,0,0,0,false
+Finastra,2026-04,calculated,false,Pre-collected revenue from transaction-time charges: $2.00. $0.00 was excluded from this invoice to avoid double charging and still counts toward monthly minimum calculations.,,,0,,Pre-collected revenue from transaction-time charges: $2.00. $0.00 was excluded from this invoice to avoid double charging and still counts toward monthly minimum calculations.,0,0,0,false
+Frieghtos,2026-04,calculated,false,,,,0,,,0,0,0,false
+Fulfil,2026-04,calculated,true,,Rev Share,pay,4.12,Payout Standard,Payout Standard: 20.0000%x($29.00 est revenue-$8.40 cost),1,1,1266.84,false
+GME_Remit,2026-04,calculated,false,,,,0,,,0,0,0,false
+Goldstack,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+Graph Finance,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jan 1, 2026.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Jan 1, 2026.",0,0,0,false
+Halorecruiting,2026-04,calculated,true,,Rev Share,pay,55.22,Payout Standard,Payout Standard: 20.0000%x($489.79 est revenue-$213.70 cost),1,27,16467.96,false
+Halorecruiting,2026-04,calculated,true,,Rev Share,pay,4.12,Payout Standard,Payout Standard: 20.0000%x($29.00 est revenue-$8.40 cost),1,1,1356.9,false
+Jacques,2026-04,calculated,false,,,,0,,,0,0,0,false
+Jagger,2026-04,calculated,false,,,,0,,,0,0,0,false
+Jazz Cash,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+LianLian,2026-04,calculated,false,Already charged at transaction time via Est Revenue $2.00,Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,5473.71,true
+Lightnet,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+M-DAQ,2026-04,calculated,false,,,,0,,,0,0,0,false
+Magaya,2026-04,calculated,true,,Rev Share,pay,640.37,Payout Standard,"Payout Standard: 40.0000%x($1,600.92 est revenue-$0.00 cost)",1,5,45875.18,false
+Magaya,2026-04,calculated,true,,Rev Share,pay,379.86,Payout Standard,Payout Standard: 40.0000%x($960.91 est revenue-$11.25 cost),1,5,86644.82,false
+Maplewave,2026-04,calculated,true,,Volume,charge,17726.92,0-50M,"0-50M 0-50M (0.2500%x$10,500,958.74) (less $8,525.48 already charged)",32,125,10500958.74,true
+Maplewave,2026-04,calculated,false,"Not applicable because invoiced revenue $17,726.92 + pre-collected revenue $8,525.48 exceeds minimum",Minimum,charge,10000,Monthly minimum,"Monthly minimum fee for period ($10,000.00)",0,0,0,false
+Mazal,2026-04,calculated,false,,,,0,,,0,0,0,false
+Mds,2026-04,calculated,false,,,,0,,,0,0,0,false
+Multigate,2026-04,calculated,false,,,,0,,,0,0,0,false
+NIBSS ( TurboTech),2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+Nium,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+Nomad,2026-04,calculated,false,"Replaced by monthly minimum $10,000.00",Offline,charge,116,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$29.00),1,4,41998.48,true
+Nomad,2026-04,calculated,true,,Minimum,charge,10000,Monthly minimum,"Monthly minimum fee for period ($10,000.00) replaces $116.00 generated revenue",0,0,0,false
+Nsave,2026-04,calculated,true,,Offline,charge,38.73,FX Standard Wire,FX Standard Wire (3x$15.00) (less $6.27 already charged),1,3,962.83,true
+Nsave,2026-04,calculated,true,,Offline,charge,210,USD Abroad Standard Wire,USD Abroad Standard Wire (14x$15.00),1,14,16027.57,true
+Nsave,2026-04,calculated,true,,FX,charge,6.26,USD→TRY,USD→TRY @ 0.6500% (avg txn $320.94) x $962.83,1,3,962.83,true
+Nsave,2026-04,calculated,true,,Platform,charge,4000,Monthly platform fee,Monthly subscription,0,0,0,false
+Nuvion,2026-04,calculated,true,,Offline,charge,2,CAD Domestic Standard EFT,CAD Domestic Standard EFT (4x$0.50),1,4,752.02,true
+Nuvion,2026-04,calculated,true,,Offline,charge,0.5,CAD Domestic Standard EFT,CAD Domestic Standard EFT (1x$0.50),1,1,29.39,true
+Nuvion,2026-04,calculated,true,,Offline,charge,6.5,Domestic Standard ACH,Domestic Standard ACH (13x$0.50),1,13,96890.26,true
+Nuvion,2026-04,calculated,true,,Offline,charge,27.5,Domestic Standard ACH,Domestic Standard ACH (55x$0.50),1,55,370064.69,true
+Nuvion,2026-04,calculated,true,,Volume,charge,256.65,Domestic RTP,"Domestic RTP  (0.6000%x$57,475.60 MAX@$20.00/txn)",2,16,57475.6,true
+Nuvion,2026-04,calculated,true,,Reversal,charge,75,Wallet reversals,Wallet 15x$5.00,1,15,0,false
+Nuvion,2026-04,calculated,true,,Virtual Acct,charge,156,Account Opening,Account Opening: 78 accts x $2.00,0,0,0,true
+Nuvion,2026-04,calculated,true,,Account Setup,charge,1650,Account Setup,33 biz x $50.00,0,0,0,true
+Nuvion,2026-04,calculated,true,,Settlement,charge,210,Daily Settlement,21 sweeps x $10.00,0,0,0,true
+OhentPay,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+Oson,2026-04,archived/skipped,false,"Partner is archived, so billing was skipped for April 2026.",,,0,,"Partner is archived, so billing was skipped for April 2026.",0,0,0,false
+Popbooking,2026-04,calculated,false,,,,0,,,0,0,0,false
+Principal,2026-04,calculated,false,,,,0,,,0,0,0,false
+Q2,2026-04,calculated,true,,Rev Share,pay,3.37,Payout FasterACH,Payout FasterACH: 40.0000%x($8.78 est revenue-$0.35 cost),1,1,1755,false
+Q2,2026-04,calculated,true,,Rev Share,pay,7.84,Payout RTP,Payout RTP: 40.0000%x($20.00 est revenue-$0.40 cost),1,1,10703.11,false
+Q2,2026-04,calculated,true,,Rev Share,pay,6.02,Payout Standard,Payout Standard: 40.0000%x($15.06 est revenue-$0.00 cost),1,5,1887.5,false
+Q2,2026-04,calculated,true,,Rev Share,pay,422.3,Payout Standard,"Payout Standard: 40.0000%x($1,145.75 est revenue-$90.00 cost)",1,40,530720.02,false
+Q2,2026-04,calculated,true,,Rev Share,pay,19.08,Payout Standard,Payout Standard: 40.0000%x($72.59 est revenue-$24.89 cost),1,3,2595.5,false
+Quickbook,2026-04,calculated,false,,,,0,,,0,0,0,false
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1,CAD Domestic Standard EFT,CAD Domestic Standard EFT (1x$1.00),1,1,6641.02,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1,Domestic Standard ACH,Domestic Standard ACH (1x$1.00),1,1,49490,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,25,Domestic Standard ACH,Domestic Standard ACH (25x$1.00),1,25,10792300.53,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1,Domestic Standard ACH,Domestic Standard ACH (1x$1.00),1,1,6000,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,3,Domestic Standard ACH,Domestic Standard ACH (3x$1.00),1,3,143976,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1,Domestic Standard ACH,Domestic Standard ACH (1x$1.00),1,1,18774,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,4611,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,50700,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,2,Domestic Standard ACH,Domestic Standard ACH (2x$1.00),1,2,13460,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,15267.37,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,3,EUR Domestic Standard ACH,EUR Domestic Standard ACH (2x$1.50),1,2,406996,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,2633.83,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,3144.01,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,271150.41,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,397392,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,EUR Domestic Standard ACH,EUR Domestic Standard ACH (1x$1.50),1,1,34197.23,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,3,GBP Domestic Standard ACH,GBP Domestic Standard ACH (2x$1.50),1,2,315970.55,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,7.5,GBP Domestic Standard ACH,GBP Domestic Standard ACH (5x$1.50),1,5,102114.37,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,3,GBP Domestic Standard ACH,GBP Domestic Standard ACH (2x$1.50),1,2,4021.59,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,1.5,GBP Domestic Standard ACH,GBP Domestic Standard ACH (1x$1.50),1,1,2273.41,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,54786.69,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,84455,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,254520,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,2900,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$10.00),1,3,2658.3,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,2500,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,65000,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,100,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,155,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,44694,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,40,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$10.00),1,4,111783.88,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,50076,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$10.00),1,3,25200,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,1778,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,21879,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,40000,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,73100,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,192000,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,44700,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,145500.22,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (6x$10.00),1,6,316240.04,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,20,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$10.00),1,2,97595.1,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,5000,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,310800,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,10,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$10.00),1,1,409.74,true
+Remittanceshub,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$10.00),1,3,9860,true
+Remittanceshub,2026-04,calculated,true,,FX,charge,26.04,USD→AED,"USD→AED @ 0.2000% (avg txn $26,041.84) x $26,041.84 (less $26.04 already charged)",1,1,26041.84,true
+Remittanceshub,2026-04,calculated,true,,FX,charge,0.55,USD→AED,"USD→AED @ 0.2000% (avg txn $748.80) x $1,497.60 (less $2.45 already charged)",1,2,1497.6,true
+Remittanceshub,2026-04,calculated,true,,FX,charge,30.58,USD→AED,"USD→AED @ 0.2000% (avg txn $3,059.23) x $30,592.27 (less $30.60 already charged)",1,10,30592.27,true
+Remittanceshub,2026-04,calculated,false,Already charged at transaction time via Est Revenue $2.57,FX,charge,2.57,USD→CHF,"USD→CHF @ 0.1000% (avg txn $2,569.72) x $2,569.72",1,1,2569.72,true
+Remittanceshub,2026-04,calculated,true,,FX,charge,2.52,USD→ILS,"USD→ILS @ 0.2000% (avg txn $2,514.50) x $2,514.50 (less $2.51 already charged)",1,1,2514.5,true
+Remittanceshub,2026-04,calculated,true,,FX,charge,14.61,USD→ILS,"USD→ILS @ 0.2000% (avg txn $14,617.25) x $14,617.25 (less $14.62 already charged)",1,1,14617.25,true
+Remittanceshub,2026-04,calculated,true,,Reversal,charge,10,Wallet reversals,Wallet 2x$5.00,1,2,0,false
+Repay,2026-04,calculated,false,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Feb 1, 2026.",,,0,,"Partner is marked not yet live. Only implementation bills until go-live is confirmed. Target go-live date: Feb 1, 2026.",0,0,0,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,12.87,Payout Standard,Payout Standard: 30.0000%x($50.90 est revenue-$8.00 cost),1,1,2545,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,1.32,Payout Standard,Payout Standard: 30.0000%x($12.40 est revenue-$8.00 cost),1,1,620,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,2.93,Payout Standard,Payout Standard: 30.0000%x($9.75 est revenue-$0.00 cost),1,1,650,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,2.93,Payout Standard,Payout Standard: 30.0000%x($9.75 est revenue-$0.00 cost),1,2,1150,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,43.05,Payout Standard,Payout Standard: 30.0000%x($143.50 est revenue-$0.00 cost),1,4,4100,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,4.9,Payout Standard,Payout Standard: 30.0000%x($99.60 est revenue-$83.25 cost),1,37,34884.14,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,47.12,Payout Standard,Payout Standard: 30.0000%x($157.08 est revenue-$0.00 cost),1,26,25275.28,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,54.53,Payout Standard,Payout Standard: 30.0000%x($192.75 est revenue-$11.00 cost),1,2,2000,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,31.62,Payout Standard,Payout Standard: 30.0000%x($115.94 est revenue-$10.55 cost),1,2,1700,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,11.56,Payout Standard,Payout Standard: 30.0000%x($55.55 est revenue-$17.01 cost),1,2,2008.04,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,19.14,Payout Standard,Payout Standard: 30.0000%x($75.60 est revenue-$11.80 cost),1,2,1200,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,157.24,Payout Standard,Payout Standard: 30.0000%x($568.60 est revenue-$44.45 cost),1,8,8300,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,4.94,Payout Standard,Payout Standard: 30.0000%x($20.77 est revenue-$4.31 cost),1,1,206.25,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,2.79,Payout Standard,Payout Standard: 30.0000%x($15.12 est revenue-$5.81 cost),1,1,540,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,8.29,Payout Standard,Payout Standard: 30.0000%x($32.75 est revenue-$5.13 cost),1,1,750,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,10.32,Payout Standard,Payout Standard: 30.0000%x($41.72 est revenue-$7.32 cost),1,1,1545,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,7.91,Payout Standard,Payout Standard: 30.0000%x($33.21 est revenue-$6.85 cost),1,1,1230,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,49.38,Payout Standard,Payout Standard: 30.0000%x($201.49 est revenue-$36.89 cost),1,7,5923.71,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,42.82,Payout Standard,Payout Standard: 30.0000%x($198.41 est revenue-$55.67 cost),1,7,4444.09,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,3.2,Payout Standard,Payout Standard: 30.0000%x($18.60 est revenue-$7.93 cost),1,1,620,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,1002.58,Payout Standard,"Payout Standard: 30.0000%x($5,314.78 est revenue-$1,972.83 cost)",1,248,157886.84,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,16.53,Payout Standard,Payout Standard: 30.0000%x($75.12 est revenue-$20.01 cost),1,4,2670,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,14.36,Payout Standard,Payout Standard: 30.0000%x($56.25 est revenue-$8.40 cost),1,1,1500,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,9.2,Payout Standard,Payout Standard: 30.0000%x($97.88 est revenue-$67.20 cost),1,8,2610,false
+Shepherd,2026-04,calculated,true,,Rev Share,pay,6.18,Payout Standard,Payout Standard: 30.0000%x($29.00 est revenue-$8.40 cost),1,1,9781.99,false
+Skydo,2026-04,calculated,true,,Offline,charge,257,Domestic Standard ACH,Domestic Standard ACH (514x$0.50),1,514,662906.73,true
+Skydo,2026-04,calculated,true,,Platform,charge,3000,Monthly platform fee,Monthly subscription,0,0,0,false
+Stampli,2026-04,calculated,true,,Offline,charge,746.1,Domestic FasterACH ACH,Domestic FasterACH ACH (2487x$0.30),1,2487,23499822.92,true
+Stampli,2026-04,calculated,true,,Offline,charge,3031.55,Domestic Standard ACH,Domestic Standard ACH (60631x$0.05),1,60631,861219817.26,true
+Stampli,2026-04,calculated,true,,Offline,charge,0.05,Domestic Standard ACH,Domestic Standard ACH (1x$0.05),1,1,2500,true
+Stampli,2026-04,calculated,true,,Offline,charge,180,USD Abroad Standard Wire,USD Abroad Standard Wire (12x$15.00),1,12,102590.45,true
+Stampli,2026-04,calculated,true,,Offline,charge,510,USD Abroad Standard Wire,USD Abroad Standard Wire (34x$15.00),1,34,44153.4,true
+Stampli,2026-04,calculated,true,,Offline,charge,45,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$15.00),1,3,271453.1,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,225,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,5000,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,3000,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,15000,true
+Stampli,2026-04,calculated,true,,Offline,charge,150,USD Abroad Standard Wire,USD Abroad Standard Wire (10x$15.00),1,10,103677.07,true
+Stampli,2026-04,calculated,true,,Offline,charge,2925,USD Abroad Standard Wire,USD Abroad Standard Wire (195x$15.00),1,195,14896423.71,true
+Stampli,2026-04,calculated,true,,Offline,charge,165,USD Abroad Standard Wire,USD Abroad Standard Wire (11x$15.00),1,11,27069.13,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,183826.36,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,4000,true
+Stampli,2026-04,calculated,true,,Offline,charge,150,USD Abroad Standard Wire,USD Abroad Standard Wire (10x$15.00),1,10,97104.42,true
+Stampli,2026-04,calculated,true,,Offline,charge,45,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$15.00),1,3,45925.02,true
+Stampli,2026-04,calculated,true,,Offline,charge,105,USD Abroad Standard Wire,USD Abroad Standard Wire (7x$15.00),1,7,494176.69,true
+Stampli,2026-04,calculated,true,,Offline,charge,90,USD Abroad Standard Wire,USD Abroad Standard Wire (6x$15.00),1,6,26881.67,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,21179.85,true
+Stampli,2026-04,calculated,true,,Offline,charge,840,USD Abroad Standard Wire,USD Abroad Standard Wire (56x$15.00),1,56,909154.5,true
+Stampli,2026-04,calculated,true,,Offline,charge,120,USD Abroad Standard Wire,USD Abroad Standard Wire (8x$15.00),1,8,16952.71,true
+Stampli,2026-04,calculated,true,,Offline,charge,1350,USD Abroad Standard Wire,USD Abroad Standard Wire (90x$15.00),1,90,4747892.29,true
+Stampli,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$15.00),1,2,104664.23,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,600,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,2014.65,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,6298.5,true
+Stampli,2026-04,calculated,true,,Offline,charge,45,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$15.00),1,3,65139,true
+Stampli,2026-04,calculated,true,,Offline,charge,765,USD Abroad Standard Wire,USD Abroad Standard Wire (51x$15.00),1,51,960721.69,true
+Stampli,2026-04,calculated,true,,Offline,charge,120,USD Abroad Standard Wire,USD Abroad Standard Wire (8x$15.00),1,8,26345.65,true
+Stampli,2026-04,calculated,true,,Offline,charge,45,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$15.00),1,3,244600,true
+Stampli,2026-04,calculated,true,,Offline,charge,45,USD Abroad Standard Wire,USD Abroad Standard Wire (3x$15.00),1,3,60296.24,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,1226097.85,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,2082.19,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,10500,true
+Stampli,2026-04,calculated,true,,Offline,charge,75,USD Abroad Standard Wire,USD Abroad Standard Wire (5x$15.00),1,5,90987.57,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,65324.29,true
+Stampli,2026-04,calculated,true,,Offline,charge,75,USD Abroad Standard Wire,USD Abroad Standard Wire (5x$15.00),1,5,107851.44,true
+Stampli,2026-04,calculated,true,,Offline,charge,75,USD Abroad Standard Wire,USD Abroad Standard Wire (5x$15.00),1,5,77046.05,true
+Stampli,2026-04,calculated,true,,Offline,charge,75,USD Abroad Standard Wire,USD Abroad Standard Wire (5x$15.00),1,5,19020.2,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,29674.9,true
+Stampli,2026-04,calculated,true,,Offline,charge,75,USD Abroad Standard Wire,USD Abroad Standard Wire (5x$15.00),1,5,22581.17,true
+Stampli,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$15.00),1,2,17303,true
+Stampli,2026-04,calculated,true,,Offline,charge,90,USD Abroad Standard Wire,USD Abroad Standard Wire (6x$15.00),1,6,100334.72,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,233731.54,true
+Stampli,2026-04,calculated,true,,Offline,charge,435,USD Abroad Standard Wire,USD Abroad Standard Wire (29x$15.00),1,29,322220.35,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,1500,true
+Stampli,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$15.00),1,2,5650,true
+Stampli,2026-04,calculated,true,,Offline,charge,90,USD Abroad Standard Wire,USD Abroad Standard Wire (6x$15.00),1,6,25529.34,true
+Stampli,2026-04,calculated,true,,Offline,charge,120,USD Abroad Standard Wire,USD Abroad Standard Wire (8x$15.00),1,8,95732.14,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,16130.57,true
+Stampli,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$15.00),1,2,314464.75,true
+Stampli,2026-04,calculated,true,,Offline,charge,210,USD Abroad Standard Wire,USD Abroad Standard Wire (14x$15.00),1,14,177825.05,true
+Stampli,2026-04,calculated,true,,Offline,charge,60,USD Abroad Standard Wire,USD Abroad Standard Wire (4x$15.00),1,4,2610.49,true
+Stampli,2026-04,calculated,true,,Offline,charge,30,USD Abroad Standard Wire,USD Abroad Standard Wire (2x$15.00),1,2,2514.43,true
+Stampli,2026-04,calculated,true,,Offline,charge,15,USD Abroad Standard Wire,USD Abroad Standard Wire (1x$15.00),1,1,1350,true
+Stampli,2026-04,calculated,true,,Rev Share,pay,54082.33,FX partner markup payout,"FX partner markup payout (249 payout txns, markup $54,082.33, net after reversals $54,038.71)",1,249,3870120.28,false
+Stampli,2026-04,calculated,true,,Rev Share,pay,-43.62,FX partner markup reversal,"FX partner markup reversal adjustment (3 reversal txns, reversed $43.62, net balance $54,038.71)",1,3,2260.96,false
+Stampli,2026-04,calculated,true,,Reversal,charge,500,Bank reversals,Bank 200x$2.50 default,1,200,0,false
+Stampli,2026-04,calculated,false,"Not applicable because generated revenue $13,512.70 exceeds minimum",Minimum,charge,8000,Monthly minimum,"Monthly minimum fee for period ($8,000.00)",0,0,0,false
+TripleA,2026-04,calculated,false,"Replaced by monthly minimum $2,500.00",Offline,charge,2.4,Domestic Standard ACH,Domestic Standard ACH (3x$0.80),1,3,2.62,true
+TripleA,2026-04,calculated,false,"Replaced by monthly minimum $2,500.00",Offline,charge,57.6,Domestic Standard ACH,Domestic Standard ACH (72x$0.80),1,72,698078.7,true
+TripleA,2026-04,calculated,false,"Replaced by monthly minimum $2,500.00",Offline,charge,3.2,Domestic Standard ACH,Domestic Standard ACH (4x$0.80),1,4,3.55,true
+TripleA,2026-04,calculated,false,"Replaced by monthly minimum $2,500.00",Offline,charge,1.6,Domestic Standard ACH,Domestic Standard ACH (2x$0.80),1,2,160000,true
+TripleA,2026-04,calculated,false,"Replaced by monthly minimum $2,500.00",Volume,charge,1750.25,Platform Fee,"Platform Fee Platform Fee (0.2000%x$875,122.55)",5,82,875122.55,true
+TripleA,2026-04,calculated,true,,Minimum,charge,2500,Monthly minimum,"Monthly minimum fee for period ($2,500.00) replaces $1,815.05 generated revenue",0,0,0,false
+VG Pay,2026-04,calculated,false,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,,,0,,Partner is marked not yet live. Only implementation bills during integration until a go-live date is set.,0,0,0,false
+VirtualLationos,2026-04,calculated,false,,,,0,,,0,0,0,false
+Whish,2026-04,calculated,true,,Volume,charge,9141.02,ACH,"ACH  (0.4000%x$3,018,941.22) (less $2,934.74 already charged)",3,2631,3018941.22,true
+Whish,2026-04,calculated,true,,Reversal,charge,2.25,Bank reversals,Bank 1x$2.25,1,1,0,false
+Whish,2026-04,calculated,false,"Not applicable because invoiced revenue $9,141.02 + pre-collected revenue $2,934.74 exceeds minimum",Minimum,charge,10000,Monthly minimum,"Monthly minimum fee for period ($10,000.00)",0,0,0,false
+Xero,2026-04,calculated,false,,,,0,,,0,0,0,false
+Yeepay,2026-04,calculated,true,,Offline,charge,1.5,Domestic Standard ACH,Domestic Standard ACH (6x$0.25),1,6,0,true
+Yeepay,2026-04,calculated,true,,Offline,charge,1,Domestic Standard ACH,Domestic Standard ACH (4x$0.25),1,4,597806.32,true
+Yeepay,2026-04,calculated,true,,Offline,charge,18.5,Domestic Standard ACH,Domestic Standard ACH (74x$0.25),1,74,542227.77,true
+Yeepay,2026-04,calculated,true,,Offline,charge,2.75,Domestic Standard ACH,Domestic Standard ACH (11x$0.25),1,11,138545.94,true
+Yeepay,2026-04,calculated,true,,Reversal,charge,10,Wallet reversals,Wallet 2x$5.00,1,2,0,false
+Yeepay,2026-04,calculated,true,,Platform,charge,5000,Monthly platform fee,Monthly subscription,0,0,0,false
