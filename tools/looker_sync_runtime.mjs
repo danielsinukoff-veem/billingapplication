@@ -12,6 +12,7 @@ const PARTNER_PATTERNS = [
   ["fulfil", "Fulfil"],
   ["gme_remit", "GME_Remit"],
   ["gme remit", "GME_Remit"],
+  ["gmeremit", "GME_Remit"],
   ["graph finance", "Graph Finance"],
   ["graph", "Graph Finance"],
   ["halorecruiting", "Halorecruiting"],
@@ -19,6 +20,10 @@ const PARTNER_PATTERNS = [
   ["jazz", "Jazz Cash"],
   ["lightnet", "Lightnet"],
   ["magaya", "Magaya"],
+  ["m-daq global ltd", "M-DAQ"],
+  ["m daq global ltd", "M-DAQ"],
+  ["m-daq", "M-DAQ"],
+  ["m daq", "M-DAQ"],
   ["multigate", "Multigate"],
   ["nibss", "NIBSS ( TurboTech)"],
   ["nium", "Nium"],
@@ -33,6 +38,9 @@ const PARTNER_PATTERNS = [
   ["yeepay", "Yeepay"],
   ["nuvion", "Nuvion"],
   ["maplewave", "Maplewave"],
+  ["triple a technologies", "TripleA"],
+  ["triplea technologies", "TripleA"],
+  ["triple a", "TripleA"],
   ["triple-a", "TripleA"],
   ["triplea", "TripleA"],
   ["nomadglobal", "Nomad"],
@@ -43,6 +51,7 @@ const PARTNER_PATTERNS = [
   ["remittanceshub", "Remittanceshub"],
   ["vg pay", "VG Pay"],
   ["vgpay", "VG Pay"],
+  ["vigipay", "VG Pay"],
 ];
 
 const PARTNER_ALIASES = Object.fromEntries(PARTNER_PATTERNS);
@@ -86,6 +95,12 @@ const US_COUNTRY_CODES = new Set(["US", "USA"]);
 const UK_COUNTRY_CODES = new Set(["GB", "UK"]);
 const CA_COUNTRY_CODES = new Set(["CA", "CAN"]);
 const AU_COUNTRY_CODES = new Set(["AU", "AUS"]);
+const SAME_CURRENCY_DOMESTIC_TXN_TYPES = {
+  AUD: "AUD Domestic",
+  CAD: "CAD Domestic",
+  EUR: "EUR Domestic",
+  GBP: "GBP Domestic",
+};
 
 const SECTION_CHANGE_LABELS = {
   ltxn: "Transactions",
@@ -327,9 +342,6 @@ function normalizeProcessingMethod(txnType, speedFlag, methods) {
 
 function deriveContractTxnType(rawTxnType, payerCcy = "", payeeCcy = "", payerCountry = "", payeeCountry = "", paymentType = "") {
   const normalizedRaw = normalizeFixedTxnType(rawTxnType);
-  if (["Domestic", "USD Abroad", "FX", "CAD Domestic", "GBP Domestic", "EUR Domestic", "AUD Domestic", "Payin", "Payout"].includes(normalizedRaw)) {
-    return normalizedRaw;
-  }
   const normalizedPaymentType = normalizeFixedTxnType(paymentType);
   if (["Payin", "Payout"].includes(normalizedPaymentType)) return normalizedPaymentType;
 
@@ -338,6 +350,13 @@ function deriveContractTxnType(rawTxnType, payerCcy = "", payeeCcy = "", payerCo
   const payerCountryCode = normalizeCountryCode(payerCountry);
   const payeeCountryCode = normalizeCountryCode(payeeCountry);
 
+  if (normalizedRaw === "FX" && payerCcyText && payeeCcyText && payerCcyText === payeeCcyText) {
+    if (payeeCcyText === "USD" && payeeCountryCode && !US_COUNTRY_CODES.has(payeeCountryCode)) return "USD Abroad";
+    if (SAME_CURRENCY_DOMESTIC_TXN_TYPES[payeeCcyText]) return SAME_CURRENCY_DOMESTIC_TXN_TYPES[payeeCcyText];
+  }
+  if (["Domestic", "USD Abroad", "FX", "CAD Domestic", "GBP Domestic", "EUR Domestic", "AUD Domestic", "Payin", "Payout"].includes(normalizedRaw)) {
+    return normalizedRaw;
+  }
   if (payerCcyText && payeeCcyText && payerCcyText !== payeeCcyText) return "FX";
   if (payeeCcyText === "USD" && payeeCountryCode && !US_COUNTRY_CODES.has(payeeCountryCode)) return "USD Abroad";
   if (payerCcyText === "CAD" && payeeCcyText === "CAD" && CA_COUNTRY_CODES.has(payerCountryCode) && CA_COUNTRY_CODES.has(payeeCountryCode)) return "CAD Domestic";
@@ -356,6 +375,9 @@ function inferPartner(row) {
     "**  Initiator Customer Account ** Partner Group Source",
     "Partner Offline Billing PARTNER",
     "Partner Group With Bank",
+    "PARTNER",
+    "Partner",
+    "partner",
   ]) {
     const partner = normalizePartnerName(row?.[key]);
     if (partner) return partner;
@@ -1503,7 +1525,13 @@ function buildOfflineTransactions(rows, period, { includeDetailRows = true } = {
       "Transaction Lookup Dates Credit Complete Timestamp Time",
       { patterns: ["creditcompletedate", "creditcompletetimestampdate", "creditcompletetimestampdate", "creditcompletetimestamptime"] }
     );
-    const month = monthKey(creditCompleteValue);
+    const billingMonthValue = rowValueFirst(
+      row,
+      "Billing Month",
+      "Billing Month Month",
+      { patterns: ["billingmonthmonth", "billingmonth", "billingmo"] }
+    );
+    const month = monthKey(creditCompleteValue || billingMonthValue);
     if (!month || !matchesPeriod(month, period)) continue;
     const paymentId = text(rowValueFirst(row, "Payment Payment ID", "Payment ID", { patterns: ["paymentpaymentid", "paymentid"] }));
     if (!paymentId) continue;
@@ -1544,7 +1572,13 @@ function buildOfflineTransactionsFromCsv(csvSource, period, { includeDetailRows 
       "Transaction Lookup Dates Credit Complete Timestamp Time",
       { patterns: ["creditcompletedate", "creditcompletetimestampdate", "creditcompletetimestampdate", "creditcompletetimestamptime"] }
     );
-    const month = monthKey(creditCompleteValue);
+    const billingMonthValue = rowValueFirst(
+      row,
+      "Billing Month",
+      "Billing Month Month",
+      { patterns: ["billingmonthmonth", "billingmonth", "billingmo"] }
+    );
+    const month = monthKey(creditCompleteValue || billingMonthValue);
     if (!month || !matchesPeriod(month, period)) return;
     const paymentId = text(rowValueFirst(row, "Payment Payment ID", "Payment ID", { patterns: ["paymentpaymentid", "paymentid"] }));
     if (!paymentId) return;
@@ -2048,8 +2082,8 @@ export function buildS3WorkbookKeys(prefix = "") {
   const normalized = text(prefix).replace(/^\/+|\/+$/g, "");
   if (!normalized) {
     return {
-      workbookKey: "current/workbook.json",
-      summaryKey: "looker-sync/latest-summary.json",
+      workbookKey: "data/current-workbook.json",
+      summaryKey: "data/looker-sync/latest-summary.json",
     };
   }
   return {

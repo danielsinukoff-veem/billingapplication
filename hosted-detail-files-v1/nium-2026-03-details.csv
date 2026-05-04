@@ -1,2 +1,2 @@
-closedAccounts,dormantAccounts,newAccountsOpened,newBusinessSetups,partner,period,settlementCount,sourceSection,totalActiveAccounts,totalBusinessAccounts,totalIndividualAccounts
-0,0,0,0,Nium,2026-03,0,lva,1,1,0
+detailCategory,detailSource,partner,period,paymentId,txnType,speedFlag,processingMethod,payerFunding,payeeFunding,payerCcy,payeeCcy,payerCountry,payeeCountry,accountId,paymentType,submissionDate,reversalDate,payerEmail,payerBusinessName,payeeEmail,payeeBusinessName,paymentPriority,payeeAmountCurrency,payeeAmount,usdAmountDebited,paymentUsdEquivalentAmount
+reversal,offline_reversal,Nium,2026-03,6993856,,,,Bank,,USD,USD,,US,1606576,Domestic,2026-02-19,2026-03-02,45415893017495632190b19994c4ff649c38f14eb63d4dbff1b@stampli.com,eGlobal,grantvictorap-2dca0781-71a5-447b-a24b-0d2867ea5486-USD@stampli.com,CARRIAGE HOUSE CONDOMINIUMS OWNERS ASSOCIATION,bank - bank,3.5,3.5,3.5,3.5
