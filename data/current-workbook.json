@@ -4,8 +4,8 @@
   },
   "user": {},
   "snapshot": {
-    "_version": 36,
-    "_saved": "2026-05-04T21:55:31.380Z",
+    "_version": 38,
+    "_saved": "2026-05-06T03:57:56.632Z",
     "ps": [
       "Stampli",
       "Shepherd",
@@ -92,7 +92,11 @@
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Support Shepherd LLC dba Somewhere",
+        "partnerBillingAddress": "",
+        "billingAddressIntentionallyBlank": true
       },
       {
         "contractStartDate": "",
@@ -108,11 +112,20 @@
         "note": "Source: Everflow.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.",
         "contractDueText": "Not specified",
         "preferredBillingTiming": "2nd of following month",
-        "contactEmails": "ed@everflow.io, arshi@everflow.io, peter@everflow.io, suzy@everflow.io, olivier@everflow.io, patrick@everflow.io, accountspayable@veem.com, sheila@veem.com, natalie@everflow.io",
+        "contactEmails": "pay.help@everflow.io",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Everflow Technologies Inc.",
+        "partnerBillingAddress": "530 Showers Drive Suite 7-302\nMountain View, CA 94040",
+        "partnerPrimaryEmail": "pay.help@everflow.io",
+        "partnerAccountId": "1313224",
+        "partnerBusinessLegalName": "Everflow Technologies Inc.",
+        "partnerPlatformPrefix": "API - Everflow -",
+        "partnerPlatformName": "Everflow Technologies Inc.",
+        "partnerUtmSource": "Everflow"
       },
       {
         "contractStartDate": "",
@@ -132,7 +145,10 @@
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Q2 Software, Inc.",
+        "partnerBillingAddress": "13785 Research Blvd Ste. 150\nAustin, TX 78750"
       },
       {
         "contractStartDate": "",
@@ -168,11 +184,15 @@
         "note": "Source: Halo_Recruiting.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.",
         "contractDueText": "",
         "preferredBillingTiming": "",
-        "contactEmails": "",
+        "contactEmails": "monica@halorecruiting.com, dan@halorecruiting.com",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Halorecruiting",
+        "partnerBillingAddress": "",
+        "billingAddressIntentionallyBlank": true
       },
       {
         "contractStartDate": "",
@@ -188,11 +208,16 @@
         "note": "Operational source: Partner Payouts sheet",
         "contractDueText": "",
         "preferredBillingTiming": "",
-        "contactEmails": "",
+        "contactEmails": "ap@magaya.com",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Magaya Corporation",
+        "partnerBillingAddress": "7950 NW 53rd Street, Suite 300\nMiami, FL 33166\nUSA",
+        "partnerPrimaryEmail": "ap@magaya.com",
+        "partnerBusinessLegalName": "Magaya Corporation"
       },
       {
         "contractStartDate": "",
@@ -208,11 +233,16 @@
         "note": "No mapped contract file",
         "contractDueText": "",
         "preferredBillingTiming": "",
-        "contactEmails": "",
+        "contactEmails": "conor.daly@fulfil.io",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Fulfil.IO Inc.",
+        "partnerBillingAddress": "340 South Lemon Avenue\nWalnut, CA 91789\nUS",
+        "partnerPrimaryEmail": "conor.daly@fulfil.io",
+        "partnerBusinessLegalName": "Fulfil.IO Inc."
       },
       {
         "contractStartDate": "2024-10-16",
@@ -272,11 +302,20 @@
         "note": "Source: Triple_A.txt No explicit due term extracted.",
         "contractDueText": "Monthly",
         "preferredBillingTiming": "",
-        "contactEmails": "finance@triple-a.io",
+        "contactEmails": "partners@triple-a.io",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Triple A Technologies Pte. Ltd.",
+        "partnerBillingAddress": "International Plaza\nSingapore 079903\n#24-14",
+        "partnerPrimaryEmail": "partners@triple-a.io",
+        "partnerAccountId": "1660263",
+        "partnerBusinessLegalName": "Triple A Technologies Pte. Ltd.",
+        "partnerPlatformPrefix": "API - Triple A Techn",
+        "partnerPlatformName": "Triple A Technologies",
+        "partnerUtmSource": "Triple A Technologies"
       },
       {
         "contractStartDate": "2025-04-03",
@@ -356,7 +395,17 @@
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Nuvion Payments LLC",
+        "partnerBillingAddress": "",
+        "billingAddressIntentionallyBlank": true,
+        "partnerPrimaryEmail": "oluwadara@nuvion.co",
+        "partnerAccountId": "1731603",
+        "partnerBusinessLegalName": "Nuvion Payments LLC",
+        "partnerPlatformPrefix": "API - Nuvion",
+        "partnerPlatformName": "Nuvion",
+        "partnerUtmSource": "Nuvion"
       },
       {
         "contractStartDate": "2025-07-31",
@@ -432,11 +481,20 @@
         "note": "Operational source: Billed and Collected sheet",
         "contractDueText": "",
         "preferredBillingTiming": "",
-        "contactEmails": "",
+        "contactEmails": "parveen.gandhi@remittanceshub.com",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "REMITTANCES HUB ENTERPRISES CANADA LTD",
+        "partnerBillingAddress": "445 Banks Road\nOffice Number 8\nKelowna, BC V1X 6A2\nCanada",
+        "partnerPrimaryEmail": "parveen.gandhi@remittanceshub.com",
+        "partnerAccountId": "1748015",
+        "partnerBusinessLegalName": "REMITTANCES HUB ENTERPRISES CANADA LTD",
+        "partnerPlatformPrefix": "API - RemittancesHub -",
+        "partnerPlatformName": "RemittancesHub",
+        "partnerUtmSource": "RemittancesHub"
       },
       {
         "contractStartDate": "2026-01-31",
@@ -516,7 +574,17 @@
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Blindpay",
+        "partnerBillingAddress": "",
+        "billingAddressIntentionallyBlank": true,
+        "partnerPrimaryEmail": "bernardo@blindpay.com",
+        "partnerAccountId": "1731754",
+        "partnerBusinessLegalName": "Blind Pay, Inc.",
+        "partnerPlatformPrefix": "API - Blindpay",
+        "partnerPlatformName": "Blindpay",
+        "partnerUtmSource": "Blindpay"
       },
       {
         "contractStartDate": "",
@@ -572,11 +640,21 @@
         "note": "Source: Maplewave.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.",
         "contractDueText": "",
         "preferredBillingTiming": "",
-        "contactEmails": "",
+        "contactEmails": "support@maplewave.money",
         "lateFeePercentMonthly": 0,
         "lateFeeStartDays": 0,
         "serviceSuspensionDays": 0,
-        "lateFeeTerms": ""
+        "lateFeeTerms": "",
+        "invoiceEntity": "Veem Inc",
+        "partnerLegalName": "Maplewave Payments, Inc.",
+        "partnerBillingAddress": "",
+        "billingAddressIntentionallyBlank": true,
+        "partnerPrimaryEmail": "support@maplewave.money",
+        "partnerAccountId": "1781972",
+        "partnerBusinessLegalName": "Maplewave Payments, Inc.",
+        "partnerPlatformPrefix": "API - Maplewave -",
+        "partnerPlatformName": "Maplewave",
+        "partnerUtmSource": "Maplewave"
       },
       {
         "contractStartDate": "",
@@ -822,6 +900,29 @@
           "Venture Garden",
           "Venture Garden Pay"
         ]
+      },
+      {
+        "contractStartDate": "2025-06-20",
+        "goLiveDate": "",
+        "notYetLive": false,
+        "integrationStatus": "",
+        "invoiceEntity": "Veem Inc",
+        "id": "pb_mdaq",
+        "partner": "M-DAQ",
+        "billingFreq": "Monthly",
+        "payBy": "Due in 7 days",
+        "dueDays": 7,
+        "billingDay": 7,
+        "note": "Source: M-DAQ.pdf Schedule A. Company invoices Partner monthly for transaction fees, FX fees, miscellaneous fees, platform fees, and applicable monthly minimum FX processing.",
+        "contractDueText": "Fees payable within 7 days",
+        "preferredBillingTiming": "7th of following month",
+        "contactEmails": "",
+        "lateFeePercentMonthly": 0,
+        "lateFeeStartDays": 0,
+        "serviceSuspensionDays": 0,
+        "lateFeeTerms": "",
+        "partnerLegalName": "M-DAQ Payment Solutions Pte Ltd",
+        "partnerBillingAddress": "15 Playfair Rd, #02-01\nSingapore 367987"
       }
     ],
     "pInvoices": [],
@@ -3340,6 +3441,42 @@
         "startDate": "2025-11-01",
         "endDate": "",
         "note": "Bulk Transfer Wire Fee per Yeepay contract: International Wire $20 per transaction"
+      },
+      {
+        "id": "mdaq-off-domestic-ach",
+        "partner": "M-DAQ",
+        "txnType": "Domestic",
+        "speedFlag": "Standard",
+        "minAmt": 0,
+        "maxAmt": 10000000,
+        "payerFunding": "",
+        "payeeFunding": "",
+        "fee": 0.7,
+        "payerCcy": "USD",
+        "payeeCcy": "USD",
+        "payerCountry": "",
+        "payeeCountry": "",
+        "processingMethod": "ACH",
+        "startDate": "2025-06-20",
+        "endDate": ""
+      },
+      {
+        "id": "mdaq-off-usd-abroad-wire",
+        "partner": "M-DAQ",
+        "txnType": "USD Abroad",
+        "speedFlag": "Standard",
+        "minAmt": 0,
+        "maxAmt": 10000000,
+        "payerFunding": "",
+        "payeeFunding": "",
+        "fee": 18,
+        "payerCcy": "USD",
+        "payeeCcy": "USD",
+        "payerCountry": "",
+        "payeeCountry": "",
+        "processingMethod": "Wire",
+        "startDate": "2025-06-20",
+        "endDate": ""
       }
     ],
     "vol": [
@@ -4895,6 +5032,54 @@
         "volMaxFee": 0,
         "volMinFee": 0,
         "note": "Skydo card pricing schedule (amendment)"
+      },
+      {
+        "id": "mdaq-vol-platform",
+        "partner": "M-DAQ",
+        "txnType": "",
+        "speedFlag": "",
+        "rate": 0.0002,
+        "payerFunding": "",
+        "payeeFunding": "",
+        "payeeCardType": "",
+        "ccyGroup": "",
+        "minVol": 0,
+        "maxVol": 1000000000,
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "note": "Platform Fee"
+      },
+      {
+        "id": "mdaq-vol-same-day-ach",
+        "partner": "M-DAQ",
+        "txnType": "Domestic",
+        "speedFlag": "FasterACH",
+        "rate": 0.0035,
+        "payerFunding": "",
+        "payeeFunding": "",
+        "payeeCardType": "",
+        "ccyGroup": "USD",
+        "minVol": 0,
+        "maxVol": 1000000000,
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "note": "Same Day ACH"
+      },
+      {
+        "id": "mdaq-vol-rtp",
+        "partner": "M-DAQ",
+        "txnType": "Domestic",
+        "speedFlag": "RTP",
+        "rate": 0.007,
+        "payerFunding": "",
+        "payeeFunding": "",
+        "payeeCardType": "",
+        "ccyGroup": "USD",
+        "minVol": 0,
+        "maxVol": 1000000000,
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "note": "Instant Bank Transfer"
       }
     ],
     "fxRates": [
@@ -6129,6 +6314,22 @@
         "startDate": "2026-01-01",
         "endDate": "",
         "note": ""
+      },
+      {
+        "id": "mdaq-fx-major",
+        "partner": "M-DAQ",
+        "payerCorridor": "",
+        "payerCcy": "",
+        "payeeCorridor": "Major",
+        "payeeCcy": "",
+        "minTxnSize": 0,
+        "maxTxnSize": 1000000000,
+        "minVol": 0,
+        "maxVol": 1000000000,
+        "rate": 0.0015,
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "note": "Foreign Exchange - Major Currencies"
       }
     ],
     "cap": [
@@ -6185,6 +6386,24 @@
         "productType": "RTP",
         "capType": "Max Fee",
         "amount": 20
+      },
+      {
+        "id": "mdaq-cap-fasterach",
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "partner": "M-DAQ",
+        "productType": "FasterACH",
+        "capType": "Max Fee",
+        "amount": 15
+      },
+      {
+        "id": "mdaq-cap-rtp",
+        "startDate": "2025-06-20",
+        "endDate": "",
+        "partner": "M-DAQ",
+        "productType": "RTP",
+        "capType": "Max Fee",
+        "amount": 15
       }
     ],
     "rs": [
@@ -6834,6 +7053,14 @@
     ],
     "revf": [
       {
+        "id": "revf_stampli_default_250",
+        "partner": "Stampli",
+        "payerFunding": "",
+        "feePerReversal": 2.5,
+        "startDate": "2024-06-19",
+        "endDate": ""
+      },
+      {
         "id": "8gd6q5",
         "partner": "Whish",
         "payerFunding": "",
@@ -7026,6 +7253,14 @@
         "startDate": "2025-03-01",
         "endDate": "",
         "note": "Default reversal fee per Skydo contract (non-card)"
+      },
+      {
+        "id": "mdaq-revf-all",
+        "partner": "M-DAQ",
+        "payerFunding": "",
+        "feePerReversal": 5,
+        "startDate": "2025-06-20",
+        "endDate": ""
       }
     ],
     "impl": [
@@ -58324,5 +58559,5 @@
       "Yeepay|2026-05": "./hosted-detail-files-v1/yeepay-2026-05-details.csv"
     }
   },
-  "savedAt": "2026-05-04T21:55:31.380Z"
+  "savedAt": "2026-05-06T03:57:56.632Z"
 }

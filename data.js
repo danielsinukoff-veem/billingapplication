@@ -78,11 +78,14 @@ const DEFAULT_INVOICE_ENTITIES = {
   Cellpay: "Veem Payments Inc",
   Everflow: "Veem Inc",
   Factura: "Veem Inc",
+  Fulfil: "Veem Inc",
   Halorecruiting: "Veem Inc",
   "Jazz Cash": "Veem Payments Inc",
   LianLian: "Veem Payments Inc",
   Lightnet: "Veem Payments Inc",
   Maplewave: "Veem Inc",
+  Magaya: "Veem Inc",
+  "M-DAQ": "Veem Inc",
   Multigate: "Veem Inc",
   "NIBSS ( TurboTech)": "Veem Inc",
   Nium: "Veem Inc",
@@ -97,7 +100,7 @@ const DEFAULT_INVOICE_ENTITIES = {
   Shepherd: "Veem Inc",
   Skydo: "Veem Payments Inc",
   Stampli: "Veem Inc",
-  TripleA: "Veem Payments Inc",
+  TripleA: "Veem Inc",
   "VG Pay": "Veem Inc",
   Whish: "Veem Payments Inc",
   Yeepay: "Veem Inc",
@@ -128,6 +131,7 @@ const DEFAULT_CONTRACT_START_DATES = {
   Whish: "2024-07-04",
   Athena: "2025-02-27",
   Maplewave: "2026-01-31",
+  "M-DAQ": "2025-06-20",
   Oson: "2024-07-05"
 };
 
@@ -145,6 +149,7 @@ const DEFAULT_GO_LIVE_DATES = {
   Altpay: "",
   Repay: "",
   Maplewave: "2026-01-15",
+  "M-DAQ": "",
   Blindpay: "2026-02-18",
   LianLian: "2025-12-01",
   Skydo: "2025-05-20",
@@ -190,15 +195,16 @@ function enrichPartnerBillingRows(rows) {
 const initPartnerBilling = [
   pb("pb_stampli", "Stampli", "Monthly", "Monthly settlement / setoff", 0, 2, "Source: Stampli.txt Warnings: Detected an FX markup or settlement formula that cannot be converted into fixed rate rows automatically.", "7th of the following month", "2nd of following month", "accounting@stampli.com"),
   pb("pb_shepherd", "Shepherd", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, 7, "Source: Shepherd_Somewhere.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "Not specified", "1st week of following month", "sheila@veem.com, ryan@somewhere.com, venice@somewhere.com, niel@somewhere.com, jerimiah@somewhere.com, nprada@somewhere.com, accountspayable@veem.com"),
-  pb("pb_everflow", "Everflow", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, 2, "Source: Everflow.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "Not specified", "2nd of following month", "ed@everflow.io, arshi@everflow.io, peter@everflow.io, suzy@everflow.io, olivier@everflow.io, patrick@everflow.io, accountspayable@veem.com, sheila@veem.com, natalie@everflow.io"),
+  pb("pb_everflow", "Everflow", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, 2, "Source: Everflow.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "Not specified", "2nd of following month", "pay.help@everflow.io"),
   pb("pb_q2", "Q2", "Monthly", "Monthly within 45 days from last day of month", 45, "", "Source: Q2.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually."),
   pb("pb_finastra", "Finastra", "Monthly", "", 0, "", "No mapped contract file"),
-  pb("pb_halorecruiting", "Halorecruiting", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, "", "Source: Halo_Recruiting.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually."),
-  pb("pb_magaya", "Magaya", "Quarterly", "Due in 30 days", 30, "", "Operational source: Partner Payouts sheet"),
-  pb("pb_fulfil", "Fulfil", "Monthly", "", 0, "", "No mapped contract file"),
+  pb("pb_halorecruiting", "Halorecruiting", "Quarterly", "Quarterly within 45 days from last day of quarter", 45, "", "Source: Halo_Recruiting.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "", "", "monica@halorecruiting.com, dan@halorecruiting.com"),
+  pb("pb_magaya", "Magaya", "Quarterly", "Due in 30 days", 30, "", "Operational source: Partner Payouts sheet", "", "", "ap@magaya.com"),
+  pb("pb_mdaq", "M-DAQ", "Monthly", "Due in 7 days", 7, 7, "Source: M-DAQ.pdf Schedule A. Company invoices Partner monthly for transaction fees, FX fees, miscellaneous fees, platform fees, and applicable monthly minimum FX processing.", "Fees payable within 7 days", "7th of following month"),
+  pb("pb_fulfil", "Fulfil", "Monthly", "", 0, "", "No mapped contract file", "", "", "conor.daly@fulfil.io"),
   pb("pb_nomad", "Nomad", "Monthly", "Due in 30 days", 30, 1, "Source: Nomad.txt", "1st of following month", "1st of following month", "mathias.fischer@nomadglobal.com, financeiro@nomadglobal.com, pedro.barreiro@nomadglobal.com, alessandra.ferreira@nomadglobal.com, finops@nomadglobal.com, geovanne.pereira@nomadglobal.com"),
   pb("pb_skydo", "Skydo", "Monthly", "Due in 30 days", 30, 1, "Source: Skydo.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "1st of following month", "1st of following month", "payables@skydo.com"),
-  pb("pb_triplea", "TripleA", "Monthly", "", 0, "", "Source: Triple_A.txt No explicit due term extracted.", "Monthly", "", "finance@triple-a.io"),
+  pb("pb_triplea", "TripleA", "Monthly", "", 0, "", "Source: Triple_A.txt No explicit due term extracted.", "Monthly", "", "partners@triple-a.io"),
   pb("pb_capi", "Capi", "Monthly", "Before 15th(Due Net 30)", 30, 1, "Source: Capi.txt No explicit due term extracted.", "Monthly", "1st of begining of month", "josh@capimoney.com"),
   pb("pb_nsave", "Nsave", "Monthly", "Before 15th(Due Net 30)", 30, 1, "Source: NSave_Addendum.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually. No explicit due term extracted.", "Monthly", "1st of begining of month", "amer@nsave.com, finance@nsave.com"),
   pb("pb_cellpay", "Cellpay", "Monthly", "Due in 7 days", 7, 1, "Source: Cellpay.txt", "Monthly", "1st of begining of month", "garene@cellpay.com"),
@@ -206,14 +212,14 @@ const initPartnerBilling = [
   pb("pb_yeepay", "Yeepay", "Monthly", "Due in 7 days", 7, 31, "Source: Yeepay.txt", "Monthly", "End of Month", "overseasops@yeepay.com, yuezhang.liu@yeepay.com, qiuyu.cui@yeepay.com"),
   pb("pb_clearshift", "Clearshift", "Monthly", "Due in 7 days", 7, "", "Source: Clearshift.txt"),
   pb("pb_graph_finance", "Graph Finance", "Monthly", "Due in 7 days", 7, "", "Source: Graph.txt"),
-  pb("pb_remittanceshub", "Remittanceshub", "Monthly", "Due in 14 days", 14, "", "Operational source: Billed and Collected sheet"),
+  pb("pb_remittanceshub", "Remittanceshub", "Monthly", "Due in 14 days", 14, "", "Operational source: Billed and Collected sheet", "", "", "parveen.gandhi@remittanceshub.com"),
   pb("pb_altpay", "Altpay", "Monthly", "Due in 7 days", 7, "", "Source: Altpay.txt"),
   pb("pb_repay", "Repay", "Monthly", "Due in 30 days", 30, "", "Source: RePay.txt"),
   pb("pb_lianlian", "LianLian", "Monthly", "Due in 7 days", 7, 31, "Source: Lian_Lian.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually. No explicit due term extracted.", "Monthly", "End of Month"),
   pb("pb_blindpay", "Blindpay", "Monthly", "Due in 7 days", 7, 31, "Source: Blindpay.txt", "Monthly", "End of Month", "bernardo@blindpay.com"),
   pb("pb_whish", "Whish", "Monthly", "Before 15th(Due Net 30)", 30, 7, "Source: Whish.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually. No explicit due term extracted.", "Not specified", "1st week of following month         Make sure to include bank wire details on Invoice Notes section", "veem@whish.money, a.hanna@whish.money, sheila@veem.com"),
   pb("pb_athena", "Athena", "Monthly", "Before 15th(Due Net 30)", 30, 1, "Source: Athena.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually. No explicit due term extracted.", "Monthly", "1st of begining of month", "sam.nazzaro@athenabitcoin.com"),
-  pb("pb_maplewave", "Maplewave", "Monthly", "Issued monthly in arrears", 0, "", "Source: Maplewave.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually."),
+  pb("pb_maplewave", "Maplewave", "Monthly", "Issued monthly in arrears", 0, "", "Source: Maplewave.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually.", "", "", "support@maplewave.money"),
   pb("pb_gme_remit", "GME_Remit", "Monthly", "Due in 30 days", 30, "", "Operational source: Billed and Collected sheet"),
   pb("pb_oson", "Oson", "Monthly", "net 30", 30, 10, "Source: Oson.txt Warnings: No pricing rows were confidently extracted. Review the contract text and complete any missing details manually. No explicit due term extracted.", "Not specified", "1st week of following month         Make sure to include bank wire details on Invoice Notes section", "info@oson.kz, a.almambetov@oson.com"),
   pb("pb_bhn", "BHN", "Monthly", "Due in 30 days", 30, "", "Source: BHN.txt Warnings: Pricing extraction is incomplete and should be reviewed manually.", "", "", "", "2025-08-04", "", true, "Integration Underway (Partners Onboarding)"),
@@ -475,7 +481,9 @@ const offRaw = [
 ["Blindpay","Domestic","FasterACH",5000,19999,0.80,"USD","USD","","2026-01-01",""],
 ["Blindpay","Domestic","FasterACH",20000,10000000,0.50,"USD","USD","","2026-01-01",""],
 ["Blindpay","Domestic","Standard",0,10000000,10.00,"USD","USD","Wire","2026-01-01",""],
-["Blindpay","FX","Standard",0,10000000,15.00,"USD","","Wire","2026-01-01",""]
+["Blindpay","FX","Standard",0,10000000,15.00,"USD","","Wire","2026-01-01",""],
+["M-DAQ","Domestic","Standard",0,10000000,0.70,"USD","USD","ACH","2025-06-20",""],
+["M-DAQ","USD Abroad","Standard",0,10000000,18.00,"USD","USD","Wire","2025-06-20",""]
 ];
 
 export const MAJORS = "AUD,CAD,CHF,CNY,DKK,EUR,GBP,HKD,JPY,NOK,NZD,PHP,SEK,SGD,USD";
@@ -516,6 +524,10 @@ const volRaw = [
 ["Cellpay","","",0.0325,"Card","","","",0,1e9,"2025-06-01","","Card 3.25%"],
 ["Cellpay","","",0.008,"","","","",0,1e9,"2025-06-01","",""],
 ["Cellpay","FX","",0.005,"","","","CAD",0,1e9,"2025-06-01","",""],
+["M-DAQ","","",0.0002,"","","","",0,1e9,"2025-06-20","","Platform Fee"],
+["M-DAQ","Domestic","FasterACH",0.0035,"","","","USD",0,1e9,"2025-06-20","","Same Day ACH"],
+["M-DAQ","Domestic","RTP",0.007,"","","","USD",0,1e9,"2025-06-20","","Instant Bank Transfer"],
+["M-DAQ","FX","",0.0015,"","","",MAJORS,0,1e9,"2025-06-20","","Foreign Exchange - Major Currencies"],
 ["Nuvion","","RTP",0.006,"","","","",0,1e9,"2025-10-01","",""],
 ["Nuvion","FX","",0.003,"","","",MAJORS,0,1e9,"2025-10-01","","Majors"],
 ["Nuvion","FX","",0.0075,"","","",MINORS,0,1e9,"2025-10-01","","Minors"],
@@ -725,6 +737,7 @@ const platformFeesRaw = [
 ];
 
 const revFeeRaw = [
+["Stampli","",2.50,STAMPLI_EFFECTIVE_DATE,""],
 ["Whish","",2.25,"2025-01-01",""],
 ["Nomad","",2.25,"2025-01-01",""],
 ["TripleA","",5.00,"2025-01-01",""],
@@ -746,7 +759,8 @@ const revFeeRaw = [
 ["Repay","Card",25.00,"2026-01-01",""],
 ["Blindpay","Bank",5.00,"2026-01-01",""],
 ["Blindpay","Wallet",5.00,"2026-01-01",""],
-["Blindpay","Card",25.00,"2026-01-01",""]
+["Blindpay","Card",25.00,"2026-01-01",""],
+["M-DAQ","",5.00,"2025-06-20",""]
 ];
 
 const implFeesRaw = [
@@ -897,7 +911,9 @@ const feeCapsRaw = [
   { partner: "Yeepay", productType: "FasterACH", capType: "Max Fee", amount: 20 },
   { partner: "Yeepay", productType: "RTP", capType: "Max Fee", amount: 20 },
   { partner: "Repay", productType: "RTP", capType: "Max Fee", amount: 20 },
-  { partner: "Blindpay", productType: "RTP", capType: "Max Fee", amount: 20 }
+  { partner: "Blindpay", productType: "RTP", capType: "Max Fee", amount: 20 },
+  { partner: "M-DAQ", productType: "FasterACH", capType: "Max Fee", amount: 15 },
+  { partner: "M-DAQ", productType: "RTP", capType: "Max Fee", amount: 15 }
 ];
 
 const revShareRaw = [
@@ -1008,6 +1024,7 @@ const baseData = {
   lva: initVirtualAccountUsage,
   lrs: initRevShareSummary,
   lfxp: initFxPartnerPayouts,
+  qaCheckerLatest: null,
   accessLogs: initAccessLogs,
   adminSettings: initAdminSettings
 };

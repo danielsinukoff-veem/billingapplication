@@ -11,6 +11,9 @@ const sharedWorkbookState = {
 
 const LAMBDA_FUNCTION_URL_SAFE_JSON_BYTES = 5_500_000;
 const INVOICE_ARTIFACT_CHUNK_CHAR_LIMIT = 1_500_000;
+const DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS = 60 * 60;
+const DEFAULT_PRIVATE_LINK_RETENTION_DAYS = 180;
+const QA_STATUS_FETCH_TIMEOUT_MS = 5000;
 
 let awsBrowserModulesPromise = null;
 let cognitoSessionPromise = null;
@@ -29,6 +32,12 @@ function normalizeConfigList(value) {
     .split(/[,\s]+/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function normalizePositiveInteger(value, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return fallback;
+  return Math.round(number);
 }
 
 function readWindowOverrides() {
@@ -64,6 +73,7 @@ export function getSharedBackendConfig() {
     ...billingAppConfig,
     ...overrides
   };
+  const hubspotSyncWebhookUrl = normalizeConfigUrl(merged.hubspotSyncWebhookUrl || merged.hubspotPartnerSyncWebhookUrl);
   return {
     ...merged,
     dataBucket: normalizeConfigUrl(merged.dataBucket),
@@ -71,14 +81,32 @@ export function getSharedBackendConfig() {
     bootstrapUrl: normalizeConfigUrl(merged.bootstrapUrl),
     workbookReadUrl: normalizeConfigUrl(merged.workbookReadUrl),
     workbookWriteUrl: normalizeConfigUrl(merged.workbookWriteUrl),
+    workbookWriteBridgeUrl: normalizeConfigUrl(merged.workbookWriteBridgeUrl),
+    workbookWriteKey: normalizeConfigUrl(merged.workbookWriteKey),
     workbookHistoryWriteBaseUrl: normalizeConfigUrl(merged.workbookHistoryWriteBaseUrl),
+    workbookHistoryKeyPrefix: normalizeConfigUrl(merged.workbookHistoryKeyPrefix),
     invoiceDraftUrl: normalizeConfigUrl(merged.invoiceDraftUrl),
     invoiceArtifactWriteUrl: normalizeConfigUrl(merged.invoiceArtifactWriteUrl),
     invoiceArtifactWriteBaseUrl: normalizeConfigUrl(merged.invoiceArtifactWriteBaseUrl),
     privateInvoiceLinkWriteBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkWriteBaseUrl),
     privateInvoiceLinkReadBaseUrl: normalizeConfigUrl(merged.privateInvoiceLinkReadBaseUrl),
     privateInvoiceLinkSignerUrl: normalizeConfigUrl(merged.privateInvoiceLinkSignerUrl),
+    privateInvoiceDownloadUrlTtlSeconds: normalizePositiveInteger(
+      merged.privateInvoiceDownloadUrlTtlSeconds || merged.privateInvoiceLinkDefaultTtl,
+      DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS
+    ),
+    privateInvoiceLinkExpiresInDays: normalizePositiveInteger(
+      merged.privateInvoiceLinkExpiresInDays || merged.privateInvoiceDownloadRetentionDays,
+      DEFAULT_PRIVATE_LINK_RETENTION_DAYS
+    ),
+    privateInvoiceDownloadRetentionDays: normalizePositiveInteger(
+      merged.privateInvoiceDownloadRetentionDays || merged.privateInvoiceLinkExpiresInDays,
+      DEFAULT_PRIVATE_LINK_RETENTION_DAYS
+    ),
     automationOutboxUrl: normalizeConfigUrl(merged.automationOutboxUrl),
+    hubspotSyncWebhookUrl,
+    hubspotPartnerSyncWebhookUrl: hubspotSyncWebhookUrl,
+    qaCheckerSummaryUrl: normalizeConfigUrl(merged.qaCheckerSummaryUrl),
     lookerImportWebhookUrl: normalizeConfigUrl(merged.lookerImportWebhookUrl),
     contractParseWebhookUrl: normalizeConfigUrl(merged.contractParseWebhookUrl),
     contractExtractWebhookUrl: normalizeConfigUrl(merged.contractExtractWebhookUrl),
@@ -151,7 +179,7 @@ export function isSharedWorkbookEnabled() {
 
 export function isSharedWorkbookWriteEnabled() {
   const config = getSharedBackendConfig();
-  return !!(config.enableSharedWorkbook && config.workbookWriteUrl);
+  return !!(config.enableSharedWorkbook && (config.workbookWriteUrl || (config.workbookWriteBridgeUrl && config.workbookWriteKey)));
 }
 
 export function isRemoteInvoiceReadEnabled() {
@@ -172,6 +200,11 @@ export function isPrivateInvoiceLinkEnabled() {
 export function isLookerImportEnabled() {
   const config = getSharedBackendConfig();
   return !!(config.enableLookerImports && config.lookerImportWebhookUrl);
+}
+
+export function isHubSpotSyncEnabled() {
+  const config = getSharedBackendConfig();
+  return !!(config.enableHubSpotSync !== false && config.hubspotSyncWebhookUrl);
 }
 
 export function isContractParseEnabled() {
@@ -625,7 +658,7 @@ function bodyToUploadBytes(value) {
 // Lambda Function URL. Small bodies ride the inline `action: "write"` path
 // (one round-trip). Larger bodies are PUT directly to S3 through a presigned
 // URL minted by the bridge so the Lambda body never exceeds 6 MB.
-async function writeArtifactFileViaBridge(bridgeUrl, key, body, contentType) {
+async function writeArtifactFileViaBridge(bridgeUrl, key, body, contentType, options = {}) {
   const binaryBody = isBinaryUploadBody(body);
   const normalizedBody = binaryBody ? "" : String(body ?? "");
   const bytes = bodyToUploadBytes(body);
@@ -633,15 +666,21 @@ async function writeArtifactFileViaBridge(bridgeUrl, key, body, contentType) {
   const contentTypeHeader = String(contentType);
 
   if (!binaryBody && byteLength <= BRIDGE_INLINE_MAX_BODY_BYTES) {
+    const action = {
+      action: "write",
+      key: String(key),
+      contentType: contentTypeHeader,
+      encoding: "utf8",
+      body: normalizedBody
+    };
+    // ifAbsent translates to S3 PutObject IfNoneMatch:"*" inside the
+    // bridge so the call only succeeds when the key is missing. Used by
+    // the boot-time seed-if-missing path; everywhere else this option is
+    // left undefined and the call stays a regular overwrite save.
+    if (options && options.ifAbsent === true) action.ifAbsent = true;
     return postConfiguredJson(
       bridgeUrl,
-      {
-        action: "write",
-        key: String(key),
-        contentType: contentTypeHeader,
-        encoding: "utf8",
-        body: normalizedBody
-      },
+      action,
       `Could not save ${key} via the Veem Billing FE bridge.`
     );
   }
@@ -685,10 +724,17 @@ async function writeArtifactFileViaBridge(bridgeUrl, key, body, contentType) {
 async function signPartnerDownloadUrl(signerUrl, key, ttl) {
   const result = await postConfiguredJson(
     signerUrl,
-    { key: String(key), ttl: Number(ttl) || 3600 },
+    { key: String(key), ttl: normalizePositiveInteger(ttl, DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS) },
     `Could not sign ${key} via the Veem Billing FE signer.`
   );
-  return typeof result?.url === "string" ? result.url : "";
+  return String(
+    result?.url
+    || result?.signedUrl
+    || result?.downloadUrl
+    || result?.download_url
+    || result?.privateUrl
+    || ""
+  ).trim();
 }
 
 function jsonByteLength(value) {
@@ -724,6 +770,26 @@ function ensureTrailingSlash(value) {
 
 function buildObjectUrl(baseUrl, objectKey) {
   return resolveUrl(`${ensureTrailingSlash(baseUrl)}${String(objectKey || "").replace(/^\/+/, "")}`);
+}
+
+function addDaysIso(value, days) {
+  const base = value ? new Date(value) : new Date();
+  if (Number.isNaN(base.getTime())) return new Date().toISOString();
+  base.setUTCDate(base.getUTCDate() + normalizePositiveInteger(days, DEFAULT_PRIVATE_LINK_RETENTION_DAYS));
+  return base.toISOString();
+}
+
+function addSecondsIso(value, seconds) {
+  const base = value ? new Date(value) : new Date();
+  if (Number.isNaN(base.getTime())) return new Date().toISOString();
+  base.setUTCSeconds(base.getUTCSeconds() + normalizePositiveInteger(seconds, DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS));
+  return base.toISOString();
+}
+
+function buildPartnerDownloadReadUrl(readBaseUrl, token, fileName = "index.html") {
+  const base = ensureTrailingSlash(readBaseUrl);
+  if (!base || !token) return "";
+  return buildObjectUrl(base, `${token}/${fileName}`);
 }
 
 function escapeHtml(value) {
@@ -835,15 +901,36 @@ async function putConfiguredContent(url, content, contentType, fallbackMessage, 
   };
 }
 
-function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
+function buildPrivateInvoiceIndexHtml({ title, summaryLines, links, signerUrl = "", signedUrlTtlSeconds = DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS, linkExpiresAt = "" }) {
   const safeTitle = escapeHtml(title || "Partner Invoice Package");
   const safeSummary = (summaryLines || []).map((line) => `<p>${escapeHtml(line)}</p>`).join("");
-  const safeLinks = (links || []).map((item) => {
-    const href = escapeHtml(safeLinkHref(item?.href));
-    const label = escapeHtml(item?.label || "Download");
-    const fileName = escapeHtml(item?.fileName || "");
+  const normalizedTtlSeconds = normalizePositiveInteger(signedUrlTtlSeconds, DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS);
+  const ttlMinutes = Math.max(1, Math.round(normalizedTtlSeconds / 60));
+  const ttlLabel = ttlMinutes === 1 ? "1 minute" : `${ttlMinutes} minutes`;
+  const normalizedLinks = (links || []).map((item, index) => ({
+    index,
+    label: String(item?.label || "Download"),
+    fileName: String(item?.fileName || ""),
+    key: String(item?.key || ""),
+    href: safeLinkHref(item?.href)
+  }));
+  const safeLinks = normalizedLinks.map((item) => {
+    const href = escapeHtml(item.href);
+    const label = escapeHtml(item.label || "Download");
+    const fileName = escapeHtml(item.fileName || "");
+    if (signerUrl && item.key) {
+      return `<button type="button" data-download-index="${escapeHtml(String(item.index))}">${label}</button>`;
+    }
     return `<a href="${href}"${fileName ? ` download="${fileName}"` : ""}>${label}</a>`;
   }).join("");
+  const safeDownloadsJson = JSON.stringify(normalizedLinks).replace(/</g, "\\u003c");
+  const safeSignerUrlJson = JSON.stringify(String(signerUrl || "")).replace(/</g, "\\u003c");
+  const safeTtlJson = JSON.stringify(normalizedTtlSeconds);
+  const safeTtlLabelJson = JSON.stringify(ttlLabel).replace(/</g, "\\u003c");
+  const safeExpiry = linkExpiresAt ? `<p>Partner link expires ${escapeHtml(linkExpiresAt)}.</p>` : "";
+  const safeNotice = signerUrl
+    ? `Each download is protected with a fresh signed URL that expires ${escapeHtml(ttlLabel)} after it is requested.`
+    : "Use the links below to download the invoice files and transaction detail export.";
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -851,13 +938,18 @@ function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${safeTitle}</title>
     <style>
-      body { font-family: system-ui, sans-serif; background: #faf7f2; color: #2f241d; margin: 0; padding: 32px; }
-      .card { max-width: 760px; margin: 0 auto; background: white; border: 1px solid #e7ddd1; border-radius: 20px; padding: 28px; }
+      body { font-family: "Source Sans Pro", system-ui, sans-serif; background: linear-gradient(180deg, #ffffff 0%, #f2f8fa 100%); color: #212f45; margin: 0; padding: 32px; }
+      .card { max-width: 760px; margin: 0 auto; background: white; border: 1px solid rgba(33, 47, 69, 0.14); border-radius: 20px; padding: 28px; box-shadow: 0 18px 42px rgba(33, 47, 69, 0.1); }
       h1 { margin: 0 0 12px; font-size: 28px; }
       p, li { line-height: 1.55; }
-      .muted { color: #6d5d52; }
+      .muted { color: #5e6b7f; }
       ul { padding-left: 20px; }
-      .downloads a { display: inline-block; margin: 8px 10px 0 0; padding: 10px 14px; border-radius: 999px; text-decoration: none; background: #0f5a52; color: white; }
+      .notice { margin: 18px 0; padding: 12px 14px; border-radius: 14px; background: #eaf8fa; color: #1c3969; }
+      .downloads a,
+      .downloads button { display: inline-block; margin: 8px 10px 0 0; padding: 10px 14px; border: 0; border-radius: 999px; text-decoration: none; background: linear-gradient(135deg, #007fe0 0%, #1c3969 100%); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+      .downloads button:disabled { cursor: not-allowed; opacity: 0.62; }
+      .status { margin-top: 14px; color: #5e6b7f; min-height: 1.4em; }
+      .status.error { color: #f00112; }
     </style>
   </head>
   <body>
@@ -865,13 +957,158 @@ function buildPrivateInvoiceIndexHtml({ title, summaryLines, links }) {
       <h1>${safeTitle}</h1>
       <div class="muted">
         ${safeSummary}
+        ${safeExpiry}
       </div>
+      <div class="notice">${safeNotice}</div>
       <div class="downloads">
         ${safeLinks}
       </div>
+      <div class="status" id="download-status" aria-live="polite"></div>
     </div>
+    <script>
+      const DOWNLOADS = ${safeDownloadsJson};
+      const SIGNER_URL = ${safeSignerUrlJson};
+      const SIGNED_URL_TTL_SECONDS = ${safeTtlJson};
+      const SIGNED_URL_TTL_LABEL = ${safeTtlLabelJson};
+      const STATUS = document.getElementById("download-status");
+      let runtimeConfigPromise = null;
+
+      function setStatus(message, isError = false) {
+        if (!STATUS) return;
+        STATUS.textContent = message || "";
+        STATUS.className = isError ? "status error" : "status";
+      }
+
+      function loadScript(src) {
+        return new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = () => resolve();
+          script.onerror = () => resolve();
+          document.head.appendChild(script);
+        });
+      }
+
+      async function loadRuntimeConfig() {
+        if (!runtimeConfigPromise) runtimeConfigPromise = loadScript("/app-config-runtime.js");
+        await runtimeConfigPromise;
+        return window.BILLING_APP_CONFIG || window.VEEM_BILLING_FE_CONFIG || {};
+      }
+
+      async function signDownloadUrl(key) {
+        if (!SIGNER_URL) throw new Error("The private-link signer is not configured.");
+        const config = await loadRuntimeConfig();
+        const token = config.bearerToken || config.apiToken || "";
+        const headers = { "Content-Type": "application/json", Accept: "application/json" };
+        if (token) headers.Authorization = "Bearer " + token;
+        const response = await fetch(SIGNER_URL, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ key, ttl: SIGNED_URL_TTL_SECONDS })
+        });
+        const text = await response.text();
+        let payload = {};
+        try { payload = text ? JSON.parse(text) : {}; } catch (error) {}
+        if (!response.ok) throw new Error(payload.error || payload.message || text || "Could not create the download URL.");
+        const url = payload.url || payload.signedUrl || payload.downloadUrl || payload.download_url || "";
+        if (!url) throw new Error("The signer did not return a download URL.");
+        return url;
+      }
+
+      function clickDownload(url, fileName) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        if (fileName) anchor.download = fileName;
+        anchor.rel = "noopener";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+
+      document.addEventListener("click", async (event) => {
+        const button = event.target && event.target.closest ? event.target.closest("[data-download-index]") : null;
+        if (!button) return;
+        const item = DOWNLOADS[Number(button.dataset.downloadIndex)];
+        if (!item) return;
+        try {
+          button.disabled = true;
+          setStatus("Preparing " + item.fileName + "...");
+          const url = item.key ? await signDownloadUrl(item.key) : item.href;
+          clickDownload(url, item.fileName);
+          setStatus(SIGNER_URL ? "Download URL created. It expires in " + SIGNED_URL_TTL_LABEL + "." : "Download started.");
+        } catch (error) {
+          setStatus(error && error.message ? error.message : "Could not create the download URL.", true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
   </body>
 </html>`;
+}
+
+// Stamps the data bucket with the bundled bootstrap payload the very
+// first time this app loads in a fresh environment. The bridge handler
+// honors ifAbsent by setting S3 PutObject IfNoneMatch:"*", so any
+// browser arriving after the first seed gets a no-op (HTTP 200 with
+// seeded:false). Gated by a localStorage flag so we do not POST 1 MB of
+// bootstrap JSON on every page load -- one attempt per browser per
+// WORKBOOK_SEED_TTL_MS.
+const WORKBOOK_SEED_FLAG_KEY = "__veem_billing_workbook_seed_attempted";
+const WORKBOOK_SEED_TTL_MS = 24 * 60 * 60 * 1000;
+
+function workbookSeedAlreadyAttempted() {
+  if (typeof localStorage === "undefined") return false;
+  try {
+    const last = parseInt(localStorage.getItem(WORKBOOK_SEED_FLAG_KEY) || "0", 10);
+    if (!Number.isFinite(last) || last <= 0) return false;
+    return Date.now() - last < WORKBOOK_SEED_TTL_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markWorkbookSeedAttempted() {
+  if (typeof localStorage === "undefined") return;
+  try { localStorage.setItem(WORKBOOK_SEED_FLAG_KEY, String(Date.now())); } catch {}
+}
+
+async function seedSharedWorkbookIfMissing(payload) {
+  if (!payload || typeof payload !== "object") return;
+  if (workbookSeedAlreadyAttempted()) return;
+  const config = getSharedBackendConfig();
+  const bridgeUrl = config.workbookWriteBridgeUrl;
+  const writeKey = config.workbookWriteKey;
+  if (!bridgeUrl || !writeKey) return;
+
+  // Write the bootstrap payload as-is so n8n and other readers see the
+  // same bytes the bundled site origin serves. After a real user save
+  // lands, the bridge would refuse this seed via ifAbsent, so it stays
+  // a one-time event.
+  const serialized = JSON.stringify(payload, null, 2);
+  try {
+    const result = await writeArtifactFileViaBridge(
+      bridgeUrl,
+      writeKey,
+      serialized,
+      "application/json",
+      { ifAbsent: true }
+    );
+    // Only suppress retries when the bridge gave a definitive answer:
+    //   seeded:true  -> we just wrote it,
+    //   seeded:false -> object already existed (412 PreconditionFailed).
+    // Anything else (network blip, bridge 5xx, infra not yet deployed,
+    // unexpected response shape) leaves the flag unset so the next page
+    // load retries -- otherwise a single failed first attempt would lock
+    // the browser out of the seed for 24 hours.
+    if (result && (result.seeded === true || result.seeded === false)) {
+      markWorkbookSeedAttempted();
+    }
+  } catch (err) {
+    if (typeof console !== "undefined" && console.warn) {
+      console.warn("[billing-fe] seed-if-missing failed:", err && err.message ? err.message : err);
+    }
+  }
 }
 
 export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = {}) {
@@ -886,13 +1123,65 @@ export async function loadSharedBootstrap({ retries = 4, retryDelayMs = 350 } = 
   });
   sharedWorkbookState.etag = result.etag || "";
   sharedWorkbookState.readUrl = result.url || resolveUrl(staticUrl);
+  // Best-effort: if the data bucket is empty (fresh env, no save has
+  // landed yet), upload the bundled bootstrap payload so n8n and any
+  // other direct-S3 reader has something to read. Idempotent via
+  // bridge's ifAbsent->IfNoneMatch.
+  seedSharedWorkbookIfMissing(result.payload).catch(() => {});
   return normalizeBootstrapPayload(result.payload);
 }
 
+function normalizeQaCheckerReportPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  const candidates = [
+    payload.qaCheckerLatest,
+    payload.report,
+    payload.data,
+    payload.snapshot?.qaCheckerLatest,
+    payload
+  ];
+  return candidates.find((candidate) => {
+    if (!candidate || typeof candidate !== "object") return false;
+    return !!(candidate.summary || candidate.status || candidate.issues || candidate.runId || candidate.generatedAt);
+  }) || null;
+}
+
+export async function fetchLatestQaCheckerReport({ retries = 1, retryDelayMs = 350 } = {}) {
+  const config = getSharedBackendConfig();
+  if (!config.qaCheckerSummaryUrl) return null;
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timeout = controller ? globalThis.setTimeout(() => controller.abort(), QA_STATUS_FETCH_TIMEOUT_MS) : null;
+    try {
+      const payload = await parseApiResponse(
+        await fetch(resolveUrl(config.qaCheckerSummaryUrl, { ts: Date.now() }), {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller?.signal
+        }),
+        "Could not load the latest QA checker result."
+      );
+      return normalizeQaCheckerReportPayload(payload);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries) break;
+      await sleep(retryDelayMs * (attempt + 1));
+    } finally {
+      if (timeout) globalThis.clearTimeout(timeout);
+    }
+  }
+  throw lastError || new Error("Could not load the latest QA checker result.");
+}
+
 export async function saveSharedWorkbookSnapshot(snapshot) {
+  const config = getSharedBackendConfig();
   const writeUrl = getSharedWorkbookWriteUrl();
-  if (!writeUrl) {
-    throw new Error("Shared workbook saving is not configured. Set BILLING_APP_CONFIG.workbookWriteUrl.");
+  const bridgeUrl = config.workbookWriteBridgeUrl;
+  const writeKey = config.workbookWriteKey;
+  if (!writeUrl && !(bridgeUrl && writeKey)) {
+    throw new Error("Shared workbook saving is not configured. Set BILLING_APP_CONFIG.workbookWriteUrl or workbookWriteBridgeUrl/workbookWriteKey.");
   }
   const savedAt = snapshot?._saved || new Date().toISOString();
   const serialized = JSON.stringify({
@@ -901,6 +1190,23 @@ export async function saveSharedWorkbookSnapshot(snapshot) {
     savedAt,
     mode: "workbook_save"
   }, null, 2);
+  if (bridgeUrl && writeKey) {
+    await writeArtifactFileViaBridge(bridgeUrl, writeKey, serialized, "application/json");
+    let historyUrl = "";
+    const historyPrefix = String(config.workbookHistoryKeyPrefix || "").replace(/^\/+/, "").replace(/\/?$/, "/");
+    if (historyPrefix) {
+      const historyKey = `${historyPrefix}workbook-${savedAt.replaceAll(":", "-").replaceAll(".", "-")}.json`;
+      await writeArtifactFileViaBridge(bridgeUrl, historyKey, serialized, "application/json");
+      historyUrl = historyKey;
+    }
+    sharedWorkbookState.etag = "";
+    return {
+      savedAt,
+      url: config.workbookReadUrl || writeKey,
+      historyUrl,
+      etag: ""
+    };
+  }
   const writeResult = await putConfiguredContent(
     writeUrl,
     serialized,
@@ -909,7 +1215,6 @@ export async function saveSharedWorkbookSnapshot(snapshot) {
     { ifMatch: sharedWorkbookState.etag }
   );
   sharedWorkbookState.etag = writeResult.etag || "";
-  const config = getSharedBackendConfig();
   let historyUrl = "";
   if (config.workbookHistoryWriteBaseUrl) {
     const historyKey = `workbook-${savedAt.replaceAll(":", "-").replaceAll(".", "-")}.json`;
@@ -1334,16 +1639,23 @@ export async function generatePrivateInvoiceLink(payload) {
     const token = payload?.token || createOpaqueToken(28);
     const savedAt = payload?.requestedAt || new Date().toISOString();
     const writePrefix = `partner-downloads/${token}`;
-    const privateLinkTtl = Number(payload?.ttl) || Number(config.privateInvoiceLinkDefaultTtl) || 3600;
+    const signedUrlTtlSeconds = normalizePositiveInteger(
+      payload?.downloadUrlTtlSeconds || payload?.ttl || config.privateInvoiceDownloadUrlTtlSeconds || config.privateInvoiceLinkDefaultTtl,
+      DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS
+    );
+    const retentionDays = normalizePositiveInteger(
+      payload?.partnerLinkExpiresInDays || config.privateInvoiceLinkExpiresInDays,
+      DEFAULT_PRIVATE_LINK_RETENTION_DAYS
+    );
+    const linkExpiresAt = payload?.linkExpiresAt || addDaysIso(savedAt, retentionDays);
 
     const bridgeUrl = config.invoiceArtifactWriteUrl;
     const signerUrl = config.privateInvoiceLinkSignerUrl;
 
-    const writeAndSign = async (fileName, body, contentType) => {
+    const writeFile = async (fileName, body, contentType) => {
       const key = `${writePrefix}/${fileName}`;
       await writeArtifactFileViaBridge(bridgeUrl, key, body, contentType);
-      const signedUrl = await signPartnerDownloadUrl(signerUrl, key, privateLinkTtl);
-      return { fileName, key, signedUrl };
+      return { fileName, key };
     };
 
     const documentEntries = Array.isArray(payload?.invoiceArtifact?.documents) ? payload.invoiceArtifact.documents : [];
@@ -1351,7 +1663,7 @@ export async function generatePrivateInvoiceLink(payload) {
     for (const doc of documentEntries) {
       const pdfBody = getInvoiceDocumentPdfBody(doc);
       const fileName = pdfBody ? getInvoiceDocumentPdfFileName(doc) : getInvoiceDocumentHtmlFileName(doc);
-      const written = await writeAndSign(
+      const written = await writeFile(
         fileName,
         pdfBody || doc?.pdfHtml || "",
         pdfBody ? "application/pdf" : "text/html;charset=utf-8"
@@ -1361,21 +1673,26 @@ export async function generatePrivateInvoiceLink(payload) {
         title: doc?.title || "",
         amountDue: Number(doc?.amountDue || 0),
         fileName,
-        url: written.signedUrl
+        key: written.key,
+        url: buildPartnerDownloadReadUrl(config.privateInvoiceLinkReadBaseUrl, token, fileName)
       });
     }
 
     const transactionFileName = payload?.invoiceArtifact?.transactions?.fileName || "transactions.csv";
-    const transactionsWrite = await writeAndSign(
+    const transactionsWrite = await writeFile(
       transactionFileName,
       payload?.invoiceArtifact?.transactions?.csvText || "",
       "text/csv;charset=utf-8"
     );
-    const transactionsReadUrl = transactionsWrite.signedUrl;
+    const transactionsReadUrl = buildPartnerDownloadReadUrl(config.privateInvoiceLinkReadBaseUrl, token, transactionFileName);
 
     const manifest = {
       token,
       savedAt,
+      linkExpiresAt,
+      retentionDays,
+      signedUrlTtlSeconds,
+      signedUrlExpiresAt: addSecondsIso(savedAt, signedUrlTtlSeconds),
       partner: payload?.partner || payload?.invoiceArtifact?.partner || "",
       period: payload?.period || payload?.invoiceArtifact?.period || "",
       periodStart: payload?.periodStart || payload?.invoiceArtifact?.periodStart || "",
@@ -1385,16 +1702,17 @@ export async function generatePrivateInvoiceLink(payload) {
       documents: savedDocuments,
       transactions: {
         fileName: transactionFileName,
+        key: transactionsWrite.key,
         rowCount: Number(payload?.invoiceArtifact?.transactions?.rowCount || 0),
         url: transactionsReadUrl
       }
     };
-    const manifestWrite = await writeAndSign(
+    const manifestWrite = await writeFile(
       "manifest.json",
       JSON.stringify(manifest, null, 2),
       "application/json"
     );
-    const manifestReadUrl = manifestWrite.signedUrl;
+    const manifestReadUrl = buildPartnerDownloadReadUrl(config.privateInvoiceLinkReadBaseUrl, token, "manifest.json");
 
     const summaryLines = [
       `${manifest.partner} · ${manifest.periodStart === manifest.periodEnd ? manifest.periodStart : `${manifest.periodStart} to ${manifest.periodEnd}`}`,
@@ -1407,18 +1725,28 @@ export async function generatePrivateInvoiceLink(payload) {
       links: [
         ...savedDocuments.map((doc) => ({
           label: doc.kind === "receivable" ? "Download AR Invoice PDF" : "Download AP Invoice PDF",
+          key: doc.key,
           href: doc.url,
           fileName: doc.fileName
         })),
-        { label: "Download Transactions CSV", href: transactionsReadUrl, fileName: transactionFileName }
-      ]
+        { label: "Download Transactions CSV", key: transactionsWrite.key, href: transactionsReadUrl, fileName: transactionFileName }
+      ],
+      signerUrl,
+      signedUrlTtlSeconds,
+      linkExpiresAt
     });
-    const indexWrite = await writeAndSign("index.html", indexHtml, "text/html;charset=utf-8");
+    const indexWrite = await writeFile("index.html", indexHtml, "text/html;charset=utf-8");
+    const signedIndexUrl = await signPartnerDownloadUrl(signerUrl, indexWrite.key, signedUrlTtlSeconds);
+    const durableIndexUrl = buildPartnerDownloadReadUrl(config.privateInvoiceLinkReadBaseUrl, token, "index.html");
 
     return {
       token,
       savedAt,
-      privateUrl: indexWrite.signedUrl,
+      linkExpiresAt,
+      retentionDays,
+      signedUrlTtlSeconds,
+      signedPrivateUrl: signedIndexUrl,
+      privateUrl: signedIndexUrl || durableIndexUrl,
       manifestUrl: manifestReadUrl,
       transactionsUrl: transactionsReadUrl,
       documents: savedDocuments,
@@ -1428,10 +1756,24 @@ export async function generatePrivateInvoiceLink(payload) {
 
   if (config.privateInvoiceLinkSignerUrl) {
     const archivedArtifact = payload?.archivedArtifact || null;
+    const savedAt = payload?.requestedAt || new Date().toISOString();
+    const signedUrlTtlSeconds = normalizePositiveInteger(
+      payload?.downloadUrlTtlSeconds || payload?.ttl || config.privateInvoiceDownloadUrlTtlSeconds || config.privateInvoiceLinkDefaultTtl,
+      DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS
+    );
+    const retentionDays = normalizePositiveInteger(
+      payload?.partnerLinkExpiresInDays || config.privateInvoiceLinkExpiresInDays,
+      DEFAULT_PRIVATE_LINK_RETENTION_DAYS
+    );
+    const linkExpiresAt = payload?.linkExpiresAt || addDaysIso(savedAt, retentionDays);
     const requestPayload = {
       ...payload,
       mode: "invoice_private_link",
       action: "generate_private_invoice_link",
+      requestedAt: savedAt,
+      downloadUrlTtlSeconds: signedUrlTtlSeconds,
+      partnerLinkExpiresInDays: retentionDays,
+      linkExpiresAt,
       readBaseUrl: config.privateInvoiceLinkReadBaseUrl || "",
       artifactId: archivedArtifact?.artifactId || archivedArtifact?.id || payload?.invoiceArtifact?.bundleKey || "",
       archivedArtifact,
@@ -1455,6 +1797,15 @@ export async function generatePrivateInvoiceLink(payload) {
   const writeBase = ensureTrailingSlash(config.privateInvoiceLinkWriteBaseUrl);
   const readBase = ensureTrailingSlash(config.privateInvoiceLinkReadBaseUrl || config.privateInvoiceLinkWriteBaseUrl);
   const savedAt = payload?.requestedAt || new Date().toISOString();
+  const signedUrlTtlSeconds = normalizePositiveInteger(
+    payload?.downloadUrlTtlSeconds || payload?.ttl || config.privateInvoiceDownloadUrlTtlSeconds || config.privateInvoiceLinkDefaultTtl,
+    DEFAULT_PRIVATE_DOWNLOAD_URL_TTL_SECONDS
+  );
+  const retentionDays = normalizePositiveInteger(
+    payload?.partnerLinkExpiresInDays || config.privateInvoiceLinkExpiresInDays,
+    DEFAULT_PRIVATE_LINK_RETENTION_DAYS
+  );
+  const linkExpiresAt = payload?.linkExpiresAt || addDaysIso(savedAt, retentionDays);
   const documentEntries = Array.isArray(payload?.invoiceArtifact?.documents) ? payload.invoiceArtifact.documents : [];
   const savedDocuments = [];
 
@@ -1491,6 +1842,10 @@ export async function generatePrivateInvoiceLink(payload) {
   const manifest = {
     token,
     savedAt,
+    linkExpiresAt,
+    retentionDays,
+    signedUrlTtlSeconds,
+    signedUrlExpiresAt: addSecondsIso(savedAt, signedUrlTtlSeconds),
     partner: payload?.partner || payload?.invoiceArtifact?.partner || "",
     period: payload?.period || payload?.invoiceArtifact?.period || "",
     periodStart: payload?.periodStart || payload?.invoiceArtifact?.periodStart || "",
@@ -1528,7 +1883,9 @@ export async function generatePrivateInvoiceLink(payload) {
         fileName: doc.fileName
       })),
       { label: "Download Transactions CSV", href: transactionsReadUrl, fileName: transactionFileName }
-    ]
+    ],
+    signedUrlTtlSeconds,
+    linkExpiresAt
   });
   const indexWriteUrl = buildObjectUrl(writeBase, `${token}/index.html`);
   const indexReadUrl = buildObjectUrl(readBase, `${token}/index.html`);
@@ -1537,6 +1894,9 @@ export async function generatePrivateInvoiceLink(payload) {
   return {
     token,
     savedAt,
+    linkExpiresAt,
+    retentionDays,
+    signedUrlTtlSeconds,
     privateUrl: indexReadUrl,
     manifestUrl: manifestReadUrl,
     transactionsUrl: transactionsReadUrl,
@@ -1563,6 +1923,14 @@ export async function importLookerFileAndSave(payload) {
     throw new Error("Looker import automation is not configured.");
   }
   return postConfiguredJson(config.lookerImportWebhookUrl, payload, "Could not import and save the Looker file.");
+}
+
+export async function syncHubSpotPartnerProfiles(payload) {
+  const config = getSharedBackendConfig();
+  if (!config.hubspotSyncWebhookUrl) {
+    throw new Error("HubSpot sync is not configured. Connect BILLING_APP_CONFIG.hubspotSyncWebhookUrl to an n8n production webhook.");
+  }
+  return postConfiguredJson(config.hubspotSyncWebhookUrl, payload, "Could not sync HubSpot partner profiles.");
 }
 
 export async function parseContractText(payload) {

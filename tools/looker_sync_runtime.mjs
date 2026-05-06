@@ -874,6 +874,11 @@ function buildRevenueDetailTransactions(rows, period, { includeDetailRows = true
     const processingMethod = speedFlag === "RTP" ? "RTP" : (txnType === "FX" || txnType === "USD Abroad" ? "Wire" : text(rowValueFirst(row, "Payment Transaction Processing Method", "Transaction Processing Method", { patterns: ["transactionprocessingmethod", "processingmethod"] })) || "ACH");
     const walletFlag = paymentType.toLowerCase().includes("wallet");
     const customerRevenueValue = row["Net Revenue"] ?? row["Fixed Fee"] ?? rowValueByPatterns(row, "netrevenue", "fixedfee");
+    const payeeAmount = money(rowValueFirst(row, "Payment Payee Amount Number", "Payee Amount Number", "Foreign Currency Amount (Payee Amount Number)", { patterns: ["payeeamountnumber", "foreigncurrencyamount"] }));
+    const paymentUsdEquivalentAmount = money(rowValueFirst(row, "Payment Total USD Amount Number", "USD Amount Number", "Total USD Amount Number", { patterns: ["totalusdamountnumber", "usdamountnumber"] }));
+    const creditUsdRate = payeeAmount > 0 && paymentUsdEquivalentAmount > 0
+      ? Number((paymentUsdEquivalentAmount / payeeAmount).toFixed(8))
+      : 0;
     const estRevenue = Number(extractEstRevenue(row).toFixed(2));
     const revenueBasis = row["Net Revenue"] !== null && row["Net Revenue"] !== undefined && row["Net Revenue"] !== "" ? "net" : "gross";
     const key = [
@@ -883,7 +888,7 @@ function buildRevenueDetailTransactions(rows, period, { includeDetailRows = true
     ].join("|");
     const current = grouped.get(key) || { txnCount: 0, totalVolume: 0, customerRevenue: 0, estRevenue: 0 };
     current.txnCount += 1;
-    current.totalVolume += money(rowValueFirst(row, "Payment Total USD Amount Number", "USD Amount Number", "Total USD Amount Number", { patterns: ["totalusdamountnumber", "usdamountnumber"] }));
+    current.totalVolume += paymentUsdEquivalentAmount;
     current.customerRevenue += money(customerRevenueValue);
     current.estRevenue += estRevenue;
     grouped.set(key, current);
@@ -901,6 +906,11 @@ function buildRevenueDetailTransactions(rows, period, { includeDetailRows = true
         payeeFunding: walletFlag ? "Wallet" : "",
         payerCcy,
         payeeCcy,
+        payeeAmountCurrency: payeeCcy,
+        payeeAmount: Number(payeeAmount.toFixed(2)),
+        usdAmountDebited: Number(paymentUsdEquivalentAmount.toFixed(2)),
+        paymentUsdEquivalentAmount: Number(paymentUsdEquivalentAmount.toFixed(2)),
+        creditUsdRate,
         payerCountry,
         payeeCountry,
         accountId: text(row["Account Id"] || rowValueByPatterns(row, "accountid", "payeraccountid")),
@@ -912,7 +922,7 @@ function buildRevenueDetailTransactions(rows, period, { includeDetailRows = true
         payeeName: text(row["Payee Name"] || rowValueByPatterns(row, "payeename")),
         payerEmail: text(row["Payer Email"] || rowValueByPatterns(row, "payercustomeraccountprimaryemail")),
         payeeEmail: text(row["Payee Email"] || rowValueByPatterns(row, "payeecustomeraccountprimaryemail")),
-        usdAmount: Number(money(rowValueFirst(row, "Payment Total USD Amount Number", "USD Amount Number", "Total USD Amount Number", { patterns: ["totalusdamountnumber", "usdamountnumber"] })).toFixed(2)),
+        usdAmount: Number(paymentUsdEquivalentAmount.toFixed(2)),
         customerRevenue: Number(money(customerRevenueValue).toFixed(2)),
         estRevenue,
         netRevenue: Number(money(row["Net Revenue"] || rowValueByPatterns(row, "netrevenue")).toFixed(2)),

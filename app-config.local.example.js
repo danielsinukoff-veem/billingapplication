@@ -6,6 +6,12 @@ window.BILLING_APP_CONFIG = {
   bootstrapUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
   workbookReadUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
   workbookWriteUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/current/workbook.json",
+  workbookWriteBridgeUrl: "",
+  workbookWriteKey: "",
   workbookHistoryWriteBaseUrl: "https://YOUR-BUCKET.s3.us-east-1.amazonaws.com/history/workbook/",
+  workbookHistoryKeyPrefix: "",
+  contractParseWebhookUrl: "https://veem.app.n8n.cloud/webhook/billing-contract-parse",
+  contractExtractWebhookUrl: "https://veem.app.n8n.cloud/webhook/billing-contract-extract",
   enableSharedWorkbook: true,
+  enableContractAutomation: true,
 };

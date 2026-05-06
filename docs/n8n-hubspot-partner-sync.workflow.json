@@ -1,0 +1,347 @@
+{
+  "name": "Billing Workbook HubSpot Partner Sync - Updated 2026-04-30",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "billing-hubspot-partner-sync",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "https://billing.qa-us-west-2.veem.com"
+        }
+      },
+      "id": "hubspot-sync-webhook",
+      "name": "HubSpot Sync Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        260
+      ],
+      "webhookId": "billing-hubspot-partner-sync"
+    },
+    {
+      "parameters": {},
+      "id": "manual-test-trigger",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        180,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\nreturn [\n  {\n    json: {\n      manualTest: true,\n      action: \"sync_partner\",\n      requestedAt: new Date().toISOString(),\n      source: \"partner-billing-workbook-manual-test\",\n      workspace: {\n        version: 36,\n        label: \"Manual n8n test\"\n      },\n      partners: [\n        {\n          partner: \"Stampli\",\n          hubspotCompanyName: \"Stampli\",\n          hubspotDomain: \"stampli.com\",\n          partnerLegalName: \"Stampli\",\n          contactEmails: \"billing@stampli.com\"\n        }\n      ]\n    }\n  }\n];\n"
+      },
+      "id": "sample-frontend-request",
+      "name": "Sample Frontend Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first()?.json || {};\nreturn [{ json: { ...input, hubspotPortalId: \"23392895\" } }];"
+      },
+      "id": "config",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\nconst first = $input.first();\nconst raw = first?.json || {};\nconst body = raw.body && typeof raw.body === \"object\" ? raw.body : raw;\nconst partners = Array.isArray(body.partners) ? body.partners : [];\n\nfunction clean(value) {\n  return String(value || \"\").trim();\n}\n\nfunction unique(values) {\n  return [...new Set(values.map(clean).filter(Boolean))];\n}\n\nfunction normalizeDomain(value) {\n  const text = clean(value).toLowerCase();\n  if (!text) return \"\";\n  try {\n    const host = new URL(text.includes(\"://\") ? text : \"https://\" + text).hostname;\n    return host.replace(/^www\\./, \"\");\n  } catch {\n    return text.replace(/^https?:\\/\\//, \"\").replace(/^www\\./, \"\").split(/[/?#]/)[0];\n  }\n}\n\nfunction domainsFromEmails(value) {\n  return clean(value)\n    .split(/[,\\s;]+/)\n    .map((entry) => entry.split(\"@\")[1] || \"\")\n    .map(normalizeDomain)\n    .filter(Boolean);\n}\n\nif (!partners.length) {\n  throw new Error(\"HubSpot sync request did not include a partners array.\");\n}\n\nreturn partners.map((entry, index) => {\n  const partner = clean(entry.partner || entry.partnerName || entry.name);\n  if (!partner) throw new Error(\"Partner sync item \" + (index + 1) + \" did not include a partner name.\");\n  const partnerLegalName = clean(entry.partnerLegalName) || partner;\n  const domainCandidates = unique([\n    normalizeDomain(entry.hubspotDomain || entry.domain),\n    ...domainsFromEmails(entry.contactEmails),\n    ...domainsFromEmails(entry.hubspotContactEmails)\n  ]);\n  return {\n    json: {\n      action: clean(body.action) || \"sync_all_partners\",\n      requestedAt: clean(body.requestedAt) || new Date().toISOString(),\n      source: clean(body.source) || \"partner-billing-workbook\",\n      workspace: body.workspace || {},\n      partner,\n      partnerLegalName,\n      searchName: partnerLegalName,\n      hubspotCompanyId: clean(entry.hubspotCompanyId || entry.companyId),\n      domainCandidates,\n      frontendContext: entry\n    }\n  };\n});\n"
+      },
+      "id": "normalize-frontend-request",
+      "name": "Normalize Frontend Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\nconst companyProperties = [\n  \"name\",\n  \"domain\",\n  \"hs_additional_domains\",\n  \"address\",\n  \"address2\",\n  \"city\",\n  \"state\",\n  \"zip\",\n  \"country\",\n  \"phone\",\n  \"lifecyclestage\",\n  \"hubspot_owner_id\",\n  \"integration_status\",\n  \"partner_status\",\n  \"go_live_date\",\n  \"live_date\",\n  \"partner_live_date\",\n  \"billing_email\",\n  \"ap_email\",\n  \"finance_email\"\n];\n\nfunction clean(value) {\n  return String(value || \"\").trim();\n}\n\nreturn $input.all().map((item) => {\n  const ctx = item.json || {};\n  const firstDomain = Array.isArray(ctx.domainCandidates) ? clean(ctx.domainCandidates[0]).toLowerCase() : \"\";\n\n  return {\n    json: {\n      ...ctx,\n      companySearchDomain: firstDomain || \"__missing-domain__.invalid\",\n      companySearchProperties: companyProperties\n    }\n  };\n});\n"
+      },
+      "id": "prepare-company-search",
+      "name": "Prepare Company Search",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "company",
+        "operation": "searchByDomain",
+        "domain": "={{ $json.companySearchDomain }}",
+        "returnAll": false,
+        "limit": 5,
+        "options": {
+          "properties": [
+            "name",
+            "domain",
+            "hs_additional_domains",
+            "address",
+            "address2",
+            "city",
+            "state",
+            "zip",
+            "country",
+            "phone",
+            "lifecyclestage",
+            "hubspot_owner_id",
+            "integration_status",
+            "partner_status",
+            "go_live_date",
+            "live_date",
+            "partner_live_date",
+            "billing_email",
+            "ap_email",
+            "finance_email"
+          ]
+        }
+      },
+      "id": "hubspot-search-companies",
+      "name": "HubSpot Search Companies",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        260
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "REPLACE_WITH_YOUR_HUBSPOT_CREDENTIAL_ID",
+          "name": "HubSpot OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\nconst requests = $(\"Prepare Company Search\").all();\nconst companyResponses = $input.all();\n\nfunction clean(value) {\n  return String(value || \"\").trim();\n}\n\nfunction pairedIndex(item, fallbackIndex) {\n  const paired = item?.pairedItem;\n  if (Array.isArray(paired)) return Number(paired[0]?.item ?? fallbackIndex);\n  if (paired && typeof paired === \"object\") return Number(paired.item ?? fallbackIndex);\n  return fallbackIndex;\n}\n\nfunction propValue(props, key) {\n  const raw = props?.[key];\n  if (raw == null) return \"\";\n  if (typeof raw === \"object\") {\n    if (raw.value != null) return clean(raw.value);\n    if (Array.isArray(raw.versions) && raw.versions[0]?.value != null) return clean(raw.versions[0].value);\n  }\n  return clean(raw);\n}\n\nfunction normalizeCompany(company) {\n  const props = company?.properties || {};\n  return {\n    ...company,\n    id: clean(company?.id || company?.companyId || propValue(props, \"hs_object_id\")),\n    properties: props\n  };\n}\n\nfunction norm(value) {\n  return clean(value).toLowerCase().replace(/[^a-z0-9]+/g, \"\");\n}\n\nfunction scoreCompany(ctx, company) {\n  const props = company?.properties || {};\n  let score = 0;\n  const companyId = clean(company?.id || company?.companyId || propValue(props, \"hs_object_id\"));\n  if (ctx.hubspotCompanyId && companyId === String(ctx.hubspotCompanyId)) score += 100;\n  const domains = Array.isArray(ctx.domainCandidates) ? ctx.domainCandidates : [];\n  if (domains.includes(propValue(props, \"domain\").toLowerCase())) score += 40;\n  if (domains.some((domain) => propValue(props, \"hs_additional_domains\").toLowerCase().includes(domain))) score += 25;\n  if (norm(propValue(props, \"name\")) === norm(ctx.searchName || ctx.partner)) score += 30;\n  if (norm(propValue(props, \"name\")).includes(norm(ctx.partner)) || norm(ctx.partner).includes(norm(propValue(props, \"name\")))) score += 15;\n  return score;\n}\n\nfunction pickBestCompany(ctx, results) {\n  let best = null;\n  let bestScore = -1;\n  for (const company of results) {\n    const score = scoreCompany(ctx, company);\n    if (score > bestScore) {\n      best = company;\n      bestScore = score;\n    }\n  }\n  return { company: best, score: bestScore };\n}\n\nconst responsesByRequestIndex = new Map();\ncompanyResponses.forEach((item, fallbackIndex) => {\n  const response = normalizeCompany(item.json || {});\n  const hasProperties = response.properties && Object.keys(response.properties).length > 0;\n  if (!response.id && !response.companyId && !hasProperties) return;\n  const index = pairedIndex(item, fallbackIndex);\n  if (!responsesByRequestIndex.has(index)) responsesByRequestIndex.set(index, []);\n  responsesByRequestIndex.get(index).push(response);\n});\n\nreturn requests.map((requestItem, index) => {\n  const ctx = requestItem.json || {};\n  const results = responsesByRequestIndex.get(index) || [];\n  const picked = pickBestCompany(ctx, results);\n  const company = picked.company || null;\n  const companyId = clean(company?.id || company?.companyId || propValue(company?.properties, \"hs_object_id\"));\n\n  return {\n    json: {\n      ...ctx,\n      company,\n      companyId,\n      companyMatchScore: picked.score,\n      companySearchResultCount: results.length,\n      contactCompanyIdForSearch: companyId || \"__no_company_match__\"\n    }\n  };\n});\n"
+      },
+      "id": "build-contact-search-requests",
+      "name": "Build Contact Search Requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "contact",
+        "operation": "search",
+        "returnAll": false,
+        "limit": 100,
+        "filterGroupsUi": {
+          "filterGroupsValues": [
+            {
+              "filtersUi": {
+                "filterValues": [
+                  {
+                    "propertyName": "associations.company|string",
+                    "operator": "EQ",
+                    "value": "={{ $json.contactCompanyIdForSearch }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "properties": [
+            "email",
+            "firstname",
+            "lastname",
+            "phone",
+            "jobtitle",
+            "hs_object_id"
+          ]
+        }
+      },
+      "id": "hubspot-search-associated-contacts",
+      "name": "HubSpot Search Associated Contacts",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        260
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "REPLACE_WITH_YOUR_HUBSPOT_CREDENTIAL_ID",
+          "name": "HubSpot OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\nconst config = $(\"Config\").all()[0]?.json || {};\nconst contexts = $(\"Build Contact Search Requests\").all();\nconst contactResponses = $input.all();\n\nfunction clean(value) {\n  return String(value || \"\").trim();\n}\n\nfunction pairedIndex(item, fallbackIndex) {\n  const paired = item?.pairedItem;\n  if (Array.isArray(paired)) return Number(paired[0]?.item ?? fallbackIndex);\n  if (paired && typeof paired === \"object\") return Number(paired.item ?? fallbackIndex);\n  return fallbackIndex;\n}\n\nfunction unique(values) {\n  return [...new Set(values.map(clean).filter(Boolean))];\n}\n\nfunction propValue(props, key) {\n  const raw = props?.[key];\n  if (raw == null) return \"\";\n  if (typeof raw === \"object\") {\n    if (raw.value != null) return clean(raw.value);\n    if (Array.isArray(raw.versions) && raw.versions[0]?.value != null) return clean(raw.versions[0].value);\n  }\n  return clean(raw);\n}\n\nfunction firstProp(props, keys) {\n  for (const key of keys) {\n    const value = propValue(props, key);\n    if (value) return value;\n  }\n  return \"\";\n}\n\nfunction normalizeDate(value) {\n  const text = clean(value);\n  if (!text) return \"\";\n  if (/^\\d{4}-\\d{2}-\\d{2}/.test(text)) return text.slice(0, 10);\n  if (/^\\d{13}$/.test(text)) return new Date(Number(text)).toISOString().slice(0, 10);\n  if (/^\\d{10}$/.test(text)) return new Date(Number(text) * 1000).toISOString().slice(0, 10);\n  return \"\";\n}\n\nfunction buildAddress(props) {\n  const line1 = firstProp(props, [\"address\"]);\n  const line2 = firstProp(props, [\"address2\"]);\n  const city = firstProp(props, [\"city\"]);\n  const state = firstProp(props, [\"state\"]);\n  const zip = firstProp(props, [\"zip\"]);\n  const country = firstProp(props, [\"country\"]);\n  const cityLine = [city, state, zip].filter(Boolean).join(\", \").replace(\", \" + zip, \" \" + zip);\n  return [line1, line2, cityLine, country].filter(Boolean).join(\"\\n\");\n}\n\nfunction hubspotRecordUrl(portalId, companyId) {\n  if (!portalId || !companyId) return \"\";\n  return \"https://app.hubspot.com/contacts/\" + portalId + \"/record/0-2/\" + companyId;\n}\n\nconst contactsByContextIndex = new Map();\ncontactResponses.forEach((item, fallbackIndex) => {\n  const contact = item.json || {};\n  if (!contact.id && !contact.properties) return;\n  const index = pairedIndex(item, fallbackIndex);\n  if (!contactsByContextIndex.has(index)) contactsByContextIndex.set(index, []);\n  contactsByContextIndex.get(index).push(contact);\n});\n\nconst partners = contexts.map((contextItem, index) => {\n  const ctx = contextItem.json || {};\n  const company = ctx.company || null;\n  const props = company?.properties || {};\n  const companyId = clean(ctx.companyId || company?.id || company?.companyId || propValue(props, \"hs_object_id\"));\n  const contactResults = contactsByContextIndex.get(index) || [];\n  const contactEmails = unique(contactResults.map((contact) => propValue(contact?.properties, \"email\")));\n  const companyEmails = unique([\n    firstProp(props, [\"billing_email\"]),\n    firstProp(props, [\"ap_email\"]),\n    firstProp(props, [\"finance_email\"])\n  ]);\n  const emails = unique([...companyEmails, ...contactEmails]);\n  const address = buildAddress(props);\n  const status = firstProp(props, [\"integration_status\", \"partner_status\", \"lifecyclestage\"]);\n  const goLiveDate = normalizeDate(firstProp(props, [\"go_live_date\", \"live_date\", \"partner_live_date\"]));\n  const existing = ctx.frontendContext || {};\n  const patch = {\n    hubspotCompanyId: companyId,\n    hubspotCompanyName: firstProp(props, [\"name\"]) || clean(ctx.partnerLegalName || ctx.partner),\n    hubspotDomain: firstProp(props, [\"domain\"]) || (Array.isArray(ctx.domainCandidates) ? ctx.domainCandidates[0] || \"\" : \"\"),\n    followUpHubspotUrl: clean(existing.followUpHubspotUrl) || hubspotRecordUrl(config.hubspotPortalId, companyId),\n    hubspotContactEmails: emails.join(\", \"),\n    hubspotAddressCandidates: address,\n    integrationStatus: status,\n    followUpNotes: companyId\n      ? \"HubSpot sync matched company \" + companyId + \" with \" + emails.length + \" contact email(s).\"\n      : \"HubSpot sync did not find a company match.\"\n  };\n  if (!clean(existing.partnerBillingAddress) && address) patch.partnerBillingAddress = address;\n  if (!clean(existing.partnerLegalName) && patch.hubspotCompanyName) patch.partnerLegalName = patch.hubspotCompanyName;\n  if (!clean(existing.contactEmails) && emails.length) patch.contactEmails = emails.join(\", \");\n  if (goLiveDate) patch.goLiveDate = goLiveDate;\n  if (status && /not\\s*live|not\\s*yet|implementation|onboarding/i.test(status)) patch.notYetLive = true;\n  if (status && /live/i.test(status) && !/not/i.test(status)) patch.notYetLive = false;\n\n  Object.keys(patch).forEach((key) => {\n    if (patch[key] === \"\" || patch[key] == null) delete patch[key];\n  });\n\n  return {\n    partner: ctx.partner,\n    patch,\n    meta: {\n      companySearchResultCount: ctx.companySearchResultCount || 0,\n      companyMatchScore: ctx.companyMatchScore || 0,\n      contactCount: contactResults.length\n    }\n  };\n});\n\nconst matched = partners.filter((row) => row.patch.hubspotCompanyId).length;\nconst emailCount = partners.reduce((sum, row) => {\n  return sum + (row.patch.hubspotContactEmails ? row.patch.hubspotContactEmails.split(\",\").map(clean).filter(Boolean).length : 0);\n}, 0);\n\nreturn [\n  {\n    json: {\n      summary: {\n        matched,\n        unmatched: partners.length - matched,\n        partners: partners.length,\n        contactEmails: emailCount,\n        syncedAt: new Date().toISOString(),\n        mode: config.manualTest ? \"manual_test\" : \"webhook\"\n      },\n      manualTest: !!config.manualTest,\n      partners\n    }\n  }\n];\n"
+      },
+      "id": "build-frontend-response",
+      "name": "Build Frontend Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "For n8n-only testing, run Manual Test Trigger, not HubSpot Sync Webhook. The Webhook node intentionally waits until the website POSTs to it. For production, activate the workflow and use the production webhook URL.",
+        "height": 220,
+        "width": 460,
+        "color": 5
+      },
+      "id": "setup-note",
+      "name": "Setup Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        -40
+      ]
+    }
+  ],
+  "connections": {
+    "HubSpot Sync Webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sample Frontend Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Frontend Request": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Normalize Frontend Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Frontend Request": {
+      "main": [
+        [
+          {
+            "node": "Prepare Company Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Company Search": {
+      "main": [
+        [
+          {
+            "node": "HubSpot Search Companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot Search Companies": {
+      "main": [
+        [
+          {
+            "node": "Build Contact Search Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Contact Search Requests": {
+      "main": [
+        [
+          {
+            "node": "HubSpot Search Associated Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot Search Associated Contacts": {
+      "main": [
+        [
+          {
+            "node": "Build Frontend Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -39,7 +39,7 @@ import {
 const STORAGE_KEY = "billing-workbook-data";
 const LOCAL_EDIT_OVERLAY_KEY = "billing-workbook-local-edit-overlay";
 const ACCESS_SESSION_KEY = "billing-workbook-access-session";
-const STORAGE_VERSION = 36;
+const STORAGE_VERSION = 38;
 const PRIVATE_DOWNLOAD_URL_TTL_SECONDS = 60 * 60;
 const PRIVATE_LINK_RETENTION_DAYS = 180;
 const LOCAL_EDIT_OVERLAY_KEYS = ["pBilling", "pInvoices"];
@@ -201,6 +201,24 @@ const inRange = (d, s, e) => {
 };
 const norm = (value) => String(value ?? "").trim().toLowerCase();
 const optionalMatch = (ruleValue, actualValue) => !ruleValue || norm(ruleValue) === norm(actualValue);
+const ccyGroupToSet = (groupValue) => {
+  const raw = String(groupValue || "").trim();
+  if (!raw) return null;
+  const upper = raw.toUpperCase();
+  if (upper === "MAJORS" || upper === "MAJOR") return new Set(MAJORS.split(",").map((ccy) => ccy.trim().toUpperCase()).filter(Boolean));
+  if (upper === "MINORS" || upper === "MINOR") return new Set(MINORS.split(",").map((ccy) => ccy.trim().toUpperCase()).filter(Boolean));
+  if (upper === "TERTIARY" || upper === "TERTIARIES") return new Set(TERTIARY.split(",").map((ccy) => ccy.trim().toUpperCase()).filter(Boolean));
+  return new Set(raw.split(",").map((ccy) => ccy.trim().toUpperCase()).filter(Boolean));
+};
+const optionalCcyGroupMatch = (ruleGroup, txn) => {
+  const group = ccyGroupToSet(ruleGroup);
+  if (!group) return true;
+  const payeeCcy = String(txn?.payeeCcy || "").trim().toUpperCase();
+  const payerCcy = String(txn?.payerCcy || "").trim().toUpperCase();
+  if (payeeCcy) return group.has(payeeCcy);
+  if (payerCcy) return group.has(payerCcy);
+  return false;
+};
 const EEA_COUNTRY_TOKENS = new Set([
   "at", "austria", "be", "belgium", "bg", "bulgaria", "hr", "croatia", "cy", "cyprus",
   "cz", "czechrepublic", "dk", "denmark", "ee", "estonia", "fi", "finland", "fr", "france",
@@ -357,6 +375,7 @@ const txnMatchesPricingRow = (rule, txn) => optionalMatch(rule.txnType, txn.txnT
   && optionalMatch(rule.payeeCardType, txn.payeeCardType)
   && optionalMatch(rule.payerCcy, txn.payerCcy)
   && optionalMatch(rule.payeeCcy, txn.payeeCcy)
+  && optionalCcyGroupMatch(rule.ccyGroup, txn)
   && optionalCountryMatch(rule.payerCountry, rule.payerCountryGroup, txn.payerCountry)
   && optionalCountryMatch(rule.payeeCountry, rule.payeeCountryGroup, txn.payeeCountry)
   && optionalMatch(rule.processingMethod, txn.processingMethod);
@@ -438,10 +457,10 @@ const state = {
   sub: "offline",
   csub: "provider",
   sp: "",
-  perStart: LOOKER_IMPORT_PERIOD,
-  perEnd: LOOKER_IMPORT_PERIOD,
+  perStart: getDefaultInvoicePeriod(),
+  perEnd: getDefaultInvoicePeriod(),
   useDateRange: false,
-  financeBatchPeriod: LOOKER_IMPORT_PERIOD,
+  financeBatchPeriod: getDefaultInvoicePeriod(),
   financeBatchStatus: "idle",
   financeBatchError: "",
   billingSummaryPartner: "",
@@ -1709,6 +1728,14 @@ function daysInMonth(year, month) {
   return new Date(year, month, 0).getDate();
 }
 
+function getBillingPeriodEndDate(period) {
+  const normalizedPeriod = normalizeMonthKey(period);
+  if (!normalizedPeriod) return "";
+  const [year, month] = normalizedPeriod.split("-").map(Number);
+  if (!year || !month) return "";
+  return `${year}-${String(month).padStart(2, "0")}-${String(daysInMonth(year, month)).padStart(2, "0")}`;
+}
+
 function parseDueDaysFromPayBy(payBy) {
   const text = String(payBy || "").trim();
   if (!text) return 0;
@@ -1718,6 +1745,7 @@ function parseDueDaysFromPayBy(payBy) {
   if (netMatch) return Number(netMatch[1]);
   const daysMatch = text.match(/\b(\d+)\s*days?\b/i);
   if (daysMatch) return Number(daysMatch[1]);
+  if (/arrears|monthly\s+settlement|setoff/i.test(text)) return 30;
   return 0;
 }
 
@@ -2210,7 +2238,7 @@ function getBillingDueDays(partner) {
   const config = getPartnerBillingConfig(partner);
   const explicit = Number(config?.dueDays || 0);
   if (explicit > 0) return explicit;
-  return parseDueDaysFromPayBy(config?.payBy || "");
+  return parseDueDaysFromPayBy(config?.payBy || "") || 30;
 }
 
 function getBillingDay(partner) {
@@ -2313,6 +2341,23 @@ function nextMonthKey(period) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+function currentMonthKey(referenceDate = new Date()) {
+  return `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function previousFullMonthKey(referenceDate = new Date()) {
+  const date = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - 1, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getDefaultInvoicePeriod(referenceDate = new Date()) {
+  const importPeriod = normalizeMonthKey(LOOKER_IMPORT_PERIOD);
+  const currentPeriod = currentMonthKey(referenceDate);
+  const previousFullPeriod = previousFullMonthKey(referenceDate);
+  if (!importPeriod) return previousFullPeriod;
+  return comparePeriods(importPeriod, currentPeriod) >= 0 ? previousFullPeriod : importPeriod;
+}
+
 function previousMonthKey(period) {
   const [year, month] = normalizeMonthKey(period).split("-").map(Number);
   if (!year || !month) return "";
@@ -2333,18 +2378,7 @@ function getExpectedInvoiceSendDate(partner, period) {
 function inferInvoiceTrackingInvoiceDate(partner, period, kind = "receivable") {
   const normalizedPeriod = normalizeMonthKey(period);
   if (!normalizedPeriod) return "";
-  const expectedSendDate = getExpectedInvoiceSendDate(partner, normalizedPeriod);
-  if (expectedSendDate) return expectedSendDate;
-  const config = getPartnerBillingConfig(partner);
-  const frequency = String(config?.billingFreq || "").toLowerCase();
-  if (frequency.includes("quarter")) {
-    return `${nextMonthKey(normalizedPeriod)}-01`.replace("--", "-");
-  }
-  const nextPeriod = nextMonthKey(normalizedPeriod);
-  if (!nextPeriod) return "";
-  const [year, month] = nextPeriod.split("-").map(Number);
-  if (!year || !month) return "";
-  return `${year}-${String(month).padStart(2, "0")}-01`;
+  return getBillingPeriodEndDate(normalizedPeriod);
 }
 
 function backfillMissingInvoiceTrackingDates({ log = false } = {}) {
@@ -3510,11 +3544,11 @@ function renderQaCheckerPanel() {
   const report = getQaCheckerReport();
   if (!report) {
     return renderSection({
-      key: "qa-checker-status",
-      title: "QA Checker",
+      key: "invoice-qa-checker-status",
+      title: "QA Checker Status",
       badge: "Not run",
       note: "Runs after the Looker sync and flags source-data, missing-fee, and calculation-review issues before Finance releases invoices.",
-      defaultOpen: true,
+      defaultOpen: false,
       content: `
         <div class="summary-banner warning">
           <h4>No checker result loaded</h4>
@@ -3531,12 +3565,18 @@ function renderQaCheckerPanel() {
   const statusLabel = report.status === "pass" ? "SOURCE DATA PASS" : String(report.status || "unknown").toUpperCase();
   const issues = Array.isArray(report.issues) ? report.issues : [];
   const previewIssues = issues.slice(0, 8);
+  const history = Array.isArray(report.history)
+    ? report.history
+    : Array.isArray(state.qaCheckerHistory)
+      ? state.qaCheckerHistory
+      : [];
+  const previewHistory = history.slice(0, 8);
   return renderSection({
-    key: "qa-checker-status",
-    title: "QA Checker",
+    key: "invoice-qa-checker-status",
+    title: "QA Checker Status",
     badge: `${statusLabel}${summary.issueCount != null ? ` · ${summary.issueCount} issue${Number(summary.issueCount) === 1 ? "" : "s"}` : ""}`,
     note: "Latest deterministic source-data checker result loaded from the shared workbook or n8n QA status endpoint. This is not an invoice-dollar or PDF release certification.",
-    defaultOpen: true,
+    defaultOpen: false,
     content: `
       <div class="summary-banner ${tone === "success" ? "success" : tone === "warning" || tone === "danger" ? "warning" : "info"}">
         <h4>Latest checker status: ${renderInvoiceStatusTag({ label: statusLabel, tone })}</h4>
@@ -3555,6 +3595,36 @@ function renderQaCheckerPanel() {
         <button class="button secondary small" data-action="download-qa-checker-exceptions"${issues.length ? "" : " disabled"}>Download Exceptions CSV</button>
         <button class="button ghost small" data-action="download-qa-checker-summary">Download Summary JSON</button>
       </div>
+      ${previewHistory.length ? `
+        <div class="table-wrap" style="margin-top:16px">
+          <table class="data-table qa-checker-table">
+            <thead>
+              <tr>
+                <th>Run Time</th>
+                <th>Period</th>
+                <th>Status</th>
+                <th>Issues</th>
+                <th>Run ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${previewHistory.map((entry) => {
+                const entryStatus = String(entry.status || "unknown").toUpperCase();
+                const entryTone = entry.status === "pass" ? "success" : entry.status === "review" ? "warning" : entry.status === "fail" ? "danger" : "info";
+                return `
+                  <tr>
+                    <td>${entry.generatedAt ? html(formatDateTime(entry.generatedAt)) : "—"}</td>
+                    <td>${html(formatPeriodLabel(entry.period || report.period || ""))}</td>
+                    <td>${renderInvoiceStatusTag({ label: entryStatus, tone: entryTone })}</td>
+                    <td>${Number(entry.issueCount || 0).toLocaleString("en-US")} total · ${Number(entry.criticalCount || 0).toLocaleString("en-US")} critical</td>
+                    <td>${html(entry.runId || "—")}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      ` : `<div class="empty-state compact" style="margin-top:16px">Checker run history will populate after the next QA checker run.</div>`}
       ${previewIssues.length ? `
         <div class="table-wrap" style="margin-top:16px">
           <table class="data-table qa-checker-table">
@@ -3774,10 +3844,36 @@ function buildPdfGroupMemo(group) {
 function buildPdfGroupMemoText(group) {
   const lines = group?.lines || [];
   if (!lines.length) return "";
-  return lines.map((line) => {
+
+  const fixedFeeEntries = lines.map(parseFixedFeePdfMemoEntry);
+  if (fixedFeeEntries.every(Boolean)) {
+    const aggregated = new Map();
+    fixedFeeEntries.forEach((entry) => {
+      const key = [entry.label, entry.unitFee, entry.imported ? "imported" : "", entry.reason].join("|");
+      const existing = aggregated.get(key) || { ...entry, count: 0 };
+      existing.count += entry.count;
+      aggregated.set(key, existing);
+    });
+    return [...aggregated.values()].map((entry) => {
+      const suffix = entry.imported ? " imported" : "";
+      const reason = entry.reason ? ` [${entry.reason}]` : "";
+      return `${entry.label} (${entry.count.toLocaleString("en-US")}x${entry.unitFee}${suffix})${reason}`;
+    }).join("; ");
+  }
+
+  const memoCounts = new Map();
+  lines.forEach((line) => {
     const reason = line.active === false && line.inactiveReason ? ` [${line.inactiveReason}]` : "";
-    return `${line.desc || group.label || ""}${reason}`;
-  }).filter(Boolean).join("; ");
+    const text = `${line.desc || group.label || ""}${reason}`.trim();
+    if (!text) return;
+    memoCounts.set(text, (memoCounts.get(text) || 0) + 1);
+  });
+  const memoParts = [...memoCounts.entries()].map(([text, count]) => count > 1 ? `${text} x ${count}` : text);
+  const visibleParts = memoParts.slice(0, 4);
+  if (memoParts.length > visibleParts.length) {
+    visibleParts.push(`${memoParts.length - visibleParts.length} more memo groups in transaction CSV`);
+  }
+  return visibleParts.join("; ");
 }
 
 function formatUsdAmount(value) {
@@ -3798,11 +3894,14 @@ function buildInvoiceFileBaseName(doc) {
 function buildInvoiceMetadata(doc) {
   const period = normalizeMonthKey(doc.periodEnd || doc.period || doc.periodStart);
   const record = getInvoiceTrackingRecord(doc.partner, period, doc.kind) || null;
-  const invoiceDate = normalizeIsoDate(record?.invoiceDate) || inferInvoiceTrackingInvoiceDate(doc.partner, period, doc.kind) || todayIsoDate();
-  const dueDate = normalizeIsoDate(record?.dueDateOverride) || getInvoiceDueDate(doc.partner, period, invoiceDate) || invoiceDate;
+  const invoiceDate = getBillingPeriodEndDate(period) || normalizeIsoDate(record?.invoiceDate) || todayIsoDate();
+  const dueDate = normalizeIsoDate(record?.dueDateOverride) || getInvoiceDueDate(doc.partner, period, invoiceDate) || "";
   const config = getPartnerBillingConfig(doc.partner);
   const dueDays = getBillingDueDays(doc.partner);
-  const terms = String(config?.payBy || "").trim() || (dueDays > 0 ? `Net ${dueDays}` : "Due on receipt");
+  const payBy = String(config?.payBy || "").trim();
+  const terms = dueDays > 0
+    ? (/\b(due|net|\d+\s*days?)\b/i.test(payBy) ? payBy : `Net ${dueDays}`)
+    : (payBy || "Due on receipt");
   const entity = getInvoiceEntityDetails(doc.partner);
   const partnerLegalName = String(config?.partnerLegalName || doc.partner || "").trim() || doc.partner;
   const partnerAddressLines = String(config?.partnerBillingAddress || "")
@@ -3993,10 +4092,11 @@ function buildInvoicePdfDocument(doc, { autoPrint = true } = {}) {
           text-align: left;
         }
         .pdf-line-table tbody td {
-          padding: 5px 8px;
+          padding: 8px 8px;
           border-bottom: 1px solid #ececec;
           font-size: 0.76rem;
-          vertical-align: top;
+          line-height: 1.35;
+          vertical-align: middle;
           text-align: left;
         }
         .pdf-line-table tbody tr:last-child td {
@@ -4184,7 +4284,7 @@ function pdfLine(x1, y1, x2, y2, width = 0.6) {
 }
 
 function pdfRect(x, y, w, h, fill = "0.91 0.91 0.91") {
-  return `${fill} rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f\n0 0 0 rg`;
+  return `${fill} rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f\n0 0 0 rg\n`;
 }
 
 function buildInvoicePdfPageContent(doc) {
@@ -4218,13 +4318,15 @@ function buildInvoicePdfPageContent(doc) {
     });
   };
   const addTableHeader = () => {
-    commands += pdfRect(margin, y - 15, width - (margin * 2), 20);
-    commands += pdfText(margin + 4, y - 9, "Item", 8, { bold: true });
-    commands += pdfText(margin + 82, y - 9, "Description", 8, { bold: true });
-    commands += pdfText(margin + 220, y - 9, "Computation", 8, { bold: true });
-    commands += pdfText(margin + 330, y - 9, "Memo", 8, { bold: true });
-    commands += pdfText(width - margin - 58, y - 9, "Amount", 8, { bold: true });
-    y -= 24;
+    const headerHeight = 22;
+    commands += pdfRect(margin, y - headerHeight + 3, width - (margin * 2), headerHeight);
+    const headerBaseline = y - 12;
+    commands += pdfText(margin + 4, headerBaseline, "Item", 8, { bold: true });
+    commands += pdfText(margin + 82, headerBaseline, "Description", 8, { bold: true });
+    commands += pdfText(margin + 220, headerBaseline, "Computation", 8, { bold: true });
+    commands += pdfText(margin + 330, headerBaseline, "Memo", 8, { bold: true });
+    commands += pdfText(width - margin - 58, headerBaseline, "Amount", 8, { bold: true });
+    y -= headerHeight + 8;
   };
 
   startPage();
@@ -4261,24 +4363,37 @@ function buildInvoicePdfPageContent(doc) {
   y -= 22;
   addTableHeader();
 
+  const drawCellLines = (x, rowTop, rowHeight, lines, size, lineHeight, options = {}) => {
+    const visibleLines = lines.length ? lines : [""];
+    const contentHeight = size + ((visibleLines.length - 1) * lineHeight);
+    const rowBottom = rowTop - rowHeight;
+    const firstBaseline = rowBottom + ((rowHeight - contentHeight) / 2) + ((visibleLines.length - 1) * lineHeight);
+    visibleLines.forEach((line, index) => {
+      commands += pdfText(x, firstBaseline - (index * lineHeight), line, size, options);
+    });
+  };
+
   rows.forEach((row) => {
-    const memoLines = wrapPdfText(row.memo, 38).slice(0, 4);
-    const descLines = wrapPdfText(row.description, 24).slice(0, 3);
-    const compLines = wrapPdfText(row.computation, 18).slice(0, 3);
-    const rowHeight = Math.max(memoLines.length, descLines.length, compLines.length, 1) * 10 + 8;
+    const itemLines = wrapPdfText(row.item, 15);
+    const memoLines = wrapPdfText(row.memo, 36);
+    const descLines = wrapPdfText(row.description, 25);
+    const compLines = wrapPdfText(row.computation, 20);
+    const amountLines = wrapPdfText(row.amount, 13).slice(0, 2);
+    const lineHeight = 9.5;
+    const rowHeight = Math.max(28, Math.max(itemLines.length, memoLines.length, descLines.length, compLines.length, amountLines.length, 1) * lineHeight + 14);
     if (y - rowHeight < 148) {
       finishPage();
       startPage();
       addTableHeader();
     }
     const rowTop = y;
-    commands += pdfText(margin + 4, rowTop, row.item, 7.5);
-    descLines.forEach((line, index) => { commands += pdfText(margin + 82, rowTop - (index * 10), line, 7.5); });
-    compLines.forEach((line, index) => { commands += pdfText(margin + 220, rowTop - (index * 10), line, 7.5); });
-    memoLines.forEach((line, index) => { commands += pdfText(margin + 330, rowTop - (index * 10), line, 7.2); });
-    commands += pdfText(width - margin - 70, rowTop, row.amount, 7.5);
+    drawCellLines(margin + 4, rowTop, rowHeight, itemLines, 7.5, lineHeight);
+    drawCellLines(margin + 82, rowTop, rowHeight, descLines, 7.5, lineHeight);
+    drawCellLines(margin + 220, rowTop, rowHeight, compLines, 7.5, lineHeight);
+    drawCellLines(margin + 330, rowTop, rowHeight, memoLines, 7.1, lineHeight);
+    drawCellLines(width - margin - 74, rowTop, rowHeight, amountLines, 7.5, lineHeight);
     y -= rowHeight;
-    commands += pdfLine(margin, y + 4, width - margin, y + 4, 0.25);
+    commands += pdfLine(margin, y, width - margin, y, 0.25);
   });
 
   if (y < 190) {
@@ -4418,6 +4533,16 @@ function replacePartnerRows(currentRows, defaultRows, partners) {
   ];
 }
 
+function removeQaMaintainedRemittanceshubVolumeRows(currentRows) {
+  const safeCurrentRows = Array.isArray(currentRows) ? currentRows : [];
+  return safeCurrentRows.filter((row) => !(
+    row
+    && row.partner === "Remittanceshub"
+    && String(row.id || "").startsWith("qa-maint-remittanceshub-fx-")
+    && String(row.txnType || "").toLowerCase() === "fx"
+  ));
+}
+
 function migrateSnapshot(saved) {
   if (!saved || typeof saved !== "object") {
     return { snapshot: saved, changed: false };
@@ -4431,7 +4556,7 @@ function migrateSnapshot(saved) {
 
   if (version < 4) {
     snapshot.off = replacePartnerRows(saved.off, defaults.off, ["Stampli", "Skydo"]);
-    snapshot.vol = replacePartnerRows(saved.vol, defaults.vol, ["Maplewave", "Skydo", "Stampli"]);
+    snapshot.vol = replacePartnerRows(saved.vol, defaults.vol, ["Maplewave", "Remittanceshub", "Skydo", "Stampli"]);
     snapshot.fxRates = replacePartnerRows(saved.fxRates, defaults.fxRates, ["Stampli"]);
     snapshot.rs = replacePartnerRows(saved.rs, defaults.rs, ["Stampli"]);
     snapshot.mins = replacePartnerRows(saved.mins, defaults.mins, ["Stampli"]);
@@ -4498,6 +4623,10 @@ function migrateSnapshot(saved) {
     snapshot.lrev = defaults.lrev;
     snapshot.lrs = defaults.lrs;
     snapshot.lfxp = defaults.lfxp;
+  }
+
+  if (version < 37) {
+    snapshot.vol = removeQaMaintainedRemittanceshubVolumeRows(snapshot.vol ?? saved.vol);
   }
 
   if (version < 17) {
@@ -4725,8 +4854,8 @@ function resetToDefaults() {
   state.lastSaved = null;
   state.lastSavedAt = null;
   state.lookerImportAudit = null;
-  state.perStart = LOOKER_IMPORT_PERIOD;
-  state.perEnd = LOOKER_IMPORT_PERIOD;
+  state.perStart = getDefaultInvoicePeriod();
+  state.perEnd = getDefaultInvoicePeriod();
   state.useDateRange = false;
   state.billingSummaryPartner = "";
   state.billingSummaryPeriod = "";
@@ -5479,9 +5608,7 @@ function detailManifestKey(partner, period) {
 }
 
 function buildFallbackDetailFilePath(partner, period) {
-  const partnerSlug = slugifyFilenamePart(partner || "partner");
-  const periodSlug = slugifyFilenamePart(period || "period");
-  return `./looker-detail-files/${partnerSlug}-${periodSlug}-details.json`;
+  return buildFallbackDetailCsvPath(partner, period);
 }
 
 function buildFallbackDetailCsvPath(partner, period) {
@@ -6017,10 +6144,99 @@ function buildInvoiceSummaryFallbackRows(group) {
   }));
 }
 
+function getInvoiceGroupBillableAmount(group) {
+  const charge = Number(group?.charge || 0);
+  const pay = Number(group?.pay || 0);
+  const offset = Number(group?.offset || 0);
+  if (Math.abs(charge) > 0.0001) return roundCurrency(charge);
+  if (Math.abs(pay) > 0.0001) return roundCurrency(pay);
+  if (Math.abs(offset) > 0.0001) return roundCurrency(offset);
+  return 0;
+}
+
+function getInvoiceGroupComputationText(group) {
+  const activeLines = (group?.lines || []).filter((line) => line.active !== false);
+  const sourceLines = activeLines.length ? activeLines : (group?.lines || []);
+  return sourceLines
+    .map((line) => line.desc || group?.label || "")
+    .filter(Boolean)
+    .join(" | ") || group?.label || "Invoice fee";
+}
+
+function getTransactionFeeAllocationBasis(group) {
+  const category = String(group?.cat || "").toLowerCase();
+  if (["volume", "fx", "surcharge", "revenue"].some((key) => category.includes(key))) return "volume";
+  if (category.includes("minimum")) return "volume";
+  return "count";
+}
+
+function getTransactionFeeAllocationWeight(row, group) {
+  if (getTransactionFeeAllocationBasis(group) === "volume") {
+    return Math.max(0, getDetailUsdEquivalentAmount(row));
+  }
+  const explicitCount = Number(row?.txnCount || 0);
+  if (explicitCount > 0) return explicitCount;
+  return isPaymentLevelDetailRow(row) ? 1 : 0;
+}
+
+function invoiceDetailRowMatchesGroup(detailRow, group, inv) {
+  const detailPartner = firstPresentValue(detailRow, ["partner", "Partner", "invoicePartner"]);
+  const detailPeriod = firstPresentValue(detailRow, ["period", "Period", "invoicePeriod", "financeBatchPeriod"]);
+  const samePartner = !inv?.partner || norm(detailPartner) === norm(inv.partner);
+  const samePeriod = !inv?.period || !detailPeriod || norm(detailPeriod) === norm(inv.period);
+  if (!samePartner || !samePeriod) return false;
+  const activityRows = group?.activityRows || [];
+  if (!activityRows.length && norm(group?.cat) === "minimum") return true;
+  return activityRows.some((summaryRow) => (
+    matchesStampliFxPartnerMarkupDetail(detailRow, summaryRow, group)
+    || matchesInvoiceActivitySummary(detailRow, summaryRow)
+    || (group?.cat === "Reversal"
+      ? matchesReversalSummary(detailRow, summaryRow)
+      : matchesTxnSummary(detailRow, summaryRow))
+  ));
+}
+
+function buildTransactionFeeAllocations(detailRows, targetGroups, inv) {
+  const allocationsByIndex = new Map();
+  const groups = (targetGroups || []).filter((group) => Math.abs(getInvoiceGroupBillableAmount(group)) > 0.0001);
+  groups.forEach((group) => {
+    const matchedIndexes = [];
+    detailRows.forEach((row, index) => {
+      if (invoiceDetailRowMatchesGroup(row, group, inv)) matchedIndexes.push(index);
+    });
+    if (!matchedIndexes.length) return;
+    const groupAmount = getInvoiceGroupBillableAmount(group);
+    const basis = getTransactionFeeAllocationBasis(group);
+    const weights = matchedIndexes.map((index) => getTransactionFeeAllocationWeight(detailRows[index], group));
+    const totalWeight = weights.reduce((sum, value) => sum + (value > 0 ? value : 0), 0);
+    matchedIndexes.forEach((index, localIndex) => {
+      const rawWeight = weights[localIndex];
+      const allocated = totalWeight > 0 && rawWeight > 0
+        ? roundCurrency(groupAmount * (rawWeight / totalWeight))
+        : roundCurrency(groupAmount / matchedIndexes.length);
+      if (!allocationsByIndex.has(index)) {
+        allocationsByIndex.set(index, { feeAmount: 0, memoParts: [], groupLabels: [] });
+      }
+      const allocation = allocationsByIndex.get(index);
+      allocation.feeAmount = roundCurrency(Number(allocation.feeAmount || 0) + allocated);
+      const weightText = basis === "volume"
+        ? `${fmt(rawWeight || 0)} transaction volume`
+        : `${rawWeight || 1} transaction${Number(rawWeight || 1) === 1 ? "" : "s"}`;
+      allocation.groupLabels.push(group.label || group.cat || "Invoice fee");
+      allocation.memoParts.push(`${group.label || group.cat || "Invoice fee"}: ${getInvoiceGroupComputationText(group)}; ${fmt(allocated)} allocated from ${fmt(groupAmount)} by ${basis} (${weightText}).`);
+    });
+  });
+  return allocationsByIndex;
+}
+
 function buildInvoiceExportRows(detailRows, scope, group, inv = state.inv) {
   if (!inv) return [];
   const matchingDescriptions = scope === "all" ? "" : (group?.lines || []).map((line) => line.desc).join(" | ");
-  return detailRows.map((row) => ({
+  const targetGroups = scope === "all" ? (inv.groups || []) : (group ? [group] : []);
+  const allocations = buildTransactionFeeAllocations(detailRows, targetGroups, inv);
+  return detailRows.map((row, index) => {
+    const allocation = allocations.get(index) || { feeAmount: 0, memoParts: [], groupLabels: [] };
+    return {
     exportScope: scope === "all" ? "all_transactions_for_range" : "matching_transactions",
     invoicePartner: inv.partner,
     invoicePeriod: inv.period,
@@ -6030,14 +6246,55 @@ function buildInvoiceExportRows(detailRows, scope, group, inv = state.inv) {
     invoiceCategory: group?.cat || "",
     invoiceGroup: group?.label || "",
     invoiceDescriptions: matchingDescriptions,
-    ...row
-  }));
+    ...row,
+    directFeeAmount: roundCurrency(allocation.feeAmount || 0),
+    directFeeComputationMemo: allocation.memoParts.length
+      ? allocation.memoParts.join(" | ")
+      : "No matching invoice fee line; $0.00 fee allocated.",
+    invoiceFeeGroups: [...new Set(allocation.groupLabels || [])].join(" | ")
+    };
+  });
 }
 
 function formatTransactionExportAmount(value, { currency = true } = {}) {
   if (value === "" || value == null || Number.isNaN(Number(String(value).replace(/[$,]/g, "")))) return "";
   const numeric = Number(String(value).replace(/[$,]/g, ""));
   return currency ? `$${numeric.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : numeric.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatCreditUsdRate(value) {
+  const numeric = parseDetailMoney(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) return "";
+  return numeric.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 8 });
+}
+
+function shouldShowCreditUsdRate(row) {
+  const txnType = norm(firstPresentValue(row, ["txnType", "txnTypeRaw", "paymentType", "Transaction Type"]));
+  const payeeCcy = norm(firstPresentValue(row, ["payeeAmountCurrency", "Currency (Payee Amount Currency)", "payeeCcy"])).toUpperCase();
+  if (txnType.includes("fx")) return true;
+  return !!payeeCcy && payeeCcy !== "USD";
+}
+
+function getCreditUsdRateForExport(row, paymentUsdAmount) {
+  if (!shouldShowCreditUsdRate(row)) return "N/A";
+  const explicitRate = firstPresentValue(row, [
+    "creditUsdRate",
+    "Credit USD Rate",
+    "Credit USD rate",
+    "openExchangeRateUsed",
+    "Open Exchange Rate used for this Transaction",
+    "Open Exchange Rate Used for this Transaction"
+  ]);
+  const formattedExplicitRate = formatCreditUsdRate(explicitRate);
+  if (formattedExplicitRate) return formattedExplicitRate;
+  const foreignAmount = parseDetailMoney(firstPresentValue(row, [
+    "payeeAmount",
+    "Foreign Currency Amount (Payee Amount Number)",
+    "foreignCurrencyAmount"
+  ]));
+  const usdAmount = parseDetailMoney(paymentUsdAmount);
+  if (foreignAmount > 0 && usdAmount > 0) return formatCreditUsdRate(usdAmount / foreignAmount);
+  return "Unavailable - missing source amount";
 }
 
 function firstPresentValue(row, keys) {
@@ -6087,7 +6344,10 @@ function formatCustomerTransactionExportRows(rows) {
       "Foreign Currency Amount (Payee Amount Number)": formatTransactionExportAmount(firstPresentValue(row, ["payeeAmount", "Foreign Currency Amount (Payee Amount Number)", "totalVolume"]), { currency: false }),
       "USD Amount Debited to the Customer": formatTransactionExportAmount(firstPresentValue(row, ["usdAmountDebited", "USD Amount Debited to the Customer", "totalUsdDebited"]), { currency: false }),
       "Payment USD Equivalent Amount": formatTransactionExportAmount(paymentUsdAmount),
-      "Fees": formatTransactionExportAmount(feeAmount),
+      "Credit USD Rate": getCreditUsdRateForExport(row, paymentUsdAmount),
+      "Fees": formatTransactionExportAmount(feeAmount || 0),
+      "Fee Computation Memo": row.directFeeComputationMemo || row.summaryComputation || row.exportNote || "No matching invoice fee line; $0.00 fee allocated.",
+      "Invoice Fee Groups": row.invoiceFeeGroups || row.invoiceGroup || "No matching invoice fee line",
       "Transaction Type": firstPresentValue(row, ["txnType", "txnTypeRaw", "paymentType"]),
       "Processing Method": firstPresentValue(row, ["processingMethod", "transactionProcessingMethodRaw", "speedFlag"]),
       "Partner": row.invoicePartner || row.partner || "",
@@ -9512,7 +9772,6 @@ function renderInvoiceTab() {
   return `
     <div class="stack">
       ${renderPageTableToggle("invoice")}
-      ${qaCheckerPanel}
       <div class="card">
         <div class="section-header compact">
           <div>
@@ -9551,6 +9810,7 @@ function renderInvoiceTab() {
         </div>
         ${state.sp ? renderPartnerLifetimeBillingSummary(state.sp) : ""}
       </div>
+      ${qaCheckerPanel}
       ${state.sp ? renderPartnerFollowUpPanel(state.sp, { variant: "invoice" }) : ""}
       ${invoiceSection}
       ${financeBatchPanel}
@@ -10223,6 +10483,12 @@ function renderImportTab() {
 // open instead of being discovered through PDF reconciliation weeks later.
 // ============================================================================
 const HEALTH_STATUS_COLORS = { green: "#1f8a3b", yellow: "#c98a18", red: "#bf2c1d" };
+const HARD_RELEASE_BLOCKER_CHECK_IDS = new Set([
+  "snapshot-fresh",
+  "snapshot-version",
+  "feed-counts",
+  "untrusted-stampli",
+]);
 
 function healthCheckSnapshotFreshness() {
   const savedAt = state._saved || state.lastSavedAt || "";
@@ -10304,23 +10570,28 @@ function healthCheckPreCollectedRevenue() {
 
 function healthCheckReversalCoverage() {
   const period = getHealthEvaluationPeriod();
-  const partnersWithRevf = Array.from(new Set((state.revf || []).map((r) => r.partner)));
-  const missing = [];
-  for (const p of partnersWithRevf) {
-    const lrevRow = (state.lrev || []).find((r) => r.partner === p && r.period === period && Number(r.reversalCount || 0) > 0);
-    const negTxnRow = (state.ltxn || []).find((r) => r.partner === p && r.period === period && Number(r.directInvoiceAmount || 0) < 0);
-    if (!lrevRow && !negTxnRow) missing.push(p);
-  }
-  const status = !partnersWithRevf.length ? "yellow" : missing.length === 0 ? "green" : missing.length <= 2 ? "yellow" : "red";
+  const reversalRows = (state.lrev || []).filter((r) => r.period === period);
+  const partnersWithRevf = new Set((state.revf || []).map((r) => r.partner).filter(Boolean));
+  const reversalPartners = new Set(reversalRows.map((r) => r.partner).filter(Boolean));
+  const unconfigured = [...reversalPartners].filter((partner) => !partnersWithRevf.has(partner));
+  const status = !partnersWithRevf.size
+    ? "yellow"
+    : !reversalRows.length
+      ? "yellow"
+      : unconfigured.length
+        ? "red"
+        : "green";
   return {
     status,
-    value: `${missing.length}/${partnersWithRevf.length}`,
-    narrative: !partnersWithRevf.length
+    value: `${reversalRows.length}`,
+    narrative: !partnersWithRevf.size
       ? "No revf rows configured."
       : status === "green"
-        ? "Every revf-configured partner has reversal data for the active period."
-        : `${missing.length} partners with reversal config but no reversal data in ${period}: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}`,
-    detail: missing.length ? missing.join(", ") : "",
+        ? `Reversal feed has ${reversalRows.length} row(s) in ${period}, and every reversal partner has a configured reversal fee.`
+        : !reversalRows.length
+          ? `No reversal rows were imported for ${period}. This is only an issue if reversals occurred in that month.`
+          : `${unconfigured.length} reversal partner(s) have imported reversals but no configured reversal fee: ${unconfigured.slice(0, 5).join(", ")}${unconfigured.length > 5 ? "…" : ""}`,
+    detail: unconfigured.length ? unconfigured.join(", ") : "",
   };
 }
 
@@ -10351,7 +10622,7 @@ function healthCheckImplCoverage() {
   const nyl = (state.pBilling || []).filter((r) => r.notYetLive);
   const implPartners = new Set((state.impl || []).filter((r) => Number(r.feeAmount || 0) > 0).map((r) => r.partner));
   const missing = nyl.filter((r) => !implPartners.has(r.partner)).map((r) => r.partner);
-  const status = !nyl.length ? "green" : missing.length === 0 ? "green" : missing.length <= 1 ? "yellow" : "red";
+  const status = !nyl.length || missing.length === 0 ? "green" : "yellow";
   return {
     status,
     value: `${nyl.length - missing.length}/${nyl.length}`,
@@ -10365,20 +10636,22 @@ function healthCheckImplCoverage() {
 }
 
 function healthCheckContractCompleteness() {
-  const partners = state.ps || [];
+  const activePartnerRows = (state.pBilling || []).filter((row) => !row.archived && !row.notYetLive);
+  const activePartners = new Set(activePartnerRows.map((row) => row.partner).filter(Boolean));
+  const partners = (state.ps || []).filter((partner) => !activePartners.size || activePartners.has(partner));
   const sources = ["off", "vol", "mins", "plat", "rs", "revf", "vaFees", "impl", "surch"];
   const missing = [];
   for (const p of partners) {
     const hasAny = sources.some((src) => (state[src] || []).some((r) => r.partner === p));
     if (!hasAny) missing.push(p);
   }
-  const status = missing.length === 0 ? "green" : "red";
+  const status = missing.length === 0 ? "green" : "yellow";
   return {
     status,
     value: `${partners.length - missing.length}/${partners.length}`,
     narrative: status === "green"
-      ? "Every partner has at least one fee config row."
-      : `${missing.length} partners with no fee config at all: ${missing.join(", ")} — invoices for these will have nothing to back them.`,
+      ? "Every active/live partner has at least one fee config row."
+      : `${missing.length} active/live partners have no fee config at all: ${missing.join(", ")} — invoices for these need manual review.`,
     detail: missing.length ? missing.join(", ") : "",
   };
 }
@@ -10449,12 +10722,14 @@ function runHealthChecks() {
 function getReleaseReadiness(checks = runHealthChecks()) {
   const redCount = checks.filter((check) => check.status === "red").length;
   const yellowCount = checks.filter((check) => check.status === "yellow").length;
+  const hardBlockers = checks.filter((check) => check.status === "red" && HARD_RELEASE_BLOCKER_CHECK_IDS.has(check.id));
+  const reviewRedCount = redCount - hardBlockers.length;
   const qaReport = getQaCheckerReport();
-  if (redCount) {
+  if (hardBlockers.length) {
     return {
       tone: "danger",
       label: "Blocked",
-      message: `${redCount} red health check${redCount === 1 ? "" : "s"} must be resolved before treating invoices as release-ready.`
+      message: `${hardBlockers.length} hard blocker${hardBlockers.length === 1 ? "" : "s"} must be resolved before batch exports: ${hardBlockers.map((check) => check.title).join(", ")}.`
     };
   }
   if (!qaReport) {
@@ -10476,6 +10751,13 @@ function getReleaseReadiness(checks = runHealthChecks()) {
       tone: "warning",
       label: "Source QA Passed With Warnings",
       message: `${yellowCount} warning health check${yellowCount === 1 ? "" : "s"} remain. Source-data QA passed, but invoices still need release review.`
+    };
+  }
+  if (reviewRedCount) {
+    return {
+      tone: "warning",
+      label: "Source QA Passed With Review Items",
+      message: `${reviewRedCount} review health check${reviewRedCount === 1 ? "" : "s"} remain. Batch exports are enabled for finance review, but do not treat outputs as released until review items are cleared.`
     };
   }
   return {
@@ -11412,4 +11694,16 @@ void initApp().catch((error) => {
 // inert there — the browser still evaluates the top-level code including
 // initApp(). Node harnesses stub document/window before importing and drive
 // the calc via calculateLocalInvoiceForPeriod.
-export { state, calculateLocalInvoiceForPeriod, runHealthChecks, renderHealthTab };
+export {
+  state,
+  calculateLocalInvoiceForPeriod,
+  buildInvoiceDocuments,
+  buildInvoicePdfBytes,
+  buildInvoicePdfDocument,
+  buildInvoiceFileBaseName,
+  buildInvoiceExportRows,
+  formatCustomerTransactionExportRows,
+  getPartnerInvoiceEntity,
+  runHealthChecks,
+  renderHealthTab
+};

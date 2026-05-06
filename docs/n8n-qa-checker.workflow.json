@@ -1,0 +1,439 @@
+{
+  "name": "Billing Workbook QA Checker - Updated 2026-04-30",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "billing-qa-checker",
+        "responseMode": "onReceived",
+        "options": {
+          "allowedOrigins": "https://billing.qa-us-west-2.veem.com",
+          "responseCode": 202
+        }
+      },
+      "id": "qa-checker-webhook",
+      "name": "QA Checker Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        220
+      ],
+      "webhookId": "billing-qa-checker"
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        380
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "when-called-by-another-workflow",
+      "name": "When Called By Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "=30 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "daily-schedule",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first()?.json || {};\nconst body = input.body && typeof input.body === \"object\" ? input.body : input;\nconst now = new Date();\nconst previous = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));\nconst defaultPeriod = `${previous.getUTCFullYear()}-${String(previous.getUTCMonth() + 1).padStart(2, \"0\")}`;\nconst timestamp = now.toISOString().replace(/[-:.TZ]/g, \"\").slice(0, 14);\nconst runToken = Math.random().toString(16).slice(2, 8);\nreturn [{ json: {\n  period: String(body.period || defaultPeriod),\n  runId: String(body.runId || `qa-${timestamp}-${runToken}`),\n  bucketName: String(body.bucketName || \"veem-qa-billing-data\"),\n  workbookKey: String(body.workbookKey || \"data/current-workbook.json\"),\n  qaSummaryKey: String(body.qaSummaryKey || \"data/qa/latest-checker-summary.json\"),\n  qaExceptionsKey: String(body.qaExceptionsKey || \"data/qa/latest-checker-exceptions.csv\"),\n} }];"
+      },
+      "id": "build-qa-run-context",
+      "name": "Build QA Run Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "download",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileKey": "={{ $json.workbookKey }}",
+        "binaryPropertyName": "currentWorkbook"
+      },
+      "id": "download-current-workbook",
+      "name": "Download Current Workbook",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        900,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nconst ctx = input.json || {};\nif (!input.binary?.currentWorkbook) throw new Error(\"Download Current Workbook did not provide currentWorkbook binary data.\");\nconst workbookBuffer = await this.helpers.getBinaryDataBuffer(0, \"currentWorkbook\");\nlet workbookPayload;\ntry {\n  workbookPayload = JSON.parse(workbookBuffer.toString(\"utf8\"));\n} catch (error) {\n  throw new Error(`Current workbook JSON could not be parsed: ${error.message}`);\n}\nconst runtimeSource = \"const QA_CHECKER_VERSION = \\\"2026-05-05.2\\\";\\n\\nconst ARCHIVED_PARTNER_OVERRIDES = new Set([\\\"oson\\\"]);\\nconst BILLING_CONFIG_KEYS = [\\\"off\\\", \\\"vol\\\", \\\"fxRates\\\", \\\"rs\\\", \\\"mins\\\", \\\"plat\\\", \\\"revf\\\", \\\"impl\\\", \\\"vaFees\\\", \\\"surch\\\"];\\nconst DATA_SECTION_KEYS = [\\\"ltxn\\\", \\\"lrev\\\", \\\"lva\\\", \\\"lrs\\\", \\\"lfxp\\\"];\\nconst SAME_CURRENCY_DOMESTIC_TXN_TYPES = {\\n  AUD: \\\"AUD Domestic\\\",\\n  CAD: \\\"CAD Domestic\\\",\\n  EUR: \\\"EUR Domestic\\\",\\n  GBP: \\\"GBP Domestic\\\",\\n};\\nconst MAJOR_CCY_GROUP = \\\"AUD,CAD,CHF,CNY,DKK,EUR,GBP,HKD,JPY,NOK,NZD,PHP,SEK,SGD,USD\\\";\\nconst MINOR_CCY_GROUP = \\\"AED,BBD,BDT,BGN,BHD,BMD,BND,BRL,BSD,BWP,BZD,CRC,CZK,DOP,DZD,EGP,ETB,FJD,GHS,GTQ,GYD,HTG,HUF,IDR,ILS,INR,ISK,JMD,JOD,KES,KWD,KYD,KZT,LBP,LKR,MAD,MOP,MUR,MWK,MXN,MZN,NGN,OMR,PEN,PGK,PKR,PLN,QAR,RON,RUB,RWF,SAR,SBD,THB,TND,TOP,TRY,TTD,TZS,UGX,UYU,VND,VUV,WST,XAF,XCD,XOF,ZAR,ZMW\\\";\\nfunction text(value) {\\n  if (value === null || value === undefined) return \\\"\\\";\\n  return String(value).trim();\\n}\\n\\nfunction number(value) {\\n  if (value === null || value === undefined || value === \\\"\\\") return 0;\\n  if (typeof value === \\\"number\\\") return Number.isFinite(value) ? value : 0;\\n  const parsed = Number(String(value).replace(/[$,]/g, \\\"\\\"));\\n  return Number.isFinite(parsed) ? parsed : 0;\\n}\\n\\nfunction roundCurrency(value) {\\n  return Math.round((Number(value) || 0) * 100) / 100;\\n}\\n\\nfunction parseDate(value) {\\n  const raw = text(value);\\n  if (!raw) return null;\\n  const direct = raw.match(/^(\\\\d{4})-(\\\\d{2})-(\\\\d{2})/);\\n  if (direct) return new Date(`${direct[1]}-${direct[2]}-${direct[3]}T00:00:00Z`);\\n  const monthOnly = raw.match(/^(\\\\d{4})-(\\\\d{2})$/);\\n  if (monthOnly) return new Date(`${monthOnly[1]}-${monthOnly[2]}-01T00:00:00Z`);\\n  const parsed = new Date(raw);\\n  return Number.isNaN(parsed.valueOf()) ? null : parsed;\\n}\\n\\nfunction monthKey(value) {\\n  const raw = text(value);\\n  if (!raw) return \\\"\\\";\\n  const direct = raw.match(/^(\\\\d{4})-(\\\\d{2})/);\\n  if (direct) return `${direct[1]}-${direct[2]}`;\\n  const parsed = parseDate(raw);\\n  return parsed ? `${parsed.getUTCFullYear()}-${String(parsed.getUTCMonth() + 1).padStart(2, \\\"0\\\")}` : \\\"\\\";\\n}\\n\\nfunction previousFullMonth(date = new Date()) {\\n  const current = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));\\n  current.setUTCMonth(current.getUTCMonth() - 1);\\n  return `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, \\\"0\\\")}`;\\n}\\n\\nfunction periodEndDate(period) {\\n  const [year, month] = text(period).split(\\\"-\\\").map(Number);\\n  if (!year || !month) return null;\\n  return new Date(Date.UTC(year, month, 0, 23, 59, 59));\\n}\\n\\nfunction inRange(period, startDate, endDate) {\\n  const end = periodEndDate(period);\\n  if (!end) return true;\\n  const start = parseDate(startDate);\\n  const finish = parseDate(endDate);\\n  if (start && start > end) return false;\\n  if (finish && finish < new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 1))) return false;\\n  return true;\\n}\\n\\nfunction normalizePartner(value) {\\n  return text(value).toLowerCase().replace(/[^a-z0-9]+/g, \\\"\\\");\\n}\\n\\nfunction partnerName(row) {\\n  return text(row?.partner || row?.partnerName || row?.partnerGroup || row?.provider);\\n}\\n\\nfunction arrayAt(snapshot, key) {\\n  return Array.isArray(snapshot?.[key]) ? snapshot[key] : [];\\n}\\n\\nfunction sameCurrencyDomesticTxnType(row) {\\n  const payerCcy = text(row?.payerCcy).toUpperCase();\\n  const payeeCcy = text(row?.payeeCcy).toUpperCase();\\n  if (!payerCcy || payerCcy !== payeeCcy) return \\\"\\\";\\n  return SAME_CURRENCY_DOMESTIC_TXN_TYPES[payeeCcy] || \\\"\\\";\\n}\\n\\nfunction ccyGroupMatches(row, txn) {\\n  const group = text(row?.ccyGroup).toUpperCase();\\n  if (!group) return true;\\n  const payeeCcy = text(txn?.payeeCcy).toUpperCase();\\n  const payerCcy = text(txn?.payerCcy).toUpperCase();\\n  if (!payeeCcy && !payerCcy) return false;\\n  const expanded = group === \\\"MAJORS\\\" || group === \\\"MAJOR\\\"\\n    ? MAJOR_CCY_GROUP\\n    : group === \\\"MINORS\\\" || group === \\\"MINOR\\\"\\n      ? MINOR_CCY_GROUP\\n      : group;\\n  const tokens = new Set(expanded.split(\\\",\\\").map((value) => value.trim().toUpperCase()).filter(Boolean));\\n  if (payeeCcy) return tokens.has(payeeCcy);\\n  if (payerCcy) return tokens.has(payerCcy);\\n  return false;\\n}\\n\\nfunction corridorForCurrency(ccy) {\\n  const normalized = text(ccy).toUpperCase();\\n  if (!normalized) return \\\"\\\";\\n  const majors = new Set(MAJOR_CCY_GROUP.split(\\\",\\\").map((value) => value.trim().toUpperCase()).filter(Boolean));\\n  if (majors.has(normalized)) return \\\"major\\\";\\n  const minors = new Set(MINOR_CCY_GROUP.split(\\\",\\\").map((value) => value.trim().toUpperCase()).filter(Boolean));\\n  if (minors.has(normalized)) return \\\"minor\\\";\\n  return \\\"tertiary\\\";\\n}\\n\\nfunction normalizeCorridor(value) {\\n  const normalized = text(value).toLowerCase();\\n  if (!normalized) return \\\"\\\";\\n  if (normalized.startsWith(\\\"maj\\\")) return \\\"major\\\";\\n  if (normalized.startsWith(\\\"min\\\")) return \\\"minor\\\";\\n  if (normalized.startsWith(\\\"ter\\\")) return \\\"tertiary\\\";\\n  return normalized;\\n}\\n\\nfunction fxRateMatches(row, txn) {\\n  const payerCcy = text(txn?.payerCcy).toUpperCase();\\n  const payeeCcy = text(txn?.payeeCcy).toUpperCase();\\n  const payerCorridor = corridorForCurrency(payerCcy);\\n  const payeeCorridor = corridorForCurrency(payeeCcy);\\n  const rowPayerCcy = text(row?.payerCcy).toUpperCase();\\n  const rowPayeeCcy = text(row?.payeeCcy).toUpperCase();\\n  const rowPayerCorridor = normalizeCorridor(row?.payerCorridor);\\n  const rowPayeeCorridor = normalizeCorridor(row?.payeeCorridor);\\n  return (!rowPayerCcy || rowPayerCcy === payerCcy)\\n    && (!rowPayeeCcy || rowPayeeCcy === payeeCcy)\\n    && (!rowPayerCorridor || rowPayerCorridor === payerCorridor)\\n    && (!rowPayeeCorridor || rowPayeeCorridor === payeeCorridor);\\n}\\n\\nfunction buildTripleaMarchVaRow() {\\n  return {\\n    id: \\\"qa-maint-triplea-lva-2026-03\\\",\\n    partner: \\\"TripleA\\\",\\n    period: \\\"2026-03\\\",\\n    sourceSection: \\\"lva\\\",\\n    totalActiveAccounts: 11,\\n    totalBusinessAccounts: 6,\\n    totalIndividualAccounts: 2,\\n    dormantAccounts: 9,\\n    newAccountsOpened: 0,\\n    newBusinessSetups: 0,\\n    settlementCount: 0,\\n    closedAccounts: 0,\\n  };\\n}\\n\\nfunction applyWorkbookQaFixes(workbookPayload, options = {}) {\\n  const root = workbookPayload && typeof workbookPayload === \\\"object\\\" ? { ...workbookPayload } : {};\\n  const snapshot = root.snapshot && typeof root.snapshot === \\\"object\\\"\\n    ? { ...root.snapshot }\\n    : { ...(workbookPayload && typeof workbookPayload === \\\"object\\\" ? workbookPayload : {}) };\\n  root.snapshot = snapshot;\\n\\n  const fixes = [];\\n  let remittanceshubRowsNormalized = 0;\\n  const ltxn = arrayAt(snapshot, \\\"ltxn\\\").map((row) => {\\n    if (\\n      normalizePartner(partnerName(row)) === \\\"remittanceshub\\\"\\n      && text(row?.txnType).toLowerCase() === \\\"fx\\\"\\n    ) {\\n      const normalizedTxnType = sameCurrencyDomesticTxnType(row);\\n      if (normalizedTxnType) {\\n        remittanceshubRowsNormalized += 1;\\n        return {\\n          ...row,\\n          txnType: normalizedTxnType,\\n          qaMaintenanceNote: \\\"Same-currency Remittanceshub FX-labeled row normalized to the matching domestic currency fee type.\\\",\\n        };\\n      }\\n    }\\n    return row;\\n  });\\n  if (remittanceshubRowsNormalized > 0) {\\n    snapshot.ltxn = ltxn;\\n    fixes.push({\\n      code: \\\"REMITTANCESHUB_SAME_CURRENCY_TXN_TYPE_NORMALIZED\\\",\\n      rowCount: remittanceshubRowsNormalized,\\n      note: \\\"Mapped same-currency FX-labeled Remittanceshub rows to existing EUR/GBP/CAD/AUD Domestic pricing rows.\\\",\\n    });\\n  }\\n\\n  const volRows = arrayAt(snapshot, \\\"vol\\\");\\n  const cleanedVolRows = volRows.filter((row) => !(\\n    normalizePartner(partnerName(row)) === \\\"remittanceshub\\\"\\n    && text(row?.id).startsWith(\\\"qa-maint-remittanceshub-fx-\\\")\\n    && text(row?.txnType).toLowerCase() === \\\"fx\\\"\\n  ));\\n  if (cleanedVolRows.length !== volRows.length) {\\n    snapshot.vol = cleanedVolRows;\\n    fixes.push({\\n      code: \\\"REMITTANCESHUB_QA_VOLUME_ROWS_REMOVED\\\",\\n      rowCount: volRows.length - cleanedVolRows.length,\\n      note: \\\"Removed temporary QA-injected Remittanceshub FX rows from volume pricing; Remittanceshub FX pricing is matched from fxRates.\\\",\\n    });\\n  }\\n\\n  const hasTripleaMarchActivity = DATA_SECTION_KEYS.some((key) => (\\n    arrayAt(snapshot, key).some((row) => normalizePartner(partnerName(row)) === \\\"triplea\\\" && rowPeriod(row) === \\\"2026-03\\\")\\n  ));\\n  if (!hasTripleaMarchActivity) {\\n    snapshot.lva = [...arrayAt(snapshot, \\\"lva\\\"), buildTripleaMarchVaRow()];\\n    fixes.push({\\n      code: \\\"TRIPLEA_MARCH_VA_ACTIVITY_RESTORED\\\",\\n      rowCount: 1,\\n      note: \\\"Restored TripleA March 2026 virtual account activity from the saved partner detail artifact.\\\",\\n    });\\n  }\\n\\n  if (fixes.length) {\\n    snapshot.qaMaintenanceLog = [\\n      ...arrayAt(snapshot, \\\"qaMaintenanceLog\\\"),\\n      {\\n        generatedAt: options.generatedAt || new Date().toISOString(),\\n        checkerVersion: QA_CHECKER_VERSION,\\n        fixes,\\n      },\\n    ].slice(-20);\\n  }\\n\\n  return root;\\n}\\n\\nfunction isArchivedPartner(snapshot, partner) {\\n  const normalized = normalizePartner(partner);\\n  return ARCHIVED_PARTNER_OVERRIDES.has(normalized)\\n    || arrayAt(snapshot, \\\"pArchived\\\").some((name) => normalizePartner(name) === normalized);\\n}\\n\\nfunction buildPartnerConfigMap(snapshot) {\\n  const map = new Map();\\n  for (const key of BILLING_CONFIG_KEYS) {\\n    for (const row of arrayAt(snapshot, key)) {\\n      const partner = partnerName(row);\\n      if (!partner) continue;\\n      const normalized = normalizePartner(partner);\\n      if (!map.has(normalized)) map.set(normalized, { partner, rows: [], byKey: {} });\\n      const entry = map.get(normalized);\\n      entry.rows.push({ key, row });\\n      entry.byKey[key] ||= [];\\n      entry.byKey[key].push(row);\\n    }\\n  }\\n  return map;\\n}\\n\\nfunction hasPartnerConfig(configMap, partner) {\\n  return Boolean(configMap.get(normalizePartner(partner))?.rows?.length);\\n}\\n\\nfunction partnerConfigRows(configMap, partner, key, period) {\\n  return (configMap.get(normalizePartner(partner))?.byKey?.[key] || []).filter((row) => inRange(period, row.startDate, row.endDate));\\n}\\n\\nfunction isActivePartner(row, period, configMap) {\\n  const partner = partnerName(row);\\n  if (!partner) return false;\\n  if (row?.notYetLive === true || /^true$/i.test(text(row?.notYetLive))) return false;\\n  const end = periodEndDate(period);\\n  const goLive = parseDate(row?.goLiveDate);\\n  const contractStart = parseDate(row?.contractStartDate);\\n  if (end && goLive && goLive > end) return false;\\n  if (end && contractStart && contractStart > end) return false;\\n  return hasPartnerConfig(configMap, partner) || Boolean(goLive || contractStart);\\n}\\n\\nfunction severityRank(severity) {\\n  return { critical: 3, warning: 2, info: 1 }[severity] || 0;\\n}\\n\\nfunction buildIssueResolution(issue) {\\n  const code = text(issue?.code).toUpperCase();\\n  if (code === \\\"LOOKER_IMPORT_WARNING\\\") {\\n    if (text(issue?.message).toLowerCase().includes(\\\"partner offline billing context was not supplied\\\")) {\\n      return \\\"Fix Partner Offline Billing first. This warning means downstream account/VBA reports ran without the transaction context they need, so rerun the Looker cloud sync after Partner Offline Billing imports rows for the period.\\\";\\n    }\\n    return \\\"Open the Looker Cloud Sync execution summary for this report, confirm whether the warning is expected, rerun/fix the source pull if rows are incomplete, then rerun the QA checker.\\\";\\n  }\\n  if (code === \\\"PARTNER_OFFLINE_BILLING_NO_PERIOD_ROWS\\\") {\\n    return \\\"Open the Partner Offline Billing Looker report for the same period, confirm it has rows, then fix the Looker Cloud Sync Partner Offline Billing import/chunk filters so data/current-workbook.json receives ltxn rows before rerunning QA.\\\";\\n  }\\n  if (code === \\\"WORKBOOK_SAVE_TIME_MISSING\\\" || code === \\\"WORKBOOK_STALE\\\") {\\n    return \\\"Run the Looker cloud sync first, verify data/current-workbook.json has a fresh savedAt timestamp, then rerun the QA checker.\\\";\\n  }\\n  if (code === \\\"DUPLICATE_ROW_IDS\\\") {\\n    return \\\"Open Data Upload for the listed source section, filter the duplicate row IDs, confirm whether they are true duplicate transactions, dedupe if needed, then rerun the QA checker.\\\";\\n  }\\n  if (code === \\\"ACTIVE_PARTNER_NO_PERIOD_ROWS\\\") {\\n    return \\\"If this partner truly had no activity, dismiss the result. If activity is expected, verify the partner alias, Looker filter, and imported source rows for the period, then rerun the Looker sync and QA checker.\\\";\\n  }\\n  if (code === \\\"TRANSACTION_ROW_MISSING_KEY_FIELDS\\\") {\\n    return \\\"Fix the source mapping so every imported transaction row has partner and period fields before releasing invoices.\\\";\\n  }\\n  if (code === \\\"NO_MATCHING_FEE_CONFIG_FOR_TRANSACTION\\\") {\\n    return \\\"Open Rate Config for this partner and add or correct the pricing row so it matches the transaction type, speed, currency/corridor, and processing fields shown here; then rerun Calculate and QA.\\\";\\n  }\\n  if (code === \\\"UNCONFIGURED_IMPORTED_PARTNER_ACTIVITY\\\") {\\n    return \\\"Either add this partner to Partner View and Rate Config if it should be billed, or archive/alias the source partner name if these rows should not enter billing.\\\";\\n  }\\n  if (code === \\\"UNMAPPED_ZERO_FEE_TRANSACTION_ROW\\\") {\\n    return \\\"Add the missing contract pricing/mapping for this transaction type before release. This row has activity but no billable amount and no matching active config.\\\";\\n  }\\n  if (code === \\\"INVALID_CURRENCY_CODE\\\") {\\n    return \\\"Fix the imported source currency mapping to a 3-letter ISO code, reload the source data, and rerun QA.\\\";\\n  }\\n  if (code === \\\"DEFAULT_REVERSAL_FEE_APPLIES\\\") {\\n    return \\\"If the contract is silent on reversal fees, no change is needed and this can be dismissed. If the contract states a reversal fee, add that partner-specific row in Rate Config.\\\";\\n  }\\n  if (code === \\\"STAMPLI_FX_VALIDATION_MISMATCH\\\") {\\n    return \\\"Do not release the Stampli FX invoice until the direct feed validation mismatch is reconciled against the source feed.\\\";\\n  }\\n  if (code === \\\"STAMPLI_FX_MISSING_SOURCE_FIELDS\\\") {\\n    return \\\"Review the Stampli FX source report for missing customer charge or mid-market values, fix/reload the source data, and rerun QA.\\\";\\n  }\\n  return text(issue?.suggestedAction) || \\\"Review the source data and partner pricing setup for this exception, apply the correction, then rerun QA.\\\";\\n}\\n\\nfunction transactionDetailsFromRow(row, section = \\\"\\\") {\\n  if (!row || typeof row !== \\\"object\\\") return {};\\n  return {\\n    sourceSection: section,\\n    rowId: row.id || \\\"\\\",\\n    paymentId: paymentIdentity(row),\\n    txnType: row.txnType || \\\"\\\",\\n    speedFlag: row.speedFlag || \\\"\\\",\\n    payerCcy: row.payerCcy || \\\"\\\",\\n    payeeCcy: row.payeeCcy || \\\"\\\",\\n    payerCountry: row.payerCountry || \\\"\\\",\\n    payeeCountry: row.payeeCountry || \\\"\\\",\\n    payerFunding: row.payerFunding || \\\"\\\",\\n    payeeFunding: row.payeeFunding || \\\"\\\",\\n    processingMethod: row.processingMethod || \\\"\\\",\\n    txnCount: number(row.txnCount),\\n    totalVolume: roundCurrency(number(row.totalVolume)),\\n    customerRevenue: roundCurrency(number(row.customerRevenue)),\\n    estRevenue: roundCurrency(number(row.estRevenue)),\\n    directInvoiceAmount: roundCurrency(number(row.directInvoiceAmount)),\\n    partnerRevenueShare: roundCurrency(number(row.partnerRevenueShare)),\\n    revenueOwed: roundCurrency(number(row.revenueOwed)),\\n  };\\n}\\n\\nfunction buildIssueTransactionDetails(issue) {\\n  const details = issue?.details && typeof issue.details === \\\"object\\\" ? issue.details : {};\\n  return details.transaction && typeof details.transaction === \\\"object\\\"\\n    ? details.transaction\\n    : {\\n        sourceSection: details.sourceSection || \\\"\\\",\\n        rowId: details.rowId || \\\"\\\",\\n        paymentId: details.paymentId || \\\"\\\",\\n        txnType: details.txnType || \\\"\\\",\\n        speedFlag: details.speedFlag || \\\"\\\",\\n        payerCcy: details.payerCcy || \\\"\\\",\\n        payeeCcy: details.payeeCcy || \\\"\\\",\\n        processingMethod: details.processingMethod || \\\"\\\",\\n        txnCount: number(details.txnCount),\\n        totalVolume: roundCurrency(number(details.totalVolume)),\\n      };\\n}\\n\\nfunction makeIssue({ severity = \\\"warning\\\", category, code, partner = \\\"\\\", period = \\\"\\\", message, suggestedAction = \\\"\\\", details = {} }) {\\n  const issue = {\\n    id: `${code || category}-${partner || \\\"all\\\"}-${period || \\\"all\\\"}-${Math.random().toString(36).slice(2, 8)}`,\\n    severity,\\n    category,\\n    code: code || category,\\n    partner,\\n    period,\\n    message,\\n    suggestedAction,\\n    details,\\n  };\\n  issue.resolutionPath = buildIssueResolution(issue);\\n  issue.transactionDetails = buildIssueTransactionDetails(issue);\\n  return issue;\\n}\\n\\nfunction rowPeriod(row) {\\n  return monthKey(row?.period || row?.refundPeriod || row?.creditCompleteMonth || row?.month || row?.billingMonth);\\n}\\n\\nfunction amountCandidates(row) {\\n  return [\\n    row?.customerRevenue,\\n    row?.estRevenue,\\n    row?.directInvoiceAmount,\\n    row?.summaryLineAmount,\\n    row?.partnerRevenueShare,\\n    row?.revenueOwed,\\n    row?.partnerPayout,\\n    row?.shareAmount,\\n  ].map(number);\\n}\\n\\nfunction rowHasPositiveBillingAmount(row) {\\n  return amountCandidates(row).some((value) => Math.abs(value) > 0.000001);\\n}\\n\\nfunction partnerPeriodRows(rowsBySection, partner, period) {\\n  const normalized = normalizePartner(partner);\\n  const rows = [];\\n  for (const [section, sectionRows] of Object.entries(rowsBySection || {})) {\\n    for (const row of sectionRows || []) {\\n      if (normalizePartner(partnerName(row)) !== normalized) continue;\\n      if (period && rowPeriod(row) !== period) continue;\\n      rows.push({ section, row });\\n    }\\n  }\\n  return rows;\\n}\\n\\nfunction partnerHasPositiveBillingRow(rowsBySection, partner, period) {\\n  return partnerPeriodRows(rowsBySection, partner, period)\\n    .some(({ row }) => rowHasPositiveBillingAmount(row));\\n}\\n\\nfunction partnerHasActiveBillingProfile(snapshot, configMap, partner, period) {\\n  const normalized = normalizePartner(partner);\\n  const billingRow = arrayAt(snapshot, \\\"pBilling\\\").find((row) => normalizePartner(partnerName(row)) === normalized);\\n  return Boolean(billingRow && !isArchivedPartner(snapshot, partner) && isActivePartner(billingRow, period, configMap));\\n}\\n\\nfunction partnerActiveConfigRows(configMap, partner, period, keys) {\\n  return keys.flatMap((key) => partnerConfigRows(configMap, partner, key, period));\\n}\\n\\nfunction firstFutureConfigStart(configMap, partner, period, keys) {\\n  const end = periodEndDate(period);\\n  if (!end) return \\\"\\\";\\n  const futureStarts = keys\\n    .flatMap((key) => configMap.get(normalizePartner(partner))?.byKey?.[key] || [])\\n    .map((row) => parseDate(row.startDate))\\n    .filter((date) => date && date > end)\\n    .sort((a, b) => a - b);\\n  return futureStarts[0] ? futureStarts[0].toISOString().slice(0, 10) : \\\"\\\";\\n}\\n\\nfunction paymentIdentity(row) {\\n  return text(row?.paymentId || row?.paymentID || row?.transactionId || row?.txnId || row?.id);\\n}\\n\\nfunction collectPeriodRows(snapshot, period) {\\n  const bySection = {};\\n  for (const key of DATA_SECTION_KEYS) {\\n    bySection[key] = arrayAt(snapshot, key).filter((row) => rowPeriod(row) === period);\\n  }\\n  return bySection;\\n}\\n\\nfunction indexRowsByPartner(rowsBySection) {\\n  const index = new Map();\\n  for (const [section, rows] of Object.entries(rowsBySection)) {\\n    for (const row of rows) {\\n      const partner = partnerName(row);\\n      if (!partner) continue;\\n      const normalized = normalizePartner(partner);\\n      if (!index.has(normalized)) index.set(normalized, { partner, sections: {}, rows: [] });\\n      const entry = index.get(normalized);\\n      entry.sections[section] ||= [];\\n      entry.sections[section].push(row);\\n      entry.rows.push({ section, row });\\n    }\\n  }\\n  return index;\\n}\\n\\nfunction classifyTransactionConfig(snapshot, configMap, rowsBySection, txn, period) {\\n  const partner = partnerName(txn);\\n  const hasActiveBillingProfile = partnerHasActiveBillingProfile(snapshot, configMap, partner, period);\\n  const hasConfiguredPartner = hasPartnerConfig(configMap, partner);\\n  if (!hasActiveBillingProfile && !hasConfiguredPartner) {\\n    return {\\n      hasConfig: false,\\n      matchedConfig: false,\\n      nonBillingImportedPartner: true,\\n      reason: \\\"Partner has imported source activity but is not configured as a billable partner in pBilling or rate config.\\\",\\n    };\\n  }\\n\\n  const activeRevenueShareRows = partnerActiveConfigRows(configMap, partner, period, [\\\"rs\\\"]);\\n  const activeMinimumRows = partnerActiveConfigRows(configMap, partner, period, [\\\"mins\\\"]);\\n  if (activeRevenueShareRows.length && partnerHasPositiveBillingRow(rowsBySection, partner, period)) {\\n    return {\\n      hasConfig: true,\\n      matchedConfig: true,\\n      coveredBy: \\\"revenue_share_period_amounts\\\",\\n      candidateCount: activeRevenueShareRows.length,\\n      matchedCount: activeRevenueShareRows.length,\\n      reason: \\\"Partner is billed from revenue-share period rows; this zero-amount ltxn row is retained as source support.\\\",\\n    };\\n  }\\n  if (activeMinimumRows.length) {\\n    return {\\n      hasConfig: true,\\n      matchedConfig: true,\\n      coveredBy: \\\"monthly_minimum\\\",\\n      candidateCount: activeMinimumRows.length,\\n      matchedCount: activeMinimumRows.length,\\n      reason: \\\"Partner has an active monthly minimum for this period; zero-amount source rows are covered by the minimum calculation.\\\",\\n    };\\n  }\\n\\n  const candidates = [\\n    ...partnerConfigRows(configMap, partner, \\\"off\\\", period).map((row) => ({ key: \\\"off\\\", row })),\\n    ...partnerConfigRows(configMap, partner, \\\"vol\\\", period).map((row) => ({ key: \\\"vol\\\", row })),\\n    ...partnerConfigRows(configMap, partner, \\\"fxRates\\\", period).map((row) => ({ key: \\\"fxRates\\\", row })),\\n    ...partnerConfigRows(configMap, partner, \\\"rs\\\", period).map((row) => ({ key: \\\"rs\\\", row })),\\n  ];\\n  if (!candidates.length) {\\n    const nextStartDate = firstFutureConfigStart(configMap, partner, period, [\\\"off\\\", \\\"vol\\\", \\\"fxRates\\\", \\\"rs\\\", \\\"mins\\\"]);\\n    if (nextStartDate) {\\n      return {\\n        hasConfig: true,\\n        matchedConfig: true,\\n        coveredBy: \\\"before_first_billable_config_start\\\",\\n        nextStartDate,\\n        reason: `Partner has no active fee rows for this period; first configured billing starts ${nextStartDate}.`,\\n      };\\n    }\\n    return { hasConfig: false, reason: \\\"No active transaction or revenue-share pricing rows for partner/period.\\\" };\\n  }\\n  const txnType = text(txn.txnType).toLowerCase();\\n  const speedFlag = text(txn.speedFlag).toLowerCase();\\n  const matching = candidates.filter(({ key, row }) => {\\n    if (key === \\\"fxRates\\\") return fxRateMatches(row, txn);\\n    const rowTxnType = text(row.txnType).toLowerCase();\\n    const rowSpeed = text(row.speedFlag).toLowerCase();\\n    return (!rowTxnType || !txnType || rowTxnType === txnType)\\n      && (!rowSpeed || !speedFlag || rowSpeed === speedFlag)\\n      && ccyGroupMatches(row, txn);\\n  });\\n  return {\\n    hasConfig: true,\\n    matchedConfig: matching.length > 0,\\n    candidateCount: candidates.length,\\n    matchedCount: matching.length,\\n  };\\n}\\n\\nfunction checkImportAudit(snapshot, issues, period) {\\n  const audit = snapshot?.lookerImportAudit || {};\\n  const byFileType = audit.byFileType || {};\\n  for (const record of Object.values(byFileType)) {\\n    const recordPeriod = text(record?.period);\\n    if (period && recordPeriod && recordPeriod !== period) continue;\\n    const warnings = Array.isArray(record?.warnings) ? record.warnings : [];\\n    for (const warning of warnings) {\\n      issues.push(makeIssue({\\n        severity: \\\"warning\\\",\\n        category: \\\"source_data\\\",\\n        code: \\\"LOOKER_IMPORT_WARNING\\\",\\n        period: recordPeriod || period,\\n        message: `${record.fileLabel || record.fileType || \\\"Looker report\\\"} import warning: ${warning}`,\\n        suggestedAction: \\\"Review the Looker import summary before releasing invoices.\\\",\\n        details: {\\n          fileType: record.fileType || \\\"\\\",\\n          fileLabel: record.fileLabel || \\\"\\\",\\n          savedAt: record.savedAt || \\\"\\\",\\n        },\\n      }));\\n    }\\n  }\\n}\\n\\nfunction checkWorkbookFreshness(workbookPayload, issues, generatedAt) {\\n  const snapshot = workbookPayload?.snapshot || workbookPayload || {};\\n  const savedAt = text(workbookPayload?.savedAt || snapshot._saved);\\n  if (!savedAt) {\\n    issues.push(makeIssue({\\n      severity: \\\"warning\\\",\\n      category: \\\"source_data\\\",\\n      code: \\\"WORKBOOK_SAVE_TIME_MISSING\\\",\\n      message: \\\"Workbook has no saved timestamp.\\\",\\n      suggestedAction: \\\"Confirm the latest n8n import wrote the workbook before using QA results.\\\",\\n    }));\\n    return;\\n  }\\n  const saved = parseDate(savedAt);\\n  if (!saved) return;\\n  const ageHours = (parseDate(generatedAt).getTime() - saved.getTime()) / 36e5;\\n  if (ageHours > 36) {\\n    issues.push(makeIssue({\\n      severity: \\\"warning\\\",\\n      category: \\\"source_data\\\",\\n      code: \\\"WORKBOOK_STALE\\\",\\n      message: `Workbook was last saved ${Math.round(ageHours)} hours before this QA run.`,\\n      suggestedAction: \\\"Run the Looker import before relying on this checker result.\\\",\\n      details: { savedAt, ageHours: roundCurrency(ageHours) },\\n    }));\\n  }\\n}\\n\\nfunction checkDuplicateIds(rowsBySection, issues, period) {\\n  for (const [section, rows] of Object.entries(rowsBySection)) {\\n    const seen = new Set();\\n    const duplicates = new Set();\\n    for (const row of rows) {\\n      const id = text(row.id);\\n      if (!id) continue;\\n      if (seen.has(id)) duplicates.add(id);\\n      seen.add(id);\\n    }\\n    if (duplicates.size) {\\n      issues.push(makeIssue({\\n        severity: \\\"warning\\\",\\n        category: \\\"source_data\\\",\\n        code: \\\"DUPLICATE_ROW_IDS\\\",\\n        period,\\n        message: `${section} has ${duplicates.size} duplicate row ID(s) for ${period}.`,\\n        suggestedAction: \\\"Confirm duplicate IDs do not represent duplicated transaction rows.\\\",\\n        details: { section, duplicateIds: [...duplicates].slice(0, 25) },\\n      }));\\n    }\\n  }\\n}\\n\\nfunction checkPrimaryTransactionSource(snapshot, configMap, rowsBySection, period, issues) {\\n  const activePartners = arrayAt(snapshot, \\\"pBilling\\\").filter((row) => {\\n    const partner = partnerName(row);\\n    return partner && !isArchivedPartner(snapshot, partner) && isActivePartner(row, period, configMap);\\n  });\\n  if (activePartners.length && !(rowsBySection.ltxn || []).length) {\\n    issues.push(makeIssue({\\n      severity: \\\"critical\\\",\\n      category: \\\"source_data\\\",\\n      code: \\\"PARTNER_OFFLINE_BILLING_NO_PERIOD_ROWS\\\",\\n      period,\\n      message: `Partner Offline Billing imported 0 transaction rows for ${period}, so active partner missing-row checks are not reliable.`,\\n      suggestedAction: \\\"Fix the Partner Offline Billing Looker import/chunk filters and rerun the Looker cloud sync before reviewing partner-level QA exceptions.\\\",\\n      details: {\\n        activePartnerCount: activePartners.length,\\n        suppressedPartnerNoRowChecks: true,\\n        sectionCounts: Object.fromEntries(Object.entries(rowsBySection).map(([key, rows]) => [key, rows.length])),\\n      },\\n    }));\\n    return true;\\n  }\\n  return false;\\n}\\n\\nfunction checkMissingPartnerPeriodRows(snapshot, configMap, rowsByPartner, period, issues) {\\n  const activePartners = arrayAt(snapshot, \\\"pBilling\\\").filter((row) => {\\n    const partner = partnerName(row);\\n    return partner && !isArchivedPartner(snapshot, partner) && isActivePartner(row, period, configMap);\\n  });\\n  for (const partnerRow of activePartners) {\\n    const partner = partnerName(partnerRow);\\n    const entry = rowsByPartner.get(normalizePartner(partner));\\n    if (entry?.rows?.length) continue;\\n    issues.push(makeIssue({\\n      severity: \\\"warning\\\",\\n      category: \\\"missing_data\\\",\\n      code: \\\"ACTIVE_PARTNER_NO_PERIOD_ROWS\\\",\\n      partner,\\n      period,\\n      message: `${partner} is active/configured but has no imported billing rows for ${period}.`,\\n      suggestedAction: \\\"Confirm whether the partner truly had no billable activity or whether a Looker feed/mapping is missing.\\\",\\n      details: {\\n        goLiveDate: partnerRow.goLiveDate || \\\"\\\",\\n        integrationStatus: partnerRow.integrationStatus || \\\"\\\",\\n      },\\n    }));\\n  }\\n}\\n\\nfunction checkTransactions(snapshot, configMap, rowsBySection, period, issues) {\\n  for (const row of rowsBySection.ltxn || []) {\\n    const partner = partnerName(row);\\n    const txnCount = number(row.txnCount);\\n    const totalVolume = number(row.totalVolume);\\n    if (!partner || !rowPeriod(row)) {\\n      issues.push(makeIssue({\\n        severity: \\\"critical\\\",\\n        category: \\\"source_data\\\",\\n        code: \\\"TRANSACTION_ROW_MISSING_KEY_FIELDS\\\",\\n        partner,\\n        period,\\n        message: \\\"A transaction row is missing partner or period.\\\",\\n        suggestedAction: \\\"Fix source mapping before invoice release.\\\",\\n        details: { sourceSection: \\\"ltxn\\\", rowId: row.id || \\\"\\\", paymentId: paymentIdentity(row), transaction: transactionDetailsFromRow(row, \\\"ltxn\\\") },\\n      }));\\n      continue;\\n    }\\n    if (txnCount > 0 && totalVolume > 0 && !rowHasPositiveBillingAmount(row)) {\\n      const configMatch = classifyTransactionConfig(snapshot, configMap, rowsBySection, row, period);\\n      if (configMatch.nonBillingImportedPartner) {\\n        issues.push(makeIssue({\\n          severity: \\\"info\\\",\\n          category: \\\"source_data\\\",\\n          code: \\\"UNCONFIGURED_IMPORTED_PARTNER_ACTIVITY\\\",\\n          partner,\\n          period,\\n          message: `${partner} has imported activity but is not configured as a billable partner in the workbook.`,\\n          suggestedAction: \\\"Confirm whether this source partner should be added to Partner View/Rate Config or ignored as non-billable source activity.\\\",\\n          details: {\\n            sourceSection: \\\"ltxn\\\",\\n            rowId: row.id || \\\"\\\",\\n            paymentId: paymentIdentity(row),\\n            txnType: row.txnType || \\\"\\\",\\n            speedFlag: row.speedFlag || \\\"\\\",\\n            payerCcy: row.payerCcy || \\\"\\\",\\n            payeeCcy: row.payeeCcy || \\\"\\\",\\n            payerCountry: row.payerCountry || \\\"\\\",\\n            payeeCountry: row.payeeCountry || \\\"\\\",\\n            payerFunding: row.payerFunding || \\\"\\\",\\n            payeeFunding: row.payeeFunding || \\\"\\\",\\n            processingMethod: row.processingMethod || \\\"\\\",\\n            txnCount,\\n            totalVolume: roundCurrency(totalVolume),\\n            configMatch,\\n            transaction: transactionDetailsFromRow(row, \\\"ltxn\\\"),\\n          },\\n        }));\\n        continue;\\n      }\\n      if (!configMatch.hasConfig || !configMatch.matchedConfig) {\\n        issues.push(makeIssue({\\n          severity: configMatch.hasConfig ? \\\"warning\\\" : \\\"critical\\\",\\n          category: \\\"missing_data\\\",\\n          code: configMatch.hasConfig ? \\\"NO_MATCHING_FEE_CONFIG_FOR_TRANSACTION\\\" : \\\"UNMAPPED_ZERO_FEE_TRANSACTION_ROW\\\",\\n          partner,\\n          period,\\n          message: `${partner} has ${txnCount} transaction(s) and ${roundCurrency(totalVolume)} volume with no amount on the source row and no clear matching fee config.`,\\n          suggestedAction: configMatch.hasConfig\\n            ? \\\"Review fee config matching fields for this transaction type/speed/corridor before invoice release.\\\"\\n            : \\\"Add or correct contract pricing/mapping for this transaction type before invoice release.\\\",\\n          details: {\\n            sourceSection: \\\"ltxn\\\",\\n            rowId: row.id || \\\"\\\",\\n            paymentId: paymentIdentity(row),\\n            txnType: row.txnType || \\\"\\\",\\n            speedFlag: row.speedFlag || \\\"\\\",\\n            payerCcy: row.payerCcy || \\\"\\\",\\n            payeeCcy: row.payeeCcy || \\\"\\\",\\n            payerCountry: row.payerCountry || \\\"\\\",\\n            payeeCountry: row.payeeCountry || \\\"\\\",\\n            payerFunding: row.payerFunding || \\\"\\\",\\n            payeeFunding: row.payeeFunding || \\\"\\\",\\n            processingMethod: row.processingMethod || \\\"\\\",\\n            txnCount,\\n            totalVolume: roundCurrency(totalVolume),\\n            amountFields: {\\n              customerRevenue: roundCurrency(number(row.customerRevenue)),\\n              estRevenue: roundCurrency(number(row.estRevenue)),\\n              directInvoiceAmount: roundCurrency(number(row.directInvoiceAmount)),\\n              partnerRevenueShare: roundCurrency(number(row.partnerRevenueShare)),\\n              revenueOwed: roundCurrency(number(row.revenueOwed)),\\n            },\\n            transaction: transactionDetailsFromRow(row, \\\"ltxn\\\"),\\n            configMatch,\\n          },\\n        }));\\n      }\\n    }\\n    const badCurrency = [row.payerCcy, row.payeeCcy].map(text).filter(Boolean).filter((ccy) => !/^[A-Z]{3}$/.test(ccy));\\n    if (badCurrency.length) {\\n      issues.push(makeIssue({\\n        severity: \\\"warning\\\",\\n        category: \\\"source_data\\\",\\n        code: \\\"INVALID_CURRENCY_CODE\\\",\\n        partner,\\n        period,\\n        message: `${partner} has transaction currency values that are not 3-letter ISO codes.`,\\n        suggestedAction: \\\"Review source currency mapping for unsupported or malformed currency values.\\\",\\n        details: { sourceSection: \\\"ltxn\\\", rowId: row.id || \\\"\\\", paymentId: paymentIdentity(row), badCurrency, transaction: transactionDetailsFromRow(row, \\\"ltxn\\\") },\\n      }));\\n    }\\n  }\\n}\\n\\nfunction checkStampliFx(rowsBySection, period, issues) {\\n  for (const row of rowsBySection.lfxp || []) {\\n    const partner = partnerName(row);\\n    if (!partner) continue;\\n    const mismatchCount = number(row.validationAmountMismatchCount) + number(row.validationPctMismatchCount);\\n    const missingCount = number(row.missingCustomerChargeCount) + number(row.missingMidMarketCount);\\n    if (mismatchCount > 0) {\\n      issues.push(makeIssue({\\n        severity: \\\"critical\\\",\\n        category: \\\"source_data\\\",\\n        code: \\\"STAMPLI_FX_VALIDATION_MISMATCH\\\",\\n        partner,\\n        period,\\n        message: `${partner} FX payout validation has ${mismatchCount} mismatch(es).`,\\n        suggestedAction: \\\"Do not release Stampli FX invoice output until the direct feed validation mismatch is resolved.\\\",\\n        details: {\\n          validationAmountMismatchCount: number(row.validationAmountMismatchCount),\\n          validationPctMismatchCount: number(row.validationPctMismatchCount),\\n          note: row.note || \\\"\\\",\\n        },\\n      }));\\n    }\\n    if (missingCount > 0) {\\n      issues.push(makeIssue({\\n        severity: \\\"warning\\\",\\n        category: \\\"missing_data\\\",\\n        code: \\\"STAMPLI_FX_MISSING_SOURCE_FIELDS\\\",\\n        partner,\\n        period,\\n        message: `${partner} FX payout rows are missing ${missingCount} source value(s).`,\\n        suggestedAction: \\\"Review the Stampli FX source data for missing customer charge or mid-market values.\\\",\\n        details: {\\n          missingCustomerChargeCount: number(row.missingCustomerChargeCount),\\n          missingMidMarketCount: number(row.missingMidMarketCount),\\n          note: row.note || \\\"\\\",\\n        },\\n      }));\\n    }\\n  }\\n}\\n\\nfunction buildMetrics(snapshot, rowsBySection, rowsByPartner, configMap, period) {\\n  const sectionCounts = Object.fromEntries(Object.entries(rowsBySection).map(([key, rows]) => [key, rows.length]));\\n  const byPartner = [...rowsByPartner.values()].map((entry) => {\\n    const counts = Object.fromEntries(Object.entries(entry.sections).map(([key, rows]) => [key, rows.length]));\\n    return {\\n      partner: entry.partner,\\n      period,\\n      totalRows: entry.rows.length,\\n      sections: counts,\\n      transactionCount: (entry.sections.ltxn || []).reduce((sum, row) => sum + number(row.txnCount), 0),\\n      reversalCount: (entry.sections.lrev || []).reduce((sum, row) => sum + number(row.reversalCount || row.txnCount), 0),\\n      volume: roundCurrency((entry.sections.ltxn || []).reduce((sum, row) => sum + number(row.totalVolume), 0)),\\n    };\\n  }).sort((a, b) => a.partner.localeCompare(b.partner));\\n  return {\\n    period,\\n    sectionCounts,\\n    byPartner,\\n    configuredPartners: [...configMap.values()].map((entry) => entry.partner).sort(),\\n    pBillingPartners: arrayAt(snapshot, \\\"pBilling\\\").map(partnerName).filter(Boolean).sort(),\\n  };\\n}\\n\\nfunction runWorkbookQaCheck(workbookPayload, options = {}) {\\n  const generatedAt = options.generatedAt || new Date().toISOString();\\n  const period = text(options.period) || previousFullMonth(parseDate(generatedAt) || new Date());\\n  const snapshot = workbookPayload?.snapshot || workbookPayload || {};\\n  const issues = [];\\n  const configMap = buildPartnerConfigMap(snapshot);\\n  const rowsBySection = collectPeriodRows(snapshot, period);\\n  const rowsByPartner = indexRowsByPartner(rowsBySection);\\n\\n  checkWorkbookFreshness(workbookPayload, issues, generatedAt);\\n  checkImportAudit(snapshot, issues, period);\\n  checkDuplicateIds(rowsBySection, issues, period);\\n  const sourceBlocked = checkPrimaryTransactionSource(snapshot, configMap, rowsBySection, period, issues);\\n  if (!sourceBlocked) checkMissingPartnerPeriodRows(snapshot, configMap, rowsByPartner, period, issues);\\n  checkTransactions(snapshot, configMap, rowsBySection, period, issues);\\n  checkStampliFx(rowsBySection, period, issues);\\n\\n  issues.sort((a, b) => (\\n    severityRank(b.severity) - severityRank(a.severity)\\n    || text(a.partner).localeCompare(text(b.partner))\\n    || text(a.code).localeCompare(text(b.code))\\n  ));\\n\\n  const criticalCount = issues.filter((issue) => issue.severity === \\\"critical\\\").length;\\n  const warningCount = issues.filter((issue) => issue.severity === \\\"warning\\\").length;\\n  const infoCount = issues.filter((issue) => issue.severity === \\\"info\\\").length;\\n  const issuePartners = [...new Set(issues.map((issue) => issue.partner).filter(Boolean))].sort();\\n  const metrics = buildMetrics(snapshot, rowsBySection, rowsByPartner, configMap, period);\\n\\n  return {\\n    checkerVersion: QA_CHECKER_VERSION,\\n    generatedAt,\\n    period,\\n    source: options.source || \\\"billing-workbook-qa-checker\\\",\\n    workbookSavedAt: text(workbookPayload?.savedAt || snapshot._saved),\\n    status: criticalCount ? \\\"fail\\\" : warningCount ? \\\"review\\\" : \\\"pass\\\",\\n    summary: {\\n      issueCount: issues.length,\\n      criticalCount,\\n      warningCount,\\n      infoCount,\\n      partnersChecked: metrics.pBillingPartners.length,\\n      partnersWithIssues: issuePartners.length,\\n      issuePartners,\\n      sectionCounts: metrics.sectionCounts,\\n    },\\n    metrics,\\n    issues,\\n  };\\n}\\n\\nfunction csvEscape(value) {\\n  const raw = value === null || value === undefined ? \\\"\\\" : typeof value === \\\"object\\\" ? JSON.stringify(value) : String(value);\\n  return /[\\\",\\\\n]/.test(raw) ? `\\\"${raw.replace(/\\\"/g, '\\\"\\\"')}\\\"` : raw;\\n}\\n\\nfunction qaReportToCsv(report) {\\n  const headers = [\\n    \\\"severity\\\",\\n    \\\"category\\\",\\n    \\\"code\\\",\\n    \\\"partner\\\",\\n    \\\"period\\\",\\n    \\\"message\\\",\\n    \\\"suggestedAction\\\",\\n    \\\"resolutionPath\\\",\\n    \\\"sourceSection\\\",\\n    \\\"rowId\\\",\\n    \\\"paymentId\\\",\\n    \\\"transactionCount\\\",\\n    \\\"volume\\\",\\n    \\\"txnType\\\",\\n    \\\"speedFlag\\\",\\n    \\\"payerCcy\\\",\\n    \\\"payeeCcy\\\",\\n    \\\"payerCountry\\\",\\n    \\\"payeeCountry\\\",\\n    \\\"payerFunding\\\",\\n    \\\"payeeFunding\\\",\\n    \\\"processingMethod\\\",\\n    \\\"configCandidateCount\\\",\\n    \\\"configMatchedCount\\\",\\n    \\\"details\\\",\\n  ];\\n  const lines = [headers.join(\\\",\\\")];\\n  for (const issue of report?.issues || []) {\\n    const details = issue.details && typeof issue.details === \\\"object\\\" ? issue.details : {};\\n    const txn = issue.transactionDetails && typeof issue.transactionDetails === \\\"object\\\" ? issue.transactionDetails : buildIssueTransactionDetails(issue);\\n    const row = {\\n      severity: issue.severity || \\\"\\\",\\n      category: issue.category || \\\"\\\",\\n      code: issue.code || \\\"\\\",\\n      partner: issue.partner || \\\"\\\",\\n      period: issue.period || report.period || \\\"\\\",\\n      message: issue.message || \\\"\\\",\\n      suggestedAction: issue.suggestedAction || \\\"\\\",\\n      resolutionPath: issue.resolutionPath || buildIssueResolution(issue),\\n      sourceSection: txn.sourceSection || details.sourceSection || \\\"\\\",\\n      rowId: txn.rowId || details.rowId || \\\"\\\",\\n      paymentId: txn.paymentId || details.paymentId || \\\"\\\",\\n      transactionCount: txn.txnCount || details.txnCount || \\\"\\\",\\n      volume: txn.totalVolume || details.totalVolume || \\\"\\\",\\n      txnType: txn.txnType || details.txnType || \\\"\\\",\\n      speedFlag: txn.speedFlag || details.speedFlag || \\\"\\\",\\n      payerCcy: txn.payerCcy || details.payerCcy || \\\"\\\",\\n      payeeCcy: txn.payeeCcy || details.payeeCcy || \\\"\\\",\\n      payerCountry: txn.payerCountry || details.payerCountry || \\\"\\\",\\n      payeeCountry: txn.payeeCountry || details.payeeCountry || \\\"\\\",\\n      payerFunding: txn.payerFunding || details.payerFunding || \\\"\\\",\\n      payeeFunding: txn.payeeFunding || details.payeeFunding || \\\"\\\",\\n      processingMethod: txn.processingMethod || details.processingMethod || \\\"\\\",\\n      configCandidateCount: details.configMatch?.candidateCount ?? \\\"\\\",\\n      configMatchedCount: details.configMatch?.matchedCount ?? \\\"\\\",\\n      details,\\n    };\\n    lines.push(headers.map((header) => csvEscape(row[header])).join(\\\",\\\"));\\n  }\\n  return lines.join(\\\"\\\\n\\\") + \\\"\\\\n\\\";\\n}\\n\";\nconst { runWorkbookQaCheck, qaReportToCsv, applyWorkbookQaFixes } = new Function(`${runtimeSource}\\nreturn { runWorkbookQaCheck, qaReportToCsv, applyWorkbookQaFixes };`)();\nconst generatedAt = new Date().toISOString();\nconst maintainedWorkbookPayload = applyWorkbookQaFixes(workbookPayload, { generatedAt });\nconst report = runWorkbookQaCheck(maintainedWorkbookPayload, {\n  period: ctx.period,\n  generatedAt,\n  source: \"n8n-qa-checker\",\n});\nreport.runId = ctx.runId;\nconst snapshotForHistory = maintainedWorkbookPayload?.snapshot && typeof maintainedWorkbookPayload.snapshot === \"object\"\n  ? maintainedWorkbookPayload.snapshot\n  : maintainedWorkbookPayload && typeof maintainedWorkbookPayload === \"object\"\n    ? maintainedWorkbookPayload\n    : {};\nconst priorHistory = Array.isArray(snapshotForHistory.qaCheckerHistory) ? snapshotForHistory.qaCheckerHistory : [];\nconst historyEntry = {\n  generatedAt,\n  period: report.period,\n  runId: report.runId,\n  status: report.status,\n  issueCount: report.summary.issueCount,\n  criticalCount: report.summary.criticalCount,\n  warningCount: report.summary.warningCount,\n  infoCount: report.summary.infoCount,\n  partnersChecked: report.summary.partnersChecked,\n  partnersWithIssues: report.summary.partnersWithIssues,\n  source: report.source,\n  workbookSavedAt: report.workbookSavedAt,\n};\nconst qaCheckerHistory = [\n  historyEntry,\n  ...priorHistory.filter((entry) => entry && entry.runId !== historyEntry.runId),\n].slice(0, 25);\nreport.history = qaCheckerHistory;\nconst csv = qaReportToCsv(report);\nfunction splitS3Key(key) {\n  const cleaned = String(key || \"\").replace(/^\\/+|\\/+$/g, \"\");\n  const parts = cleaned.split(\"/\");\n  const fileName = parts.pop() || \"artifact.json\";\n  return { parentFolderKey: parts.join(\"/\"), fileName };\n}\nfunction buildJsonBinary(fileName, jsonText) {\n  return { data: Buffer.from(jsonText, \"utf8\").toString(\"base64\"), fileName, mimeType: \"application/json\" };\n}\nfunction buildCsvBinary(fileName, csvText) {\n  return { data: Buffer.from(csvText, \"utf8\").toString(\"base64\"), fileName, mimeType: \"text/csv\" };\n}\nconst summaryKey = splitS3Key(ctx.qaSummaryKey);\nconst exceptionsKey = splitS3Key(ctx.qaExceptionsKey);\nconst workbookKey = splitS3Key(ctx.workbookKey);\nconst updatedSnapshot = { ...snapshotForHistory, _saved: generatedAt, qaCheckerLatest: report, qaCheckerHistory };\nconst updatedWorkbookPayload = maintainedWorkbookPayload && typeof maintainedWorkbookPayload === \"object\" && maintainedWorkbookPayload.snapshot && typeof maintainedWorkbookPayload.snapshot === \"object\"\n  ? { ...maintainedWorkbookPayload, savedAt: generatedAt, snapshot: updatedSnapshot }\n  : { workspace: { label: \"Veem Billing Workspace\" }, user: {}, snapshot: updatedSnapshot, savedAt: generatedAt };\nreturn [{\n  json: {\n    bucketName: ctx.bucketName,\n    runId: ctx.runId,\n    period: report.period,\n    generatedAt,\n    status: report.status,\n    criticalCount: report.summary.criticalCount,\n    warningCount: report.summary.warningCount,\n    infoCount: report.summary.infoCount,\n    issueCount: report.summary.issueCount,\n    qaSummaryParentFolderKey: summaryKey.parentFolderKey,\n    qaSummaryFileName: summaryKey.fileName,\n    qaExceptionsParentFolderKey: exceptionsKey.parentFolderKey,\n    qaExceptionsFileName: exceptionsKey.fileName,\n    workbookParentFolderKey: workbookKey.parentFolderKey,\n    workbookFileName: workbookKey.fileName,\n    workbookKey: ctx.workbookKey,\n  },\n  binary: {\n    workbookWithQaFile: buildJsonBinary(workbookKey.fileName, JSON.stringify(updatedWorkbookPayload, null, 2)),\n    qaSummaryFile: buildJsonBinary(summaryKey.fileName, JSON.stringify(report, null, 2)),\n    qaExceptionsFile: buildCsvBinary(exceptionsKey.fileName, csv),\n  },\n}];"
+      },
+      "id": "run-deterministic-qa-checker",
+      "name": "Run Deterministic QA Checker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileName": "={{ $json.workbookFileName }}",
+        "binaryData": true,
+        "binaryPropertyName": "workbookWithQaFile",
+        "additionalFields": {
+          "parentFolderKey": "={{ $json.workbookParentFolderKey }}"
+        }
+      },
+      "id": "upload-workbook-qa-status",
+      "name": "Upload Workbook QA Status",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const source = $(\"Run Deterministic QA Checker\").all()[0];\nif (!source) throw new Error(\"Run Deterministic QA Checker output was not available for the workbook QA verification.\");\nreturn [{ json: source.json || {}, binary: source.binary || {} }];"
+      },
+      "id": "restore-qa-payload-for-verification",
+      "name": "Restore QA Payload For Verification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "download",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileKey": "={{ $json.workbookKey }}",
+        "binaryPropertyName": "verifiedWorkbook"
+      },
+      "id": "download-verified-workbook-qa-status",
+      "name": "Download Verified Workbook QA Status",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const expected = $(\"Run Deterministic QA Checker\").all()[0];\nif (!expected) throw new Error(\"Run Deterministic QA Checker output was not available for data/current-workbook.json QA verification.\");\nif (!$input.first()?.binary?.verifiedWorkbook) throw new Error(\"Downloaded workbook verification file was missing.\");\nconst buffer = await this.helpers.getBinaryDataBuffer(0, \"verifiedWorkbook\");\nlet payload;\ntry {\n  payload = JSON.parse(buffer.toString(\"utf8\"));\n} catch (error) {\n  throw new Error(`Uploaded workbook could not be parsed during QA verification: ${error.message}`);\n}\nconst report = payload?.snapshot?.qaCheckerLatest || payload?.qaCheckerLatest;\nif (!report || typeof report !== \"object\") {\n  throw new Error(\"QA verification failed: data/current-workbook.json does not contain snapshot.qaCheckerLatest after upload.\");\n}\nif (String(report.runId || \"\") !== String(expected.json?.runId || \"\")) {\n  throw new Error(`QA verification failed: workbook has runId ${report.runId || \"missing\"}, expected ${expected.json?.runId || \"missing\"}.`);\n}\nreturn [{ json: expected.json || {}, binary: expected.binary || {} }];"
+      },
+      "id": "verify-workbook-qa-status",
+      "name": "Verify Workbook QA Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const source = $(\"Run Deterministic QA Checker\").all()[0];\nif (!source) throw new Error(\"Run Deterministic QA Checker output was not available for the next QA upload.\");\nreturn [{ json: source.json || {}, binary: source.binary || {} }];"
+      },
+      "id": "restore-qa-payload-for-summary",
+      "name": "Restore QA Payload For Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileName": "={{ $json.qaSummaryFileName }}",
+        "binaryData": true,
+        "binaryPropertyName": "qaSummaryFile",
+        "additionalFields": {
+          "parentFolderKey": "={{ $json.qaSummaryParentFolderKey }}"
+        }
+      },
+      "id": "upload-latest-qa-summary",
+      "name": "Upload Latest QA Summary",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        3080,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const source = $(\"Run Deterministic QA Checker\").all()[0];\nif (!source) throw new Error(\"Run Deterministic QA Checker output was not available for the next QA upload.\");\nreturn [{ json: source.json || {}, binary: source.binary || {} }];"
+      },
+      "id": "restore-qa-payload-for-exceptions",
+      "name": "Restore QA Payload For Exceptions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3380,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileName": "={{ $json.qaExceptionsFileName }}",
+        "binaryData": true,
+        "binaryPropertyName": "qaExceptionsFile",
+        "additionalFields": {
+          "parentFolderKey": "={{ $json.qaExceptionsParentFolderKey }}"
+        }
+      },
+      "id": "upload-latest-qa-exceptions-csv",
+      "name": "Upload Latest QA Exceptions CSV",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "First checker layer: deterministic QA only. It reads veem-qa-billing-data/data/current-workbook.json, flags source-data and missing-fee exceptions, writes qaCheckerLatest back to the data-bucket object, and writes the latest summary/CSV under data/qa. The hosted UI reads the latest summary through the separate Billing QA Status API workflow so this checker does not need site-bucket permissions.",
+        "height": 260,
+        "width": 520,
+        "color": 5
+      },
+      "id": "setup-note",
+      "name": "Setup Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        540,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "QA Checker Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build QA Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build QA Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Called By Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Build QA Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build QA Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build QA Run Context": {
+      "main": [
+        [
+          {
+            "node": "Download Current Workbook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Current Workbook": {
+      "main": [
+        [
+          {
+            "node": "Run Deterministic QA Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Deterministic QA Checker": {
+      "main": [
+        [
+          {
+            "node": "Upload Workbook QA Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Workbook QA Status": {
+      "main": [
+        [
+          {
+            "node": "Restore QA Payload For Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore QA Payload For Verification": {
+      "main": [
+        [
+          {
+            "node": "Download Verified Workbook QA Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Verified Workbook QA Status": {
+      "main": [
+        [
+          {
+            "node": "Verify Workbook QA Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Workbook QA Status": {
+      "main": [
+        [
+          {
+            "node": "Restore QA Payload For Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore QA Payload For Summary": {
+      "main": [
+        [
+          {
+            "node": "Upload Latest QA Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Latest QA Summary": {
+      "main": [
+        [
+          {
+            "node": "Restore QA Payload For Exceptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore QA Payload For Exceptions": {
+      "main": [
+        [
+          {
+            "node": "Upload Latest QA Exceptions CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "saveExecutionProgress": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all"
+  },
+  "pinData": {},
+  "tags": []
+}

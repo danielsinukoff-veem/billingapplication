@@ -1,0 +1,156 @@
+{
+  "name": "Billing QA Status API - Updated 2026-04-30",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "billing-qa-status",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "https://billing.qa-us-west-2.veem.com"
+        }
+      },
+      "id": "qa-status-webhook",
+      "name": "QA Status Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        240
+      ],
+      "webhookId": "billing-qa-status"
+    },
+    {
+      "parameters": {},
+      "id": "manual-test-trigger",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first()?.json || {};\nconst query = input.query && typeof input.query === \"object\" ? input.query : {};\nconst body = input.body && typeof input.body === \"object\" ? input.body : {};\nconst source = { ...query, ...body };\nreturn [{ json: {\n  bucketName: String(source.bucketName || \"veem-qa-billing-data\"),\n  qaSummaryKey: String(source.qaSummaryKey || source.summaryKey || \"data/qa/latest-checker-summary.json\"),\n  requestedAt: new Date().toISOString(),\n} }];"
+      },
+      "id": "build-qa-status-context",
+      "name": "Build QA Status Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "download",
+        "bucketName": "={{ $json.bucketName }}",
+        "fileKey": "={{ $json.qaSummaryKey }}",
+        "binaryPropertyName": "qaSummaryFile"
+      },
+      "id": "download-latest-qa-summary",
+      "name": "Download Latest QA Summary",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        900,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const input = $input.first();\nif (!input?.binary?.qaSummaryFile) {\n  throw new Error(\"Latest QA summary file was not downloaded. Run the QA checker first.\");\n}\nconst buffer = await this.helpers.getBinaryDataBuffer(0, \"qaSummaryFile\");\nlet report;\ntry {\n  report = JSON.parse(buffer.toString(\"utf8\"));\n} catch (error) {\n  throw new Error(`Latest QA summary JSON could not be parsed: ${error.message}`);\n}\nreturn [{\n  json: {\n    ok: true,\n    source: \"s3:data/qa/latest-checker-summary.json\",\n    fetchedAt: new Date().toISOString(),\n    qaCheckerLatest: report,\n    report,\n  }\n}];"
+      },
+      "id": "return-qa-status-response",
+      "name": "Return QA Status Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Read-only status API for the hosted app. It downloads veem-qa-billing-data/data/qa/latest-checker-summary.json using n8n's existing AWS credential and returns it as JSON. This avoids needing site-bucket write access while Engineering is unavailable.",
+        "height": 200,
+        "width": 500,
+        "color": 5
+      },
+      "id": "setup-note",
+      "name": "Setup Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "QA Status Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build QA Status Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build QA Status Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build QA Status Context": {
+      "main": [
+        [
+          {
+            "node": "Download Latest QA Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Latest QA Summary": {
+      "main": [
+        [
+          {
+            "node": "Return QA Status Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto",
+    "availableInMCP": false,
+    "saveExecutionProgress": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all"
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -4,12 +4,17 @@ import path from "node:path";
 const ROOT_DIR = "/Users/danielsinukoff/Documents/billing-workbook";
 const RUNTIME_PATH = path.join(ROOT_DIR, "tools", "looker_sync_runtime.mjs");
 const CONFIG_PATH = path.join(ROOT_DIR, "docs", "looker-direct-reports.json");
-const OUTPUT_PATH = path.join(ROOT_DIR, "docs", "n8n-looker-cloud.workflow.json");
+const GUIDE_OUTPUT_PATH = path.join(ROOT_DIR, "docs", "archived", "n8n-looker-cloud-split-guide.workflow.json");
+const SPLIT_OUTPUT_DIR = path.join(ROOT_DIR, "docs", "n8n-looker-cloud-split");
 
 const DEFAULT_BUCKET = "veem-qa-billing-data";
-const DEFAULT_WORKBOOK_KEY = "current/workbook.json";
-const DEFAULT_SUMMARY_KEY = "looker-sync/latest-summary.json";
+const DEFAULT_WORKBOOK_KEY = "data/current-workbook.json";
+const DEFAULT_SUMMARY_KEY = "data/looker-sync/latest-summary.json";
 const DEFAULT_WORKBOOK_HISTORY_PREFIX = "history/workbook";
+const DEFAULT_QA_CHECKER_WEBHOOK_URL = "https://veem.app.n8n.cloud/webhook/billing-qa-checker";
+const UPDATED_LABEL = "Updated 2026-04-30";
+const SPLIT_SCHEDULE_START_HOUR = 0;
+const SPLIT_SCHEDULE_INTERVAL_MINUTES = 30;
 const OFFLINE_CHUNK_MONTH_OFFSETS = [-3, -2, -1, 0];
 const DEFAULT_QUERY_TASK_WAIT_SECONDS = 30;
 const OFFLINE_QUERY_TASK_WAIT_SECONDS = 120;
@@ -36,11 +41,18 @@ function slugify(value) {
     .slice(0, 48) || "node";
 }
 
+function scheduleCronForIndex(index) {
+  const totalMinutes = (SPLIT_SCHEDULE_START_HOUR * 60) + (index * SPLIT_SCHEDULE_INTERVAL_MINUTES);
+  const hour = Math.floor(totalMinutes / 60) % 24;
+  const minute = totalMinutes % 60;
+  return `=${minute} ${hour} * * *`;
+}
+
 function makeNodeId(name) {
   return slugify(name);
 }
 
-function buildContextCode(config, runtimeSource) {
+function buildContextCode(config) {
   const configuredReportCount = Array.isArray(config.reports) ? config.reports.length : 0;
   return [
     "const now = new Date();",
@@ -54,6 +66,7 @@ function buildContextCode(config, runtimeSource) {
     `  workbookKey: ${JSON.stringify(DEFAULT_WORKBOOK_KEY)},`,
     `  summaryKey: ${JSON.stringify(DEFAULT_SUMMARY_KEY)},`,
     `  workbookHistoryPrefix: ${JSON.stringify(DEFAULT_WORKBOOK_HISTORY_PREFIX)},`,
+    `  qaCheckerWebhookUrl: ${JSON.stringify(DEFAULT_QA_CHECKER_WEBHOOK_URL)},`,
     `  configuredReportCount: ${JSON.stringify(configuredReportCount)},`,
     `  lookerBaseUrl: ${JSON.stringify(config.baseUrl || "")},`,
     `  lookerApiVersion: ${JSON.stringify(config.apiVersion || "4.0")},`,
@@ -508,7 +521,12 @@ function httpRequestNode(name, position, parameters) {
   };
 }
 
-function buildWorkflow(config, runtimeSource) {
+function buildWorkflow(config, runtimeSource, options = {}) {
+  const workflowName = options.workflowName || `Billing Workbook Looker Cloud Sync - ${UPDATED_LABEL}`;
+  const includeSchedule = options.includeSchedule !== false;
+  const includeCalledTrigger = options.includeCalledTrigger === true;
+  const scheduleExpression = options.scheduleExpression || "=0 7 * * *";
+  const includeQaTrigger = options.includeQaTrigger !== false;
   const workbookKeyParts = splitS3Key(DEFAULT_WORKBOOK_KEY);
   const summaryKeyParts = splitS3Key(DEFAULT_SUMMARY_KEY);
   const nodes = [];
@@ -533,25 +551,38 @@ function buildWorkflow(config, runtimeSource) {
     position: [220, 220],
   });
 
-  addNode({
-    parameters: {
-      rule: {
-        interval: [
-          {
-            field: "cronExpression",
-            expression: "=0 7 * * *",
-          },
-        ],
+  if (includeSchedule) {
+    addNode({
+      parameters: {
+        rule: {
+          interval: [
+            {
+              field: "cronExpression",
+              expression: scheduleExpression,
+            },
+          ],
+        },
       },
-    },
-    id: makeNodeId("Daily Schedule"),
-    name: "Daily Schedule",
-    type: "n8n-nodes-base.scheduleTrigger",
-    typeVersion: 1.2,
-    position: [220, 420],
-  });
+      id: makeNodeId("Daily Schedule"),
+      name: "Daily Schedule",
+      type: "n8n-nodes-base.scheduleTrigger",
+      typeVersion: 1.2,
+      position: [220, 420],
+    });
+  }
 
   addNode(codeNode("Build Run Context", [520, 320], buildContextCode(config)));
+
+  if (includeCalledTrigger) {
+    addNode({
+      parameters: {},
+      id: makeNodeId("When Called By Another Workflow"),
+      name: "When Called By Another Workflow",
+      type: "n8n-nodes-base.executeWorkflowTrigger",
+      typeVersion: 1,
+      position: [220, 620],
+    });
+  }
 
   addNode({
     parameters: {
@@ -598,7 +629,8 @@ function buildWorkflow(config, runtimeSource) {
   }));
 
   connect("Manual Trigger", "Build Run Context");
-  connect("Daily Schedule", "Build Run Context");
+  if (includeSchedule) connect("Daily Schedule", "Build Run Context");
+  if (includeCalledTrigger) connect("When Called By Another Workflow", "Build Run Context");
   connect("Build Run Context", "Download Current Workbook");
   connect("Download Current Workbook", "Initialize Workbook State");
   connect("Initialize Workbook State", "Looker Login");
@@ -675,11 +707,12 @@ function buildWorkflow(config, runtimeSource) {
     const isChunkedOfflineReport = report.fileType === "partner_offline_billing";
 
     if (isChunkedOfflineReport) {
+      const offlineChunkMonthOffsets = options.offlineChunkMonthOffsets || OFFLINE_CHUNK_MONTH_OFFSETS;
       const chunkParseNodeNames = [];
       connect(previousTriggerNodeName, getLookName);
       connect(getLookName, getQueryName);
       let previousChunkNodeName = getQueryName;
-      for (const [chunkIndex, monthOffset] of OFFLINE_CHUNK_MONTH_OFFSETS.entries()) {
+      for (const [chunkIndex, monthOffset] of offlineChunkMonthOffsets.entries()) {
         const chunkLabel = `${safeLabel} ${monthOffset}`;
         const buildChunkName = `Build Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
         const createChunkName = `Create Export Query: ${safeLabel} Chunk ${chunkIndex + 1}`;
@@ -691,12 +724,18 @@ function buildWorkflow(config, runtimeSource) {
           ...report,
           chunkMonthOffset: monthOffset,
           chunkLabel: `month-${monthOffset}`,
-          chunkFieldHints: ["creditcomplete", "creditcompletetimestampdate"],
+          chunkFieldHints: ["billingmonthmonth", "billingmonth", "billingmo", "billing"],
           chunkFallbackKeys: [
+            "billing_month",
+            "billing_month_month",
+            "payment_billing_month",
+            "payment_billing_month_month",
+            "transaction_lookup_dates.billing_month",
+            "transaction_lookup_dates.billing_month_month",
             "transaction_lookup_dates.credit_complete_timestamp_date",
             "credit_complete_timestamp_date",
           ],
-          chunkPeriodFilterMode: "date_range",
+          chunkPeriodFilterMode: "month",
         };
         addNode(codeNode(buildChunkName, [groupX, 340 + (chunkIndex * 300)], buildExportQueryCode(chunkSpec, getQueryName)));
         addNode(httpRequestNode(createChunkName, [groupX, 500 + (chunkIndex * 300)], {
@@ -803,7 +842,7 @@ function buildWorkflow(config, runtimeSource) {
         previousChunkNodeName = parseChunkName;
         chunkParseNodeNames.push(parseChunkName);
       }
-      addNode(codeNode(applyName, [groupX, 1140 + (OFFLINE_CHUNK_MONTH_OFFSETS.length * 300)], buildApplyChunkedReportCode(report, previousStateNodeName, chunkParseNodeNames, runtimeSource)));
+      addNode(codeNode(applyName, [groupX, 1140 + (offlineChunkMonthOffsets.length * 300)], buildApplyChunkedReportCode(report, previousStateNodeName, chunkParseNodeNames, runtimeSource)));
       connect(previousChunkNodeName, applyName);
       previousStateNodeName = applyName;
       previousTriggerNodeName = applyName;
@@ -983,13 +1022,33 @@ function buildWorkflow(config, runtimeSource) {
     position: [finalX + 320, 960],
   });
 
+  if (includeQaTrigger) {
+    addNode(httpRequestNode("Trigger QA Checker", [finalX + 680, 680], {
+      method: "POST",
+      url: "={{ $(\"Build Run Context\").all()[0].json.qaCheckerWebhookUrl }}",
+      sendBody: true,
+      contentType: "json",
+      specifyBody: "json",
+      jsonBody: "={{ ({ period: $(\"Build Run Context\").all()[0].json.period, runId: $(\"Build Run Context\").all()[0].json.runId, bucketName: $(\"Build Run Context\").all()[0].json.bucketName, workbookKey: $(\"Build Run Context\").all()[0].json.workbookKey }) }}",
+      options: {
+        timeout: 30000,
+        response: {
+          response: {
+            responseFormat: "text",
+          },
+        },
+      },
+    }));
+  }
+
   connect(previousTriggerNodeName, "Finalize Cloud Sync");
   connect("Finalize Cloud Sync", "Upload Current Workbook");
   connect("Finalize Cloud Sync", "Upload Workbook History");
   connect("Finalize Cloud Sync", "Upload Sync Summary");
+  if (includeQaTrigger) connect("Upload Current Workbook", "Trigger QA Checker");
 
   return {
-    name: "Billing Workbook Looker Cloud Sync",
+    name: workflowName,
     active: false,
     isArchived: false,
     nodes,
@@ -999,20 +1058,148 @@ function buildWorkflow(config, runtimeSource) {
       timezone: "America/Toronto",
       callerPolicy: "workflowsFromSameOwner",
       availableInMCP: false,
+      saveExecutionProgress: false,
+      saveDataSuccessExecution: "none",
+      saveDataErrorExecution: "all",
+      executionTimeout: 7200,
     },
     pinData: {},
     tags: [],
   };
 }
 
+function buildGuideWorkflow(config) {
+  const splitDefinitions = buildSplitDefinitions(config);
+  const childLines = splitDefinitions.map((definition, index) => {
+    const schedule = scheduleCronForIndex(index);
+    return `${definition.sequence}. ${definition.displayName} (${definition.report.fileType}) - ${schedule}`;
+  });
+  const content = [
+    `Billing Workbook Looker Cloud Sync - ${UPDATED_LABEL}`,
+    "",
+    "The previous single 118-node Looker workflow has been split because n8n Cloud loses connection while rendering large canvases.",
+    "",
+    "Import the child workflow JSON files from docs/n8n-looker-cloud-split instead of importing one giant workflow.",
+    "",
+    "Run order / default staggered schedules:",
+    ...childLines,
+    "",
+    "Activate the children only after AWS and Looker credentials are selected. The QA checker remains a separate workflow and can run after the last child finishes.",
+  ].join("\n");
+  return {
+    name: `ARCHIVED - Billing Workbook Looker Cloud Split Guide - ${UPDATED_LABEL}`,
+    active: false,
+    isArchived: false,
+    nodes: [
+      {
+        parameters: {},
+        id: makeNodeId("Manual Trigger"),
+        name: "Manual Trigger",
+        type: "n8n-nodes-base.manualTrigger",
+        typeVersion: 1,
+        position: [220, 320],
+      },
+      {
+        parameters: {
+          content,
+          height: 560,
+          width: 900,
+          color: 5,
+        },
+        id: makeNodeId("Split Workflow Guide"),
+        name: "Split Workflow Guide",
+        type: "n8n-nodes-base.stickyNote",
+        typeVersion: 1,
+        position: [520, 120],
+      },
+    ],
+    connections: {},
+    settings: {
+      executionOrder: "v1",
+      timezone: "America/Toronto",
+      callerPolicy: "workflowsFromSameOwner",
+      availableInMCP: false,
+      saveExecutionProgress: false,
+      saveDataSuccessExecution: "none",
+      saveDataErrorExecution: "all",
+    },
+    pinData: {},
+    tags: [],
+  };
+}
+
+function buildSplitWorkflows(config, runtimeSource) {
+  fs.mkdirSync(SPLIT_OUTPUT_DIR, { recursive: true });
+  for (const entry of fs.readdirSync(SPLIT_OUTPUT_DIR)) {
+    if (entry.endsWith(".workflow.json")) fs.unlinkSync(path.join(SPLIT_OUTPUT_DIR, entry));
+  }
+
+  const outputs = [];
+  const splitDefinitions = buildSplitDefinitions(config);
+  for (const [index, definition] of splitDefinitions.entries()) {
+    const { report, sequence, displayName, fileSlug, workflowOptions } = definition;
+    const fileName = `${sequence}-${fileSlug}.workflow.json`;
+    const workflow = buildWorkflow(
+      { ...config, reports: [report] },
+      runtimeSource,
+      {
+        workflowName: `Billing Workbook Looker ${sequence} ${displayName} - ${UPDATED_LABEL}`,
+        includeSchedule: true,
+        includeCalledTrigger: true,
+        includeQaTrigger: false,
+        scheduleExpression: scheduleCronForIndex(index),
+        ...workflowOptions,
+      }
+    );
+    const outputPath = path.join(SPLIT_OUTPUT_DIR, fileName);
+    fs.writeFileSync(outputPath, JSON.stringify(workflow, null, 2) + "\n");
+    outputs.push({ outputPath, workflow });
+  }
+  return outputs;
+}
+
+function buildSplitDefinitions(config) {
+  const definitions = [];
+  for (const report of (config.reports || [])) {
+    if (report.fileType === "partner_offline_billing") {
+      for (const monthOffset of OFFLINE_CHUNK_MONTH_OFFSETS) {
+        const displayOffset = monthOffset === 0 ? "Current Month" : `Month ${monthOffset}`;
+        const fileOffset = monthOffset === 0 ? "current-month" : `month-minus-${Math.abs(monthOffset)}`;
+        definitions.push({
+          report,
+          displayName: `${report.reportName} ${displayOffset}`,
+          fileSlug: `${slugify(report.fileType)}-${fileOffset}`,
+          workflowOptions: { offlineChunkMonthOffsets: [monthOffset] },
+        });
+      }
+      continue;
+    }
+    definitions.push({
+      report,
+      displayName: report.reportName,
+      fileSlug: slugify(report.fileType),
+      workflowOptions: {},
+    });
+  }
+  return definitions.map((definition, index) => ({
+    ...definition,
+    sequence: String(index + 1).padStart(2, "0"),
+  }));
+}
+
 const runtimeSource = stripExports(fs.readFileSync(RUNTIME_PATH, "utf8"));
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
-const workflow = buildWorkflow(config, runtimeSource);
+const workflow = buildGuideWorkflow(config);
+const splitWorkflows = buildSplitWorkflows(config, runtimeSource);
 const workbookKeyParts = splitS3Key(DEFAULT_WORKBOOK_KEY);
 const summaryKeyParts = splitS3Key(DEFAULT_SUMMARY_KEY);
-fs.writeFileSync(OUTPUT_PATH, JSON.stringify(workflow, null, 2) + "\n");
 
-console.log(`Wrote ${OUTPUT_PATH}`);
-console.log(`Reports: ${(config.reports || []).length}`);
+fs.mkdirSync(path.dirname(GUIDE_OUTPUT_PATH), { recursive: true });
+fs.writeFileSync(GUIDE_OUTPUT_PATH, JSON.stringify(workflow, null, 2) + "\n");
+console.log(`Wrote archived guide ${GUIDE_OUTPUT_PATH}`);
+console.log(`Wrote split workflows: ${splitWorkflows.length}`);
+for (const { outputPath, workflow: childWorkflow } of splitWorkflows) {
+  console.log(`- ${outputPath} (${childWorkflow.nodes.length} nodes)`);
+}
 console.log(`Workbook seed: s3://${DEFAULT_BUCKET}/${workbookKeyParts.parentFolderKey}/${workbookKeyParts.fileName}`);
 console.log(`Summary key: s3://${DEFAULT_BUCKET}/${summaryKeyParts.parentFolderKey}/${summaryKeyParts.fileName}`);
